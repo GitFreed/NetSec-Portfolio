@@ -6033,7 +6033,7 @@ Modifier `sshd_config` est très risqué. Voici la procédure stricte :
 
 ---
 
-### 🧱 C306. Sécurité Linux
+### 🧱 C306. Sécurité Linux 2
 
 > **Objectif** :
 
