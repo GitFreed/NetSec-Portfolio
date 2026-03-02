@@ -6020,6 +6020,8 @@ Modifier `sshd_config` est très risqué. Voici la procédure stricte :
 5. Vérifier la syntaxe (`sudo sshd -t`) et redémarrer le service (`sudo systemctl restart sshd`).
 6. **NE SURTOUT PAS FERMER LE TERMINAL 1**. Ouvrir un troisième terminal et tester la nouvelle connexion. En cas de problème de syntaxe ou de droits (ex: SELinux qui bloque la lecture de la clé), le Terminal 1 reste actif pour réparer.
 
+💡 **Tips** : Pour oublier l'utlisation d'une clef SSH sur une IP (nouvelle VM etc message d'erreur : *WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!*) il faut utiliser `ssh-keygen -R <IP_DE_LA_MACHINE>`
+
 [Atelier C305](./challenges/Challenge_C305.md) : Sécurisation d’un serveur Debian exposé sur Internet, durcissement minimal du système et restriction stricte des accès SSH.
 
 > 📚 **Ressources** :
