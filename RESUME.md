@@ -5888,7 +5888,7 @@ Il fonctionne avec des **chaînes** (les zones de contrôle) et des **actions**.
 - **Les 3 chaînes principales** :
   - `INPUT` : Le trafic à destination du serveur lui-même (ex: un client web qui se connecte).
   - `OUTPUT` : Le trafic généré par le serveur vers l'extérieur (ex: le serveur télécharge une mise à jour).
-  - `FORWARD` : Le trafic qui ne fait que transiter (si ton Linux agit comme un routeur).
+  - `FORWARD` : Le trafic qui ne fait que transiter (si Linux agit comme un routeur).
 
 - **Les 4 actions possibles** :
   - `ACCEPT` : Laisse passer.
@@ -5907,9 +5907,21 @@ Pour parler à `netfilter`, on utilise des outils en ligne de commande. Voici le
 ```bash
 iptables -P INPUT DROP # /!\ Coupe tout accès instantanément si tapé en premier !
 iptables -A INPUT -s 192.168.1.100 -p tcp --dport 22 -j ACCEPT # SSH restreint à une IP admin
-iptables -A INPUT -p tcp --dport 80 -j ACCEPT # Web
-iptables -A INPUT -p tcp --dport 443 -j ACCEPT # Web Sécurisé
+iptables -A INPUT -p tcp --dport 80 -j ACCEPT # Web (http)
+iptables -A INPUT -p tcp --dport 443 -j ACCEPT # Web Sécurisé (https)
 
+# Afficher les règles actives avec statistiques
+iptables -L -n -v
+```
+
+iptables ne sauvegarde rien sans la persistance
+
+```sh
+# Installer le paquet pour sauvegarder les règles iptables au redémarrage
+apt install -y iptables-persistent
+
+# Sauvegarder les règles pour qu'elles persistent après redémarrage
+netfilter-persistent save
 ```
 
 - **2. nftables** (Le remplaçant moderne, syntaxe propre et unifie IPv4/IPv6) :
@@ -5920,6 +5932,21 @@ nft add rule inet filter input tcp dport { 80, 443 } accept
 
 ```
 
+Il se configure dans un fichier /etc/nftables.conf
+
+```sh
+nano /etc/nftables.conf
+
+# Afficher le ruleset actif
+nft list ruleset
+
+# Charger la configuration depuis le fichier
+nft -f /etc/nftables.conf
+
+# Sauvegarder le ruleset actuel dans le fichier de configuration
+nft list ruleset > /etc/nftables.conf
+```
+
 - **3. ufw** (Uncomplicated Firewall - Surcouche simplifiée, parfait pour des besoins basiques) :
 
 ```bash
@@ -5928,6 +5955,8 @@ ufw allow from 192.168.1.100 to any port 22
 ufw allow 80,443/tcp
 ufw enable
 
+# Afficher le statut d'UFW et toutes les règles actives
+ufw status verbose
 ```
 
 > 💡 **Le conseil de survie réseau** : L'erreur classique est de taper la commande de blocage par défaut (`DROP`) *avant* d'avoir autorisé le port 22... Résultat : on s'enferme dehors.

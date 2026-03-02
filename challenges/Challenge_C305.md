@@ -21,7 +21,6 @@ Votre mission consiste à préparer le serveur conformément aux exigences de s�
 
 * 1 machine virtuelle vierge sous Debian (installation minimale)
 * Accès console root
-* Pour vos tests, la machine ne sera a ccessible que depuis votre propre IP
 
 ---
 
@@ -32,3 +31,5 @@ Votre mission consiste à préparer le serveur conformément aux exigences de s�
 [Récap des commandes Pare-feu & SSH](./Challenge_C305_recap.md)
 
 ---
+
+### Installation et configuration de SSH
