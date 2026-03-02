@@ -130,7 +130,7 @@ Cette fiche synthétise les notions fondamentales abordées durant les cours en 
 - [C302. Contrôle d'accès et Sécurité Sans-Fil (ACL, NAC, WiFi)](#-c302-contrôle-daccès-et-sécurité-sans-fil-acl-nac-wifi)
 - [C303. DMZ, pare-feu & VPN](#-c303-dmz-pare-feu--vpn)
 - [C304. Détection, Prévention et SIEM (Suricata & Wazuh)](#-c304-détection-prévention-et-siem-suricata--wazuh)
-- [C305.Sécurité Linux, Pare-feu & SSH](#-c305-sécurité-linux-pare-feu--ssh)
+- [C305. Sécurité Linux (Pare-feu & SSH)](#-c305-sécurité-linux-pare-feu--ssh)
 
 ### [Saison C4. Conteneurs et orchestration 📦](.)
 
