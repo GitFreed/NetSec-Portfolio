@@ -2,9 +2,30 @@
 
 ## Pitch de l’exercice 🧑‍🏫
 
-- Mise en place d'une zone DMZ isolée avec un serveur web, règles de pare-feu et redirection de port NAT.
+## 🛡️ Sécurisation d’un serveur Debian exposé sur Internet
 
-[Challenge C305](.)
+### 🎯 Contexte
+
+Vous venez d’intégrer l’équipe infrastructure d’une mairie de votre région.
+
+Un nouveau serveur sous **Debian** doit être déployé en urgence pour héberger un futur service interne.
+Avant sa mise en production, l’équipe sécurité exige un **durcissement minimal du système** et une **restriction stricte des accès SSH**.
+
+Le responsable sécurité vous transmet les exigences suivantes :
+
+Votre mission consiste à préparer le serveur conformément aux exigences de sécurité de base.
+
+---
+
+### 🖥️ Environnement technique
+
+* 1 machine virtuelle vierge sous Debian (installation minimale)
+* Accès console root
+* Pour vos tests, la machine ne sera a ccessible que depuis votre propre IP
+
+---
+
+[Challenge C305](https://github.com/O-clock-Aldebaran/SC3E06-ssh-hardening/)
 
 [Cours C305.](/RESUME.md#-c305)
 

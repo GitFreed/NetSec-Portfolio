@@ -5882,6 +5882,8 @@ Pour que la détection soit efficace, le SIEM doit fusionner les événements pu
 
 > 📚 **Ressources** :
 >
+> - Récap commandes par Franck : <https://github.com/O-clock-Aldebaran/Oclock-Franck/blob/main/01-CoursOclock/SC3%20S%C3%A9curit%C3%A9%20des%20r%C3%A9seaux/SC3EP6%20-%20S%C3%A9curit%C3%A9%20Linux.md>
+> - Exemple de configuration firewall et durcissement SSH : <>
 
 [Retour en haut](#-table-des-matières)
 
