@@ -6001,3 +6001,16 @@ Modifier `sshd_config` est très risqué. Voici la procédure stricte :
 [Retour en haut](#-table-des-matières)
 
 ---
+
+### 🧱 C306. Sécurité Linux
+
+> **Objectif** :
+
+[Atelier C306](./challenges/Challenge_C306.md) : 
+
+> 📚 **Ressources** :
+>
+
+[Retour en haut](#-table-des-matières)
+
+---
