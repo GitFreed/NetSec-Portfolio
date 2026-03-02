@@ -6006,7 +6006,7 @@ Modifier `sshd_config` est très risqué. Voici la procédure stricte :
 
 > **Objectif** :
 
-[Atelier C306](./challenges/Challenge_C306.md) : 
+[Atelier C306](./challenges/Challenge_C306.md) :
 
 > 📚 **Ressources** :
 >
