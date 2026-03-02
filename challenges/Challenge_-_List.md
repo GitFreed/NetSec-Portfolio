@@ -154,9 +154,13 @@ Commande utilisée pour extraire la liste du fichier [Resume.md](/RESUME.md)
 
 [Atelier C304](./Challenge_C304.md) : IDP, IPS & SIEM, mise en place d'une chaîne de détection et de supervision complète : Suricata & Wazuh
 
+[Challenge C305](./Challenge_C305.md) : Sécurisation d’un serveur Debian : durcissement du système et restriction stricte des accès SSH
+
 ---
 
 [Homelab Adguard](./Homelab_AdGuard.md) : Déployer AdGuard Home, serveur DHCP et DNS sinkhole.
+
+[Homelab Proxmox VE](./Homelab_Proxmox.md) : Déployer Proxmox Virtual Environment, hyperviseur de type I pour héberger des machines virtuelles et containers.
 
 [Homelab Checkmk](./Homelab_Checkmk.md) : Déployer Checkmk (Raw Edition), supervision d'infrastructure.
 
