@@ -14,9 +14,9 @@ Je suis **Frédéric**, et ce Github documente mon parcours pour l'obtention du 
 
 Ce répertoire est organisé pour refléter mon apprentissage quotidien :
 
-- **💻 `/challenges`** : Le cœur du réseau. Retrouvez [ici mes **labs**, **exercices** quotidiens et scripts](./challenges/Challenge_-_List.md) réalisés pour valider les concepts techniques abordés en cours.
-- **📝 `RESUME.md`** : Ma [fiche de synthèse](./RESUME.md) personnelle qui regroupe les notions essentielles que j'ai acquises.
-- **📌 `CHEATSHEET.md`** : Mon [aide-mémoire technique](./CHEATSHEET.md) (Quick Ref) centralisant les **commandes CLI**, schémas d'architecture et protocoles clés en Réseaux, Système et Sécurité.
+- **💻 `/challenges`** : Retrouvez [ici mes **labs**, exercices quotidiens et scripts](./challenges/Challenge_-_List.md) réalisés pour valider les concepts techniques abordés en cours.
+- **📝 `RESUME.md`** : [Fiche de synthèse](./RESUME.md) personnelle qui regroupe les **notions essentielles** que j'ai acquises.
+- **📌 `CHEATSHEET.md`** : [Aide-mémoire technique](./CHEATSHEET.md) (Quick Ref) centralisant les commandes CLI, schémas d'architecture et protocoles clés en Réseaux, Système et Sécurité.
 - **📚 `/ressources`** : Documentation technique et outils utiles pour l'administration réseau.
 - **📸 `/images`** : Schémas et captures d'écran illustrant mes projets.
 
