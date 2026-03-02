@@ -27,6 +27,8 @@ Votre mission consiste à préparer le serveur conformément aux exigences de s�
 
 [Challenge C305](https://github.com/O-clock-Aldebaran/SC3E06-ssh-hardening/)
 
-[Cours C305.](/RESUME.md#-c305)
+[Cours C305.](/RESUME.md#-c305-sécurité-linux-pare-feu--ssh)
+
+[Récap des commandes Pare-feu & SSH](./Challenge_C305_recap.md)
 
 ---

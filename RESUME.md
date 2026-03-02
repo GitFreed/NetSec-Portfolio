@@ -130,6 +130,7 @@ Cette fiche synthétise les notions fondamentales abordées durant les cours en 
 - [C302. Contrôle d'accès et Sécurité Sans-Fil (ACL, NAC, WiFi)](#-c302-contrôle-daccès-et-sécurité-sans-fil-acl-nac-wifi)
 - [C303. DMZ, pare-feu & VPN](#-c303-dmz-pare-feu--vpn)
 - [C304. Détection, Prévention et SIEM (Suricata & Wazuh)](#-c304-détection-prévention-et-siem-suricata--wazuh)
+- [C305.Sécurité Linux, Pare-feu & SSH](#-c305-sécurité-linux-pare-feu--ssh)
 
 ### [Saison C4. Conteneurs et orchestration 📦](.)
 
@@ -5872,18 +5873,130 @@ Pour que la détection soit efficace, le SIEM doit fusionner les événements pu
 
 ---
 
-### 🧱 C305. Sécurité Linux
+### 🧱 C305. Sécurité Linux (Pare-feu & SSH)
 
-> **Objectif**
+> **Objectif** : Protéger le serveur de l'intérieur. On configure le pare-feu local (`netfilter`) en appliquant le principe du "Deny by default", et on blinde l'accès d'administration (SSH) en remplaçant les mots de passe vulnérables par de la cryptographie asymétrique.
+
+#### 1. Le Pare-feu Linux : La mécanique Netfilter
+
+`netfilter` n'est pas une commande, c'est le **moteur** directement intégré au noyau Linux. C'est lui qui intercepte réellement les paquets.
+
+##### A. Comment réfléchit Netfilter ?
+
+Il fonctionne avec des **chaînes** (les zones de contrôle) et des **actions**.
+
+- **Les 3 chaînes principales** :
+  - `INPUT` : Le trafic à destination du serveur lui-même (ex: un client web qui se connecte).
+  - `OUTPUT` : Le trafic généré par le serveur vers l'extérieur (ex: le serveur télécharge une mise à jour).
+  - `FORWARD` : Le trafic qui ne fait que transiter (si ton Linux agit comme un routeur).
+
+- **Les 4 actions possibles** :
+  - `ACCEPT` : Laisse passer.
+  - `DROP` : Jette le paquet silencieusement (idéal pour bloquer les scans de ports).
+  - `REJECT` : Refuse mais renvoie un message d'erreur à l'expéditeur.
+  - `LOG` : Garde une trace dans les journaux système.
 
 ![netfilter](/images/2026-03-02-12-28-47.png)
 
-[Atelier C305](./challenges/Challenge_C305.md) :
+##### B. Les 3 Outils de configuration (Les interfaces)
+
+Pour parler à `netfilter`, on utilise des outils en ligne de commande. Voici les commandes pratiques pour un cas classique : **Bloquer tout, sauf SSH et le Web**.
+
+- **1. iptables** (Le standard historique, très verbeux mais incontournable en prod) :
+
+```bash
+iptables -P INPUT DROP # /!\ Coupe tout accès instantanément si tapé en premier !
+iptables -A INPUT -s 192.168.1.100 -p tcp --dport 22 -j ACCEPT # SSH restreint à une IP admin
+iptables -A INPUT -p tcp --dport 80 -j ACCEPT # Web
+iptables -A INPUT -p tcp --dport 443 -j ACCEPT # Web Sécurisé
+
+```
+
+- **2. nftables** (Le remplaçant moderne, syntaxe propre et unifie IPv4/IPv6) :
+
+```bash
+nft add rule inet filter input tcp dport 22 accept
+nft add rule inet filter input tcp dport { 80, 443 } accept
+
+```
+
+- **3. ufw** (Uncomplicated Firewall - Surcouche simplifiée, parfait pour des besoins basiques) :
+
+```bash
+ufw default deny incoming
+ufw allow from 192.168.1.100 to any port 22
+ufw allow 80,443/tcp
+ufw enable
+
+```
+
+> 💡 **Le conseil de survie réseau** : L'erreur classique est de taper la commande de blocage par défaut (`DROP`) *avant* d'avoir autorisé le port 22... Résultat : on s'enferme dehors.
+> *L'astuce de pro* : Lancer un script Cron qui réinitialise le pare-feu toutes les 5 minutes pendant qu'on fait nos tests. Si on se trompe, on attend 5 minutes et l'accès revient.
+
+#### 2. Hardening SSH : L'art de verrouiller la porte
+
+Un serveur avec le port 22 ouvert sur Internet reçoit ses premières attaques par "brute-force" (test de milliers de mots de passe) en moins de 10 minutes. Le compte le plus ciblé est `root`.
+
+##### A. La Cryptographie Asymétrique (Les Clés)
+
+On supprime les mots de passe au profit d'une paire de clés.
+
+1. **Génération** (Sur le PC Admin) : L'algorithme `ed25519` est le standard moderne.
+
+```bash
+ssh-keygen -t ed25519 -C "admin@nom_serveur"
+
+```
+
+1. **Envoi au serveur** :
+
+```bash
+ssh-copy-id -i ~/.ssh/id_ed25519.pub admin@ip_du_serveur
+
+```
+
+1. **Les Permissions (Le piège !)** : SSH est paranoïaque. Si le dossier contenant les clés sur le serveur est lisible par d'autres, SSH refuse la connexion silencieusement.
+
+```bash
+chmod 700 ~/.ssh
+chmod 600 ~/.ssh/authorized_keys
+
+```
+
+##### B. Durcissement du fichier `sshd_config`
+
+C'est ici que l'on verrouille le comportement du serveur (`/etc/ssh/sshd_config`). Voici une configuration durcie complète :
+
+```text
+# --- Authentification ---
+PermitRootLogin no              # Bloque la connexion directe du super-administrateur
+PasswordAuthentication no       # Coupe le brute-force instantanément (les mots de passe sont refusés)
+PubkeyAuthentication yes        # Oblige l'usage de la clé SSH
+
+# --- Accès et Sécurité ---
+AllowUsers admin deployer       # Liste blanche : seuls ces utilisateurs ont le droit d'utiliser SSH
+Port 2222                       # Sécurité par obscurité : échappe aux bots basiques qui scannent le port 22
+ClientAliveInterval 300         # Déconnecte les sessions inactives après 5 minutes (300 sec)
+
+```
+
+##### C. Le Workflow Zéro-Risque (Éviter de s'enfermer dehors)
+
+Modifier `sshd_config` est très risqué. Voici la procédure stricte :
+
+1. Ouvrir **deux terminaux** connectés en SSH.
+2. Configurer et envoyer sa clé SSH.
+3. Tester la connexion par clé.
+4. Éditer `sshd_config` (couper le mot de passe) sur le Terminal 1.
+5. Vérifier la syntaxe (`sudo sshd -t`) et redémarrer le service (`sudo systemctl restart sshd`).
+6. **NE SURTOUT PAS FERMER LE TERMINAL 1**. Ouvrir un troisième terminal et tester la nouvelle connexion. En cas de problème de syntaxe ou de droits (ex: SELinux qui bloque la lecture de la clé), le Terminal 1 reste actif pour réparer.
+
+[Atelier C305](./challenges/Challenge_C305.md) : Sécurisation d’un serveur Debian exposé sur Internet, durcissement minimal du système et restriction stricte des accès SSH.
 
 > 📚 **Ressources** :
 >
 > - Récap commandes par Franck : <https://github.com/O-clock-Aldebaran/Oclock-Franck/blob/main/01-CoursOclock/SC3%20S%C3%A9curit%C3%A9%20des%20r%C3%A9seaux/SC3EP6%20-%20S%C3%A9curit%C3%A9%20Linux.md>
-> - Exemple de configuration firewall et durcissement SSH : <>
+> - Exemple de configuration firewall et durcissement SSH : <https://github.com/GitFreed/NetSec-Portfolio/blob/main/challenges/Challenge_C305_recap.md>
 
 [Retour en haut](#-table-des-matières)
 
