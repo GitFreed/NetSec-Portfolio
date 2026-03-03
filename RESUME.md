@@ -6033,23 +6033,101 @@ Modifier `sshd_config` est très risqué. Voici la procédure stricte :
 
 ---
 
-### 🧱 C306. Sécurité Linux 2
+### 🛡️ C306. PAM, Logs, Fail2ban & Port-Knocking
 
-PAM (Pluggable Authentication Modules) est un ensemble de modules et une bibliothèque permettant de mettre en place des mécanismes d’authentification avancés utilisables par les composants logiciels. L’authentification est basée sur un ensemble de modules qui peuvent être combinés dans un ordre précis (pluggables).
+> **Objectif** : Durcir l'authentification du système de manière globale (PAM), surveiller activement qui tente de rentrer (Logs), bloquer automatiquement les attaquants (Fail2ban/CrowdSec) et réduire la surface d'attaque en cachant les services (Port-knocking).
 
-Chaque module peut utiliser des mécanismes différents pour gérer l’identification et l’authentification d’un utilisateur : authentification Linux classique, LDAP, Active Directory, NIS, reconnaissance d’une empreinte digitale, d’une image, d’un dongle USB, etc.
+#### 1. PAM (Pluggable Authentication Modules)
 
-Cela permet à un programme de ne pas avoir à gérer directement l’identification et l’authentification d’un utilisateur. Il lui suffit de faire appel à une fonction générique de la bibliothèque PAM (libpam.so), qui lui retourne un code de succès ou d’échec. Les modules PAM à mettre en œuvre et leur ordre de mise en œuvre par la fonction générique sont configurés par l’administrateur.
+Sur Linux, de nombreux services ont besoin d'authentifier les utilisateurs (SSH, sudo, login local, su...). Sans PAM, chaque service aurait sa propre logique et ses propres failles . PAM unifie tout cela : c'est la "prise électrique standard" de l'authentification .
 
-Pour savoir si un programme utilise PAM, il faut regarder s’il est lié à la bibliothèque PAM.
+##### A. Les 4 phases de PAM
 
-> **Objectif** :
+PAM ne fait pas que vérifier un mot de passe, il gère 4 étapes distinctes :
 
-[Atelier C306](./challenges/Challenge_C306.md) :
+1. **auth** : Vérifie l'identité (mot de passe, clé, biométrie...).
+2. **account** : Vérifie si le compte a le droit de se connecter (compte expiré ? heures autorisées ?).
+3. **password** : Impose des règles lors du changement de mot de passe (complexité).
+4. **session** : Prépare et nettoie l'environnement (montage de dossiers, quotas, logs).
+
+##### B. Configuration et Syntaxe
+
+Les fichiers de configuration se trouvent dans `/etc/pam.d/` (un fichier par service : `sshd`, `sudo`, `su`...) .
+La syntaxe d'une règle est : `type control module [arguments]`.
+
+**Les "Control Flags" (Comportements)**:
+
+- `required` : Le module doit réussir. S'il échoue, PAM continue quand même de lire les autres règles (pour ne pas indiquer à l'attaquant à quelle étape il a échoué) mais refusera l'accès à la fin.
+- `requisite` : Obligatoire. Si échec, PAM rejette l'accès **immédiatement**.
+- `sufficient` : Si ce module réussit, l'accès est accordé tout de suite (on ignore la suite).
+- `optional` : N'est pris en compte que si aucun autre module n'a donné de résultat.
+
+##### C. Modules indispensables à connaître
+
+- `pam_unix` : Authentification locale classique (via `/etc/shadow`).
+- `pam_faillock` : Verrouille le compte après X échecs.
+- `pam_pwquality` : Impose la complexité des mots de passe.
+- `pam_wheel` : Restreint l'utilisation de `su` (devenir root) aux seuls membres du groupe *wheel*.
+
+#### 2. Audit et Logs de connexion (`last` / `lastb`)
+
+Avant de se défendre, il faut comprendre les attaques. Un serveur exposé laisse des traces dans ses journaux.
+
+- **`last` (Les succès)** : Lit le fichier binaire `/var/log/wtmp`. Affiche l'historique des connexions **réussies** (qui, depuis quelle IP, quand, combien de temps).
+
+- **`lastb` (Les échecs)** : Lit le fichier binaire `/var/log/btmp`. Affiche l'historique des connexions **échouées**. Idéal pour repérer un brute-force en cours (ex: des dizaines d'échecs sur le compte `root` en quelques minutes) .
+
+#### 3. Défense Active : Fail2ban & CrowdSec
+
+Lire les logs c'est bien, mais bloquer automatiquement les attaquants à 3h du matin, c'est mieux.
+
+**A. Fail2ban (Le classique)**
+Fail2ban surveille les fichiers de logs en temps réel. S'il détecte trop d'échecs, il crée une règle de pare-feu (iptables/nftables) pour bannir l'IP .
+
+- **Filter** : Une expression régulière (regex) qui repère les lignes d'erreur dans les logs.
+
+- **Jail (Prison)** : Associe un filtre à des seuils et une action.
+
+- **Configuration** : On ne modifie **jamais** `jail.conf` (qui est écrasé aux mises à jour). On crée un fichier `jail.local` ou dans `jail.d/` .
+
+- **Paramètres clés**  :
+  - `maxretry = 5` : Nombre d'échecs tolérés.
+  - `findtime = 10m` : Fenêtre de temps (5 échecs en 10 minutes).
+  - `bantime = 1h` : Durée du bannissement.
+
+**B. CrowdSec (L'alternative moderne et collaborative)** *(Ajout hors-slides)*
+Là où Fail2ban travaille seul dans son coin, **CrowdSec** est un IPS moderne, open-source, et **collaboratif**.
+
+- **Le principe** : Il analyse les logs (plus rapidement que Fail2ban car écrit en Go). Lorsqu'il détecte une attaque, non seulement il bloque l'IP localement, mais il la partage avec le réseau mondial de CrowdSec (CTI - Cyber Threat Intelligence).
+- **L'avantage massif** : Si un attaquant a déjà attaqué d'autres serveurs dans le monde, votre serveur le bloquera de manière préventive *avant même* qu'il ne tente de vous attaquer, grâce à la liste de blocage communautaire.
+- **Architecture** : Il sépare le moteur de détection (qui lit les logs) des "Bouncers" (les agents qui bloquent le trafic, applicables sur le Firewall, Nginx, WordPress, etc.).
+
+#### 4. Réduire l'exposition : Le Port-Knocking
+
+Pourquoi laisser le port SSH (22) ouvert à tous les bots d'Internet ? Le principe du **Port-Knocking** est de fermer le port par défaut .
+
+- **Le Concept** : Le port n'existe pas pour l'extérieur. Pour l'ouvrir, vous devez "frapper" à la porte sur une séquence de ports précis (ex: ping le port 7000, puis 8000, puis 9000). Le pare-feu détecte la séquence secrète et ouvre le port 22 uniquement pour votre adresse IP .
+
+- **L'outil** : `knockd`. Configuré dans `/etc/knockd.conf`.
+
+- **Les limites** : C'est de la sécurité par obscurité. La séquence transite "en clair" sur le réseau. Un attaquant qui écoute le trafic pourrait la capturer et la rejouer.
+
+- **L'évolution (SPA)** : Pour pallier cela, on utilise le **SPA** (Single Packet Authorization) avec des outils comme `fwknop`. Au lieu d'une séquence de ports, on envoie un seul paquet réseau crypté contenant un jeton d'authentification .
+
+#### 💡 Le Conseil "Production" : Le Trio Gagnant
+
+En entreprise, pour un serveur exposé de manière robuste, on combine 3 couches qui ne se remplacent pas, elles s'additionnent  :
+
+1. **Clés SSH (Mot de passe coupé)** : Rends le brute-force mathématiquement impossible.
+2. **Fail2ban / CrowdSec** : Bannit les IP qui "polluent" les logs et s'acharnent inutilement, allégeant la charge du serveur.
+3. **Port-knocking (ou SPA / VPN)** : Rend le service SSH invisible aux scanners (comme Shodan), réduisant la surface d'attaque à zéro pour les non-initiés.
+
+[Atelier C306](./challenges/Challenge_C306.md) : Sécurisation d'un serveur Linux contre les attaques par force brute avec Fail2ban et Knockd
 
 > 📚 **Ressources** :
 >
 > - Exemple configurations PAM, Google Authenticator, last, lastb, fail2ban, knockd et crodwsec : [ici](./challenges/Challenge_C306_demo-cmd.md)
+> - Documentation Crowdsec : <https://doc.crowdsec.net/>
 
 [Retour en haut](#-table-des-matières)
 
