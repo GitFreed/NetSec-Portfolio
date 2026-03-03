@@ -34,7 +34,7 @@ Le responsable sécurité vous demande de mettre en place une protection automat
 
 ---
 
-## Protection automatisée contre les attaques avec Fail2ban
+## 🛡️ Protection automatisée contre les attaques avec Fail2ban
 
 ### Installation VM & SSH
 
@@ -188,7 +188,7 @@ maxretry = 3
 
 ---
 
-## Mise en place du port-knocking avec Knockd
+## 🚪 Mise en place du port-knocking avec Knockd
 
 Le port-knocking masque complètement SSH aux scanners : tant que la bonne séquence de ports n'est pas envoyée, le port 22 n'est tout simplement **pas visible**.
 
@@ -317,7 +317,7 @@ knock 192.168.1.152 9000 8000 7000
 
 ---
 
-## Défense collaborative et IPS avec CrowdSec
+## 🛡️ Défense collaborative et IPS avec CrowdSec
 
 ### Installation du moteur CrowdSec
 
