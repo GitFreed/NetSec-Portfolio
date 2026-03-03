@@ -235,6 +235,8 @@ Virtualisation réseau
 
 *Note : C'est le contexte et l'objectif qui définissent le rôle de l'outil !*
 
+![secu](/images/2026-03-03-14-36-38.png)
+
 ---
 
 ## 🗂️ Administration Systèmes
