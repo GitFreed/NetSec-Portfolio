@@ -34,7 +34,7 @@ Le responsable sécurité vous demande de mettre en place une protection automat
 
 ---
 
-## Protection automatisée contre les attaques avec fail2ban
+## Protection automatisée contre les attaques avec Fail2ban
 
 ### Installation VM & SSH
 
@@ -188,7 +188,7 @@ maxretry = 3
 
 ---
 
-## Mise en place du port-knocking avec knockd
+## Mise en place du port-knocking avec Knockd
 
 Le port-knocking masque complètement SSH aux scanners : tant que la bonne séquence de ports n'est pas envoyée, le port 22 n'est tout simplement **pas visible**.
 
@@ -317,4 +317,126 @@ knock 192.168.1.152 9000 8000 7000
 
 ---
 
-## Défense Collaborative et IPS avec CrowdSec
+## Défense collaborative et IPS avec CrowdSec
+
+### Installation du moteur CrowdSec
+
+L'installation nécessite d'ajouter le dépôt officiel, puis d'installer le paquet de base.
+
+```bash
+# Ajouter le dépôt officiel CrowdSec
+apt install curl -y
+curl -s https://install.crowdsec.net | sh
+
+# Installer l'agent principal
+apt install crowdsec -y
+
+```
+
+Une fois installé, CrowdSec détecte automatiquement les services présents sur la machine (comme SSH) et commence à surveiller leurs journaux.
+
+![crowdsec](/images/2026-03-03-18-35-14.png)
+
+### Installation du Pare-feu (Le Bouncer)
+
+```bash
+# Installer le bouncer iptables
+apt install crowdsec-firewall-bouncer-iptables -y
+
+```
+
+*(Note : Sur système récent comme Debian13 tournant exclusivement sous nftables, le paquet `crowdsec-firewall-bouncer-nftables` est également disponible).*
+
+Vérifier que le Bouncer est bien enregistré auprès du moteur :
+
+```bash
+cscli bouncers list
+
+```
+
+*(On doit voir ton firewall-bouncer avec la coche valide ✔️).*
+
+![bouncer](/images/2026-03-03-18-36-03.png)
+
+### Vérification de l'intégration Réseau
+
+Dès le démarrage du Bouncer, il a créé de nouvelles chaînes de filtrage dans le pare-feu pour intercepter les paquets malveillants en priorité.
+
+```bash
+iptables -L -n
+
+```
+
+*(On doit y voir des chaînes nommées `crowdsec-blacklists`).*
+
+Avec nftable :
+
+```bash
+nft list ruleset
+
+```
+
+*(On doit y voir une `table` nommée `crowdsec` (souvent `ip crowdsec` ou `inet crowdsec`), contenant un `set` (ensemble d'adresses IP) appelé `crowdsec-blacklists` et une règle ordonnant un `drop` immédiat pour les adresses de ce set).*
+
+![rules](/images/2026-03-03-18-43-30.png)
+
+### Test du système
+
+Pour simuler la réaction du pare-feu en bannissant manuellement l'IP d'un attaquant test
+
+```bash
+cscli decisions add -i 192.168.1.151 -r "Test de validation IPS"
+```
+
+Pour simuler la réaction du pare-feu face à une attaque brute force, il faut désactiver l'immunité de notre lan
+
+**Sur le serveur Crowdsec :**
+
+```bash
+nano /etc/crowdsec/parsers/s02-enrich/whitelists.yaml
+```
+
+```YAML
+cidrs:
+    - "127.0.0.1/8"
+    - "::1/128"
+    - "10.0.0.0/8"
+    - "172.16.0.0/12"
+    # - "192.168.0.0/16"
+```
+
+```bash
+systemctl restart crowdsec
+```
+
+**Sur la VM attaquante :**
+
+Cette commande va tenter de se connecter 7 fois de suite avec un utilisateur inexistant pour générer des erreurs dans les logs du serveur
+
+```sh
+for i in {1..7}; do ssh -o StrictHostKeyChecking=no Hackerman@192.168.1.153; done
+```
+
+Dès la 6ème tentative ratée, l'agent CrowdSec détecte le comportement anormal et ordonne immédiatement au Bouncer d'injecter la règle de Drop dans `nftables`.
+
+![sshtry](/images/2026-03-03-19-08-35.png)
+
+**Vérifier les menaces :**
+
+```sh
+# Cette commande liste tout l'historique des attaques locales que le moteur a détectées et sanctionnées.
+cscli alerts list
+
+# L'analyse détaillée
+cscli alerts inspect <ID_DE_L_ALERTE>
+```
+
+![alert](/images/2026-03-03-19-26-42.png)
+
+**Pour lever la sanction (et retrouver l'accès) :**
+
+```bash
+cscli decisions delete -i 192.168.1.151
+# ou delete --all
+
+```
