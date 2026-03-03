@@ -6027,7 +6027,7 @@ Modifier `sshd_config` est très risqué. Voici la procédure stricte :
 > 📚 **Ressources** :
 >
 > - Récap commandes par Franck : <https://github.com/O-clock-Aldebaran/Oclock-Franck/blob/main/01-CoursOclock/SC3%20S%C3%A9curit%C3%A9%20des%20r%C3%A9seaux/SC3EP6%20-%20S%C3%A9curit%C3%A9%20Linux.md>
-> - Exemple de configuration firewall et durcissement SSH : <https://github.com/GitFreed/NetSec-Portfolio/blob/main/challenges/Challenge_C305_recap.md>
+> - Exemple de configuration firewall et durcissement SSH : [ici](./challenges/Challenge_C305_demo-cmd.md)
 
 [Retour en haut](#-table-des-matières)
 
@@ -6035,12 +6035,21 @@ Modifier `sshd_config` est très risqué. Voici la procédure stricte :
 
 ### 🧱 C306. Sécurité Linux 2
 
+PAM (Pluggable Authentication Modules) est un ensemble de modules et une bibliothèque permettant de mettre en place des mécanismes d’authentification avancés utilisables par les composants logiciels. L’authentification est basée sur un ensemble de modules qui peuvent être combinés dans un ordre précis (pluggables).
+
+Chaque module peut utiliser des mécanismes différents pour gérer l’identification et l’authentification d’un utilisateur : authentification Linux classique, LDAP, Active Directory, NIS, reconnaissance d’une empreinte digitale, d’une image, d’un dongle USB, etc.
+
+Cela permet à un programme de ne pas avoir à gérer directement l’identification et l’authentification d’un utilisateur. Il lui suffit de faire appel à une fonction générique de la bibliothèque PAM (libpam.so), qui lui retourne un code de succès ou d’échec. Les modules PAM à mettre en œuvre et leur ordre de mise en œuvre par la fonction générique sont configurés par l’administrateur.
+
+Pour savoir si un programme utilise PAM, il faut regarder s’il est lié à la bibliothèque PAM.
+
 > **Objectif** :
 
 [Atelier C306](./challenges/Challenge_C306.md) :
 
 > 📚 **Ressources** :
 >
+> - Exemple configurations PAM, Google Authenticator, last, lastb, fail2ban, knockd et crodwsec : [ici](./challenges/Challenge_C306_demo-cmd.md)
 
 [Retour en haut](#-table-des-matières)
 

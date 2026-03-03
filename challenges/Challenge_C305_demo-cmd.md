@@ -6,7 +6,7 @@ Dans la seconde partie nous effectuerons un durcissement de connection avec clef
 
 [Challenge C305](./Challenge_C305.md)
 
-[Cours C305.](/RESUME.md#-c305)
+[Cours C305.](/RESUME.md#-c305-sécurité-linux-pare-feu--ssh)
 
 ---
 

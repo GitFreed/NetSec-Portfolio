@@ -156,6 +156,12 @@ Commande utilisée pour extraire la liste du fichier [Resume.md](/RESUME.md)
 
 [Challenge C305](./Challenge_C305.md) : Sécurisation d’un serveur Debian : durcissement du système et restriction stricte des accès SSH
 
+[Demo C305](./Challenge_C305_demo-cmd.md) : Exemple commandes/configurations firewall et durcissement SSH
+
+[Challenge C306](./Challenge_C306.md) :
+
+[Demo C306](./Challenge_C306_demo-cmd.md) : Exemple commandes/configurations PAM, Google Authenticator, last, lastb, fail2ban, knockd et crodwsec
+
 ---
 
 [Homelab Adguard](./Homelab_AdGuard.md) : Déployer AdGuard Home, serveur DHCP et DNS sinkhole.

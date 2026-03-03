@@ -28,7 +28,7 @@ Votre mission consiste à préparer le serveur conformément aux exigences de s�
 
 [Cours C305.](/RESUME.md#-c305-sécurité-linux-pare-feu--ssh)
 
-[Récap des commandes Pare-feu & SSH](./Challenge_C305_recap.md)
+[Récap des commandes Pare-feu & SSH](./Challenge_C305_demo-cmd.md)
 
 ---
 
