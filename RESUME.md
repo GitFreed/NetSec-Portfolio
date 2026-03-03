@@ -131,6 +131,7 @@ Cette fiche synthétise les notions fondamentales abordées durant les cours en 
 - [C303. DMZ, pare-feu & VPN](#-c303-dmz-pare-feu--vpn)
 - [C304. Détection, Prévention et SIEM (Suricata & Wazuh)](#-c304-détection-prévention-et-siem-suricata--wazuh)
 - [C305. Sécurité Linux (Pare-feu & SSH)](#-c305-sécurité-linux-pare-feu--ssh)
+- [C306. C306. PAM, Logs, Fail2ban & Port-Knocking](#️-c306-pam-logs-fail2ban--port-knocking)
 
 ### [Saison C4. Conteneurs et orchestration 📦](.)
 

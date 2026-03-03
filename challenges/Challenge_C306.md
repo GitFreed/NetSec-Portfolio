@@ -21,7 +21,7 @@ Le responsable sécurité vous demande de mettre en place une protection automat
 
 [Challenge C306](https://github.com/O-clock-Aldebaran/SC03E07-challenge-fail2ban)
 
-[Cours C306.](/RESUME.md#-c306)
+[Cours C306.](/RESUME.md#️-c306-pam-logs-fail2ban--port-knocking)
 
 [Récap des commandes et démo config](./Challenge_C306_demo-cmd.md)
 

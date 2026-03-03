@@ -4,7 +4,7 @@ Ce document présente des configurations PAM, Google Authenticator, last, lastb,
 
 [Challenge C306](./Challenge_C306.md)
 
-[Cours C306.](/RESUME.md#-c306)
+[Cours C306.](/RESUME.md#️-c306-pam-logs-fail2ban--port-knocking)
 
 ---
 
