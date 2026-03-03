@@ -158,7 +158,7 @@ Commande utilisée pour extraire la liste du fichier [Resume.md](/RESUME.md)
 
 [Demo C305](./Challenge_C305_demo-cmd.md) : Exemple commandes/configurations firewall et durcissement SSH
 
-[Challenge C306](./Challenge_C306.md) :
+[Challenge C306](./Challenge_C306.md) : Sécurisation d'un serveur Linux contre les attaques par force brute avec Fail2ban/Crodwsec et Knockd
 
 [Demo C306](./Challenge_C306_demo-cmd.md) : Exemple commandes/configurations PAM, Google Authenticator, last, lastb, fail2ban, knockd et crodwsec
 

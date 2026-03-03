@@ -1,6 +1,6 @@
 # Récapitulatif de configurations 🔐 C306 03/03/2026
 
-Ce document présente des configurations PAM, Google Authenticator, last, lastb, fail2ban, knockd et crodwsec.
+Ce document présente une démo des configurations PAM, Google Authenticator, last, lastb, fail2ban, knockd et crodwsec.
 
 [Challenge C306](./Challenge_C306.md)
 
