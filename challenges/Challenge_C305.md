@@ -1,8 +1,6 @@
 # Challenge C305 02/03/2026
 
-## Pitch de l’exercice 🧑‍🏫
-
-## 🛡️ Sécurisation d’un serveur Debian exposé sur Internet
+## 🧑‍🏫 Pitch de l’exercice : 🛡️ Sécurisation d’un serveur Debian exposé sur Internet
 
 ### 🎯 Contexte
 
@@ -14,8 +12,6 @@ Avant sa mise en production, l’équipe sécurité exige un **durcissement mini
 Le responsable sécurité vous transmet les exigences suivantes :
 
 Votre mission consiste à préparer le serveur conformément aux exigences de sécurité de base.
-
----
 
 ### 🖥️ Environnement technique
 
