@@ -2,6 +2,14 @@
 
 ## 🧑‍🏫 Pitch de l’exercice : 🛡️ Sécurisation d'un serveur Linux contre les attaques par force brute
 
+[Challenge C306](https://github.com/O-clock-Aldebaran/SC03E07-challenge-fail2ban)
+
+[Cours C306.](/RESUME.md#️-c306-pam-logs-fail2ban--port-knocking)
+
+[Récap des commandes et démo config](./Challenge_C306_demo-cmd.md)
+
+---
+
 ### 🎯 Contexte
 
 Vous êtes administrateur système dans une PME.
@@ -17,13 +25,12 @@ Le responsable sécurité vous demande de mettre en place une protection automat
 * SSH déjà installé et fonctionnel (SSH de base suffit, il doit autorisé les connexions par mot de passe pour simuler les attaques)
 * Une machine cliente pour effectuer les tests
 
----
+### 🔎 Points de vigilance
 
-[Challenge C306](https://github.com/O-clock-Aldebaran/SC03E07-challenge-fail2ban)
-
-[Cours C306.](/RESUME.md#️-c306-pam-logs-fail2ban--port-knocking)
-
-[Récap des commandes et démo config](./Challenge_C306_demo-cmd.md)
+* Ne jamais se bannir soi-même : toujours renseigner `ignoreip` avec votre IP ou votre réseau
+* Toujours garder une **session console** ouverte avant de bloquer SSH au niveau firewall
+* Tester la configuration dans une session séparée **avant** de fermer la session active
+* `knockd` nécessite un accès **console de secours** en cas d'oubli de la séquence
 
 ---
 

@@ -2,6 +2,14 @@
 
 ## 🧑‍🏫 Pitch de l’exercice : 🛡️ Sécurisation d’un serveur Debian exposé sur Internet
 
+[Challenge C305](https://github.com/O-clock-Aldebaran/SC3E06-ssh-hardening/)
+
+[Cours C305.](/RESUME.md#-c305-sécurité-linux-pare-feu--ssh)
+
+[Récap des commandes Pare-feu & SSH](./Challenge_C305_demo-cmd.md)
+
+---
+
 ### 🎯 Contexte
 
 Vous venez d’intégrer l’équipe infrastructure d’une mairie de votre région.
@@ -17,14 +25,6 @@ Votre mission consiste à préparer le serveur conformément aux exigences de s�
 
 * 1 machine virtuelle vierge sous Debian (installation minimale)
 * Accès console root
-
----
-
-[Challenge C305](https://github.com/O-clock-Aldebaran/SC3E06-ssh-hardening/)
-
-[Cours C305.](/RESUME.md#-c305-sécurité-linux-pare-feu--ssh)
-
-[Récap des commandes Pare-feu & SSH](./Challenge_C305_demo-cmd.md)
 
 ---
 
