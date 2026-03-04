@@ -1,6 +1,6 @@
 # Challenge C307 04/03/2026
 
-## 🧑‍🏫 Pitch de l’exercice : 🛡️ Mise en place d’HAProxy en reverse-proxy et de HTTPS sur une ou plusieurs apps. Mitigation DDoS et load-balancer
+## 🧑‍🏫 Pitch de l’exercice : 🛡️ Mise en place de HTTPS sur une ou plusieurs apps, de reverse-proxy avec Nginx, Apache et HAProxy. Mitigation DDoS et load-balancer
 
 [Cours C307.](/RESUME.md#-c307-reverse-proxy-load-balancer-https--anti-ddos)
 
@@ -14,7 +14,7 @@ Vos serveurs applicatifs ne doivent en aucun cas être exposés directement sur 
 ### 🖥️ Environnement technique
 
 * **Infrastructure Virtuelle :** Proxmox VE avec un réseau ponté isolé (Bridge `vmbr2` sur le subnet `10.0.0.0/24`).
-* **Nœud Frontal (Edge/Proxy) :** Un conteneur LXC dédié faisant office de bouclier et de routeur applicatif (avec Nginx et HAProxy).
+* **Nœud Frontal (Edge/Proxy) :** Un conteneur LXC dédié faisant office de bouclier et de routeur applicatif (avec Apache, Nginx et HAProxy).
 * **Nœuds Back-end (Cœur de réseau) :** Un cluster de 3 conteneurs LXC internes exécutant les serveurs web finaux (Apache).
 * **Sécurité Périmétrique :** Durcissement de la pile TCP du noyau (`sysctl`), pare-feu de couche 3/4 (`iptables`), et moteur de limitation de flux en mémoire (*stick-tables* HAProxy).
 
@@ -809,7 +809,7 @@ Failed transactions: XXX
 
 **Pour résumer ce double challenge, nous avons mis en place une infrastructure web à la fois hautement disponible et sécurisée en profondeur :**
 
-* **Une architecture de Load-Balancing et de Terminaison TLS (Couche 7) :** Nous avons déployé un Reverse Proxy frontal (HAProxy/Nginx) agissant comme point d'entrée unique. Il centralise le chiffrement HTTPS, puis distribue le trafic en clair (HTTP) vers trois serveurs back-end de manière équitable (Round-Robin), garantissant que la chute d'un nœud ne coupe pas le service.
+* **Une architecture de Load-Balancing et de Terminaison TLS (Couche 7) :** Nous avons déployé un Reverse Proxy frontal (HAProxy/Nginx/Apache) agissant comme point d'entrée unique. Il centralise le chiffrement HTTPS, puis distribue le trafic en clair (HTTP) vers trois serveurs back-end de manière équitable (Round-Robin), garantissant que la chute d'un nœud ne coupe pas le service.
 
 * **Une protection réseau anti-flood (Couches 3 et 4) :** Nous avons durci la pile TCP du pare-feu (SYN cookies) et appliqué des règles `iptables` pour "Drop" les rafales de requêtes de connexion réseau illégitimes (SYN flood) au plus bas niveau possible, avant qu'elles n'impactent la couche système.
 

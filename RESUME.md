@@ -6215,7 +6215,7 @@ Le schéma idéal :
 
 3. **Outils de test** : Toujours valider vos limites avec un outil de stress-test comme `ab` (ApacheBench) ou `siege` pour vérifier que les attaquants reçoivent bien des erreurs 429 sans casser le site pour les autres.
 
-[Atelier C307](./challenges/Challenge_C307.md) : Mise en place d’HAProxy en reverse-proxy et de HTTPS sur une ou plusieurs apps. Mitigation DDoS et load-balancer.
+[Atelier C307](./challenges/Challenge_C307.md) : Mise en place de HTTPS sur une ou plusieurs apps, de reverse-proxy avec Nginx, Apache et HAProxy. Mitigation DDoS et load-balancer.
 
 > 📚 **Ressources** :
 >
