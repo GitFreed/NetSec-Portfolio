@@ -1,5 +1,14 @@
 # LAB : Déploiement d'un Routeur/Pare-feu pfSense sous Proxmox
 
+```txt
+        __
+ _ __  / _|___  ___ _ __  ___  ___
+| '_ \| |_/ __|/ _ \ '_ \/ __|/ _ \
+| |_) |  _\__ \  __/ | | \__ \  __/
+| .__/|_| |___/\___|_| |_|___/\___|
+|_|
+```
+
 **Rôle :** Architecte / Ingénieur Réseau
 
 **Mission :** Concevoir et déployer une architecture réseau segmentée et virtualisée. L'objectif est d'isoler un domaine de diffusion local (LAN) d'un réseau externe (WAN) au travers d'une appliance de routage professionnelle (pfSense), en configurant le routage, le NAT, les services DHCP et les tunnels cryptographiques (OpenVPN), avec une approche strictement orientée flux et topologies.
@@ -290,7 +299,7 @@ Une fois que c'est fait, on va télécharger le fichier Inline Configurations : 
 
 ### Redirection de port sur Proxmox
 
-Sur le shell Proxmox, se connecteret lancer la commande suivante :
+Sur le shell Proxmox, se connecter et lancer la commande suivante :
 
 ```sh
 sudo iptables -t nat -A PREROUTING -i vmbr0 -p udp --dport 1194 -j DNAT --to-destination 192.168.10.254
@@ -304,15 +313,15 @@ Il faut installer le logiciel [OpenVPN Connect](https://openvpn.net/client/).
 
 Une fois sur OpenVPN Connect, il faudra cliquer sur le bouton `Upload File` en bas pour charger votre fichier de configuration VPN récupéré à l'étape précédente.
 
-Une fois le fichier importé, on peut se connecter en cliquant sur le bouton `Connect`. Renseignez le nom d'utilisateur (`user1` ou `user2`) et le mot de passe.
+Une fois le fichier importé, on peut se connecter en cliquant sur le bouton `Connect`. Renseignez le nom d'utilisateur (`user`) et le mot de passe.
 
-![vpn](/images/2026-02-26-18-44-58.png)
+![vpn](/images/2026-03-04-02-33-53.png)
 
 Depuis notre navigateur web (sur notre PC) accéder à [https://10.0.0.1/](https://10.0.0.1/). Si la page de connexion de notre pfSense s'affiche ça veut dire que le VPN fonctionne 🎉
 
 ## Sauvegarde iptables
 
-Si tout fonctionne bien (Windows 10 a accès à Internet et le VPN fonctionne), on peut sauvegarder notre configuration `iptables`.
+Si tout fonctionne bien (Lubuntu a accès à Internet et le VPN fonctionne), on peut sauvegarder notre configuration `iptables`.
 
 En effet, notre config' `iptables` pour le NAT sur Proxmox ne sera pas conservée après un redémarrage. Comme pour les équipements Cisco, il va falloir qu’on « sauvegarde » cette config.
 
