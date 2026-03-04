@@ -332,3 +332,43 @@ On veut que ce fichier soit « appliqué » au démarrage, pour cela on doit raj
 On utilise la commande `sudo nano /etc/network/interfaces` pour modifier la config, et on ajoute la ligne indiquée ci-dessus à la suite du vmbr0
 
 ![interfaces](/images/2026-03-04-00-44-33.png)
+
+---
+
+Super, félicitations pour avoir mené cette architecture jusqu'au bout ! 🎉
+
+Voici la suite et fin pour ta fiche de lab, toujours rédigée sous l'angle de l'ingénierie des flux et du routage, prête à être copiée-collée à la suite de la première partie :
+
+---
+
+## 🎯 Validation de l'Architecture
+
+* **Isolation L2 et Distribution L3 :** Le domaine de diffusion privé (`vmbr2`) est parfaitement étanche. Le pare-feu agit comme passerelle exclusive (`10.0.0.1/24`) et gère l'attribution dynamique des baux DHCP pour les clients du réseau local.
+* **Résolution DNS :** Intégration d'un résolveur externe (AdGuard Home en `192.168.1.250`). Le pfSense agit comme relais (DNS Forwarder), validant la chaîne de requêtes depuis le LAN jusqu'au réseau physique en passant par le pont de transit.
+* **Accès Distant (VPN) :** Création réussie d'un tunnel chiffré L3 (OpenVPN - interface *tun*). La table de routage est correctement renseignée pour assurer un flux bidirectionnel entre le réseau d'adressage du tunnel (`10.42.0.0/24`) et le sous-réseau LAN cible (`10.0.0.0/24`).
+
+## 🔄 Analyse de Flux : Le chemin d'un paquet VPN (Inbound)
+
+1. **Initiation :** Le client externe cible l'IP externe de l'hyperviseur (`192.168.1.240` sur le port UDP `1194`).
+2. **Translation (Hyperviseur) :** Proxmox intercepte le paquet sur `vmbr0` et applique une règle de destination NAT (DNAT) pour réécrire l'IP cible vers la patte WAN du pfSense (`192.168.10.254`).
+3. **Décapsulation (Routeur) :** pfSense reçoit le paquet encapsulé sur son interface WAN, valide l'échange de clés asymétriques (PKI), et décapsule la charge utile pour lire l'IP de destination réelle.
+4. **Routage Interne :** pfSense consulte sa table de routage et transfère le paquet décapsulé vers l'interface LAN (`vmbr2`) pour atteindre la machine cible dans le réseau `10.0.0.0/24`.
+
+## ⚙️ Commandes et Configurations Clés
+
+**Règles de routage Proxmox (`iptables`) :**
+Pour assurer la translation d'adresse (Sortie internet) et la redirection de port (Entrée VPN) en bordure de l'hyperviseur, sans toucher à la couche OS des VMs :
+
+```bash
+# Activation du transfert de paquets L3 (IP Forwarding) dans le noyau
+sysctl -w net.ipv4.ip_forward=1
+
+# Règle de Post-routage (Source NAT / Masquerade) pour l'accès internet du réseau de transit
+iptables -t nat -A POSTROUTING -s 192.168.10.0/24 -o vmbr0 -j MASQUERADE
+
+# Règle de Pré-routage (Destination NAT / Port Forwarding) pour le trafic OpenVPN entrant
+iptables -t nat -A PREROUTING -i vmbr0 -p udp --dport 1194 -j DNAT --to 192.168.10.254:1194
+
+```
+
+---

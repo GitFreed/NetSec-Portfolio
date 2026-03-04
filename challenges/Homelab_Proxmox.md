@@ -80,6 +80,6 @@ Maintenant nos VM et Containers seront sur le SSD dans **local-lvm**, les ISOs, 
 
 ---
 
-## VM & COntainers
+## VM & Containers
 
 Il faut penser à activer le **Start at boot** pour le redémarrage automatique dans les Options de chaque si besoin
