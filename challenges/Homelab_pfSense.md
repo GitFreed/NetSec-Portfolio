@@ -234,8 +234,6 @@ Une fois le service relancé, on a accès à Internet depuis la VM Windows 🎉
 
 On voit également le message d'alerte en jaune : *ISC HDCP has reached end-of-life...* on peut clicker **System / Advanced / Networking** et activer `Kea DHCP`
 
-![pfsense](/images/2026-02-26-18-33-35.png)
-
 ## VPN
 
 Pour pouvoir plus facilement bosser sur nos VMs par la suite, on va créer un VPN permettant de directement accéder à notre pfSense depuis le navigateur web de notre PC, et pouvoir prendre la main à distance sur nos VMs en utilisant le protocole RDP ou SSH.
@@ -332,12 +330,6 @@ On veut que ce fichier soit « appliqué » au démarrage, pour cela on doit raj
 On utilise la commande `sudo nano /etc/network/interfaces` pour modifier la config, et on ajoute la ligne indiquée ci-dessus à la suite du vmbr0
 
 ![interfaces](/images/2026-03-04-00-44-33.png)
-
----
-
-Super, félicitations pour avoir mené cette architecture jusqu'au bout ! 🎉
-
-Voici la suite et fin pour ta fiche de lab, toujours rédigée sous l'angle de l'ingénierie des flux et du routage, prête à être copiée-collée à la suite de la première partie :
 
 ---
 
