@@ -6146,7 +6146,7 @@ Le HTTP brut fait transiter les données en clair sur le réseau (mots de passe,
 
 - **Types de certificats**:
 
-  - *Auto-signé* : Créé localement via `openssl`. Provoque un avertissement dans le navigateur (parfait pour du labo).
+  - *Auto-signé* : Créé localement via `openssl`. Provoque un avertissement dans le navigateur (parfait pour du lab).
   - *Let's Encrypt* : Autorité de certification gratuite et automatisée (le standard actuel pour le web public).
 
 - **L'outil Certbot** : Il automatise l'obtention du certificat Let's Encrypt, modifie la configuration du serveur web (Nginx/Apache) pour l'appliquer, et gère le renouvellement automatique (qui a lieu tous les 90 jours).
@@ -6214,7 +6214,7 @@ Le schéma idéal :
 
 3. **Outils de test** : Toujours valider vos limites avec un outil de stress-test comme `ab` (ApacheBench) ou `siege` pour vérifier que les attaquants reçoivent bien des erreurs 429 sans casser le site pour les autres.
 
-[Atelier C307](./challenges/Challenge_C307.md) :
+[Atelier C307](./challenges/Challenge_C307.md) : Mise en place d’HAProxy en reverse-proxy et de HTTPS sur une ou plusieurs apps. Mitigation DDoS et load-balancer.
 
 > 📚 **Ressources** :
 >
