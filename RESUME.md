@@ -131,7 +131,8 @@ Cette fiche synthétise les notions fondamentales abordées durant les cours en 
 - [C303. DMZ, pare-feu & VPN](#-c303-dmz-pare-feu--vpn)
 - [C304. Détection, Prévention et SIEM (Suricata & Wazuh)](#-c304-détection-prévention-et-siem-suricata--wazuh)
 - [C305. Sécurité Linux (Pare-feu & SSH)](#-c305-sécurité-linux-pare-feu--ssh)
-- [C306. C306. PAM, Logs, Fail2ban & Port-Knocking](#️-c306-pam-logs-fail2ban--port-knocking)
+- [C306. PAM, Logs, Fail2ban & Port-Knocking](#️-c306-pam-logs-fail2ban--port-knocking)
+- [C307.](#-c307-reverse-proxy-load-balancer-https--anti-ddos)
 
 ### [Saison C4. Conteneurs et orchestration 📦](.)
 
@@ -6149,7 +6150,7 @@ Le HTTP brut fait transiter les données en clair sur le réseau (mots de passe,
   - *Auto-signé* : Créé localement via `openssl`. Provoque un avertissement dans le navigateur (parfait pour du lab).
   - *Let's Encrypt* : Autorité de certification gratuite et automatisée (le standard actuel pour le web public).
 
-- **L'outil Certbot** : Il automatise l'obtention du certificat Let's Encrypt, modifie la configuration du serveur web (Nginx/Apache) pour l'appliquer, et gère le renouvellement automatique (qui a lieu tous les 90 jours).
+- **L'outil Certbot** : Il automatise l'obtention du certificat *Let's Encrypt*, modifie la configuration du serveur web (Nginx/Apache) pour l'appliquer, et gère le renouvellement automatique (qui a lieu tous les 90 jours).
 
 #### 2. Le Reverse-Proxy (L'intermédiaire)
 
@@ -6185,7 +6186,7 @@ Si un seul serveur reçoit 1000 clients, il sature. Un **Load-Balancer** (comme 
 
 Le pare-feu réseau classique laisse passer le trafic web (port 80/443), il ne peut donc pas différencier un vrai client d'un botnet.
 
-##### **A. Attaques Niveau 4 (Ex: SynFlood)**
+##### **A. Attaques Niveau L4 (Ex: SynFlood)**
 
 - **Le principe** : L'attaquant envoie des milliers de requêtes de connexion (SYN) avec des IP sources falsifiées, mais ne répond jamais à la suite (pas de ACK). La "table d'attente" du serveur se remplit et sature, bloquant les vrais clients .
 
