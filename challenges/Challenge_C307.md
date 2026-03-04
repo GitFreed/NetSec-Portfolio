@@ -1,6 +1,6 @@
 # Challenge C307 04/03/2026
 
-## 🧑‍🏫 Pitch de l’exercice : 🛡️ Mise en place de HTTPS sur une ou plusieurs apps, de reverse-proxy avec Nginx, Apache et HAProxy. Mitigation DDoS et load-balancer
+## 🧑‍🏫 Pitch de l’exercice : 🛡️ Mise en place de HTTPS sur une ou plusieurs apps, de reverse-proxy et load-balancer avec Nginx, Apache et HAProxy. Durcissement, Mitigation DDoS, et rate-limiting
 
 [Cours C307.](/RESUME.md#-c307-reverse-proxy-load-balancer-https--anti-ddos)
 

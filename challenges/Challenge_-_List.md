@@ -162,7 +162,7 @@ Commande utilisée pour extraire la liste du fichier [Resume.md](/RESUME.md)
 
 [Demo C306](./Challenge_C306_demo-cmd.md) : Exemple commandes/configurations PAM, Google Authenticator, last, lastb, fail2ban, knockd et crodwsec
 
-[Challenge C307](./Challenge_C307.md) : Mise en place de HTTPS sur une ou plusieurs apps, de reverse-proxy avec Nginx, Apache et HAProxy. Mitigation DDoS et load-balancer.
+[Challenge C307](./Challenge_C307.md) : Mise en place de HTTPS sur une ou plusieurs apps, de reverse-proxy et load-balancer avec Nginx, Apache et HAProxy. Durcissement, Mitigation DDoS, et rate-limiting
 
 ---
 
