@@ -162,6 +162,8 @@ Commande utilisée pour extraire la liste du fichier [Resume.md](/RESUME.md)
 
 [Demo C306](./Challenge_C306_demo-cmd.md) : Exemple commandes/configurations PAM, Google Authenticator, last, lastb, fail2ban, knockd et crodwsec
 
+[Challenge C307](./Challenge_C307.md) : Mise en place d’HAProxy en reverse-proxy et de HTTPS sur une ou plusieurs apps. Mitigation DDoS et load-balancer.
+
 ---
 
 [Homelab Adguard](./Homelab_AdGuard.md) : Déployer AdGuard Home, serveur DHCP et DNS sinkhole.
@@ -169,6 +171,8 @@ Commande utilisée pour extraire la liste du fichier [Resume.md](/RESUME.md)
 [Homelab Proxmox VE](./Homelab_Proxmox.md) : Déployer Proxmox Virtual Environment, hyperviseur de type I pour héberger des machines virtuelles et containers.
 
 [Homelab Checkmk](./Homelab_Checkmk.md) : Déployer Checkmk (Raw Edition), supervision d'infrastructure.
+
+[Homelab pfSense](./Homelab_pfSense.md) : Déploiement d'un Routeur/Pare-feu pfSense sous Proxmox
 
 ---
 
