@@ -1,4 +1,4 @@
-# LAB : Déploiement d'un Routeur/Pare-feu pfSense sous Proxmox
+# 🌐 LAB : Déploiement d'un Routeur/Pare-feu pfSense sous Proxmox
 
 ```txt
         __
@@ -9,7 +9,7 @@
 |_|
 ```
 
-**Rôle :** Architecte / Ingénieur Réseau
+**Rôle :** Architecture / Ingénieur Réseau
 
 **Mission :** Concevoir et déployer une architecture réseau segmentée et virtualisée. L'objectif est d'isoler un domaine de diffusion local (LAN) d'un réseau externe (WAN) au travers d'une appliance de routage professionnelle (pfSense), en configurant le routage, le NAT, les services DHCP et les tunnels cryptographiques (OpenVPN), avec une approche strictement orientée flux et topologies.
 
