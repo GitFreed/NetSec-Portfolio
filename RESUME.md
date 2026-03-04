@@ -6133,3 +6133,92 @@ En entreprise, pour un serveur exposé de manière robuste, on combine 3 couches
 [Retour en haut](#-table-des-matières)
 
 ---
+
+### 🌐 **C307. Reverse-proxy, Load-balancer, HTTPS & Anti-DDoS**
+
+> **Objectif** : Créer un point d'entrée unique et robuste pour une infrastructure web. On chiffre les échanges (HTTPS), on masque les serveurs internes (Reverse-proxy), on répartit la charge en cas de fort trafic (Load-balancer) et on protège les ressources contre la saturation malveillante (Rate-limiting & Anti-DDoS).
+
+#### 1. Chiffrement et Certificats (HTTPS & TLS)
+
+Le HTTP brut fait transiter les données en clair sur le réseau (mots de passe, données sensibles), ce qui permet les attaques de l'homme du milieu (Man-in-the-Middle). Le protocole **TLS** (successeur de SSL) vient encapsuler et chiffrer ces données.
+
+- **Le certificat TLS** : Il garantit l'identité du serveur (il contient le nom de domaine, la clé publique, la signature d'une autorité de certification et une date d'expiration).
+
+- **Types de certificats**:
+
+  - *Auto-signé* : Créé localement via `openssl`. Provoque un avertissement dans le navigateur (parfait pour du labo).
+  - *Let's Encrypt* : Autorité de certification gratuite et automatisée (le standard actuel pour le web public).
+
+- **L'outil Certbot** : Il automatise l'obtention du certificat Let's Encrypt, modifie la configuration du serveur web (Nginx/Apache) pour l'appliquer, et gère le renouvellement automatique (qui a lieu tous les 90 jours).
+
+#### 2. Le Reverse-Proxy (L'intermédiaire)
+
+Exposer directement tous ses serveurs web sur Internet est complexe (il faudrait un certificat par serveur) et peu sécurisé. Le **Reverse-Proxy** se place devant eux.
+
+- **Analogie** : C'est la réceptionniste d'un hôtel. Le client parle uniquement à la réception, qui relaie la demande au bon service. Le client ne voit jamais les "cuisines" (les serveurs back-end) .
+
+- **La Terminaison TLS (L'avantage ultime)** : Le client se connecte en **HTTPS** (chiffré) jusqu'au Proxy. Le Proxy déchiffre la requête et la transmet en **HTTP** (clair) aux serveurs internes.
+
+  - *Gain* : Un seul certificat à gérer sur le proxy, et on allège le processeur (CPU) des serveurs back-end.
+
+**Configurations Types :**
+
+- **Nginx** (Souvent préféré car plus léger et performant ) : Utilise la directive `proxy_pass http://IP_BACKEND`. *Attention* : Il faut passer les "headers" (`proxy_set_header Host $host` et `X-Real-IP`) sinon le back-end croira que toutes les requêtes viennent du proxy lui-même.
+
+- **Apache** : Utilise les directives `ProxyPass`, `ProxyPassReverse` et `ProxyPreserveHost On` .
+
+#### 3. Répartition de Charge & Haute Disponibilité (HAProxy)
+
+Si un seul serveur reçoit 1000 clients, il sature. Un **Load-Balancer** (comme **HAProxy**) est un reverse-proxy dopé : il distribue le trafic sur une grappe de serveurs.
+
+- **Algorithmes de répartition**:
+
+  - *Round Robin* : À tour de rôle (Serveur 1, puis 2, puis 3...).
+  - *Least Connections* : Vers le serveur qui a le moins de travail en cours.
+  - *Source (IP Hash)* : Un client donné retombera toujours sur le même serveur (utile pour garder une session active).
+
+- **Health Checks (Haute Dispo)** : HAProxy interroge les serveurs en permanence (ex: toutes les 5 secondes). Si un serveur ne répond plus, HAProxy le marque "DOWN" et l'exclut de la rotation automatiquement, évitant ainsi des erreurs aux utilisateurs.
+
+- **Architecture HAProxy** : Le fichier de configuration se divise en deux zones clés : `frontend` (la porte d'entrée qui écoute le client) et `backend` (les coulisses avec les serveurs réels) .
+
+#### 4. Résister aux attaques (DDoS & Rate-Limiting)
+
+Le pare-feu réseau classique laisse passer le trafic web (port 80/443), il ne peut donc pas différencier un vrai client d'un botnet.
+
+##### **A. Attaques Niveau 4 (Ex: SynFlood)**
+
+- **Le principe** : L'attaquant envoie des milliers de requêtes de connexion (SYN) avec des IP sources falsifiées, mais ne répond jamais à la suite (pas de ACK). La "table d'attente" du serveur se remplit et sature, bloquant les vrais clients .
+
+- **La parade (OS)** : On active les **SYN Cookies** dans le noyau Linux (`sysctl -w net.ipv4.tcp_syncookies=1`) pour contourner cette table. On peut aussi utiliser iptables/nftables (`hashlimit`) pour restreindre le nombre de requêtes SYN par seconde.
+
+##### **B. Attaques Niveau Applicatif L7 (Ex: HTTP Flood)**
+
+L'attaquant envoie des requêtes HTTP parfaitement formées (ex: spammer le formulaire de login) pour épuiser la RAM et le CPU.
+
+- **La parade (Rate-Limiting)** : On limite le nombre de requêtes autorisées par IP.
+  - Sous **Nginx** : directive `limit_req_zone`.
+  - Sous **HAProxy** : utilisation de `stick-table`.
+
+- **La notion de "Burst"** : Indispensable en production. Si on limite à 10 requêtes/sec, un vrai client chargeant une page avec beaucoup d'images sera bloqué à tort. Le `burst` autorise des pics ponctuels (ex: un pic de 20 d'un coup) avant de sévir.
+
+- Le serveur renverra alors l'erreur **429 Too Many Requests** aux attaquants.
+
+#### 💡 Le Conseil "Production"
+
+La défense est **multicouche**. Une seule technologie ne suffit pas pour un serveur très exposé.
+Le schéma idéal :
+
+1. **L3/L4** : Pare-feu (Bloque les ports inutiles et limite les connexions TCP pures avec `hashlimit`).
+
+2. **L7** : Reverse-Proxy (Rate-limiting, requêtes par IP via Nginx/HAProxy).
+
+3. **Outils de test** : Toujours valider vos limites avec un outil de stress-test comme `ab` (ApacheBench) ou `siege` pour vérifier que les attaquants reçoivent bien des erreurs 429 sans casser le site pour les autres.
+
+[Atelier C307](./challenges/Challenge_C307.md) :
+
+> 📚 **Ressources** :
+>
+
+[Retour en haut](#-table-des-matières)
+
+---
