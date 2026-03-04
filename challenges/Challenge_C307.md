@@ -127,7 +127,7 @@ cat > /var/www/html/index.html << 'EOF'
 EOF
 ```
 
-_Les couleurs différentes permettront de voir quel serveur répond pendant le load-balancing_ 💡
+*Les couleurs différentes permettront de voir quel serveur répond pendant le load-balancing* 💡
 
 #### Vérification
 
