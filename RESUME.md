@@ -6239,8 +6239,8 @@ Gérer 10 applications avec 10 comptes différents pour un même utilisateur est
 - **IAM (Identity and Access Management)** : C'est la gouvernance complète. L'IAM gère le cycle de vie de l'utilisateur (arrivée, modification de droits, départ) et centralise les rôles et les accès.
 - **SSO (Single Sign-On)** : C'est la fonctionnalité visible par l'utilisateur. Il s'authentifie une seule fois sur un portail central, et accède automatiquement à toutes les autres applications sans avoir à se reconnecter.
 - **L'Architecture** :
-- **L'IdP (Identity Provider)** : Le composant central (ex: Keycloak) qui vérifie l'identité et émet les "jetons" d'accès.
-- **Le SP (Service Provider)** : L'application (ex: Nextcloud, GLPI) qui délègue l'authentification à l'IdP et consomme le jeton.
+  - **L'IdP (Identity Provider)** : Le composant central (ex: Keycloak) qui vérifie l'identité et émet les "jetons" d'accès.
+  - **Le SP (Service Provider)** : L'application (ex: Nextcloud, GLPI) qui délègue l'authentification à l'IdP et consomme le jeton.
 
 ---
 
@@ -6251,7 +6251,7 @@ Pour que l'application (SP) et le serveur d'identité (IdP) se comprennent, ils 
 - **SAML 2.0** : L'ancien standard, basé sur des échanges de fichiers XML. Il est lourd, mais reste la norme absolue dans les grandes entreprises (hôpitaux, banques).
 - **OAuth 2.0** : Ce n'est **pas** un protocole d'authentification, mais un *framework d'autorisation*. Il permet de donner accès à des ressources sans donner son mot de passe (ex: "Autoriser l'application X à lire mes contacts").
 - **OpenID Connect (OIDC)** : C'est la couche moderne d'authentification construite par-dessus OAuth 2.0. Plus léger que SAML, idéal pour les applications web modernes et mobiles.
-- **Le JWT (JSON Web Token)** : C'est le format du "badge d'accès" émis par OIDC. Il est auto-contenu et signé cryptographiquement. L'application peut vérifier la validité du JWT sans même avoir besoin de recontacter l'IdP.
+  - **Le JWT (JSON Web Token)** : C'est le format du "badge d'accès" émis par OIDC. Il est auto-contenu et signé cryptographiquement. L'application peut vérifier la validité du JWT sans même avoir besoin de recontacter l'IdP.
 
 ---
 
@@ -6265,6 +6265,7 @@ Pour que l'application (SP) et le serveur d'identité (IdP) se comprennent, ils 
 - **Clients** : Ce sont les applications (SP) qui ont le droit de demander des authentifications au Realm.
 
 **⚙️ Durcissement (Hardening) de l'IdP** :
+
 Le serveur SSO devient la clé de voûte du réseau. S'il tombe, plus personne ne se connecte. Il faut le protéger :
 
 - Activer la **Brute Force Detection** (ex: bloquer après 5 échecs).
@@ -6280,14 +6281,15 @@ Le pare-feu réseau (L3/L4) laisse passer les ports 80 et 443, il est donc **ave
 Le **WAF** opère sur la couche 7 (Applicative). Il ouvre chaque requête HTTP, l'analyse, et la bloque si elle contient un motif d'attaque.
 
 - **Fonctionnement par règles & score** : Le WAF compare la requête à des milliers de signatures (ex: le mot clé `UNION SELECT`). Si le "score d'anomalie" dépasse un seuil, la requête est rejetée (erreur 403 Forbidden).
+
 - **Les 2 Modes** :
 
-1. **Détection** : Analyse et log, mais ne bloque rien. (Toujours commencer par là en production pour repérer les faux positifs).
-2. **Prévention** : Bloque activement le trafic malveillant.
+  1. **Détection** : Analyse et log, mais ne bloque rien. (Toujours commencer par là en production pour repérer les faux positifs).
+  2. **Prévention** : Bloque activement le trafic malveillant.
 
 - **L'outil On-Premise : ModSecurity**
-- Le WAF open-source de référence, qui s'intègre directement dans Nginx ou Apache.
-- Il s'accompagne de l'**OWASP CRS** (Core Rule Set) : un dictionnaire maintenu par la communauté regroupant les règles bloquant les attaques connues.
+  - Le WAF open-source de référence, qui s'intègre directement dans Nginx ou Apache.
+  - Il s'accompagne de l'**OWASP CRS** (Core Rule Set) : un dictionnaire maintenu par la communauté regroupant les règles bloquant les attaques connues.
 
 ---
 
@@ -6296,11 +6298,11 @@ Le **WAF** opère sur la couche 7 (Applicative). Il ouvre chaque requête HTTP, 
 Plutôt que d'installer un WAF localement (ce qui consomme beaucoup de CPU sur le serveur), on peut le déporter dans le Cloud via un service comme **Cloudflare**.
 
 - **Le rôle du CDN (Content Delivery Network)** : Un réseau de serveurs répartis mondialement. Il met en cache les fichiers statiques (images, CSS). Si un utilisateur japonais demande votre site hébergé à Paris, c'est le serveur CDN de Tokyo qui lui répondra, soulageant ainsi votre propre serveur.
-- **Cloudflare (Proxy Cloud)** : En modifiant les DNS pour pointer vers Cloudflare (le fameux "Nuage Orange"), Cloudflare agit comme un immense Reverse-Proxy mondial.
+- **Cloudflare (Proxy Cloud)** : En modifiant les DNS pour pointer vers Cloudflare, Cloudflare agit comme un immense Reverse-Proxy mondial.
 - **Avantages combinés** :
-- Il encaisse les gigantesques attaques DDoS volumétriques.
-- Il fait office de WAF managé (il filtre les attaques HTTP avant même qu'elles n'atteignent votre pays).
-- Il réduit la charge de votre infrastructure (CDN).
+  - Il encaisse les gigantesques attaques DDoS volumétriques.
+  - Il fait office de WAF managé (il filtre les attaques HTTP avant même qu'elles n'atteignent votre pays).
+  - Il réduit la charge de votre infrastructure (CDN).
 
 ---
 
