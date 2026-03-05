@@ -1,5 +1,14 @@
 # 🛡️ LAB : Maîtrise du flux DNS et Sécurisation
 
+```txt
+   _       _   ___                     _ 
+  /_\   __| | / _ \_   _  __ _ _ __ __| |
+ //_\\ / _` |/ /_\/ | | |/ _` | '__/ _` |
+/  _  \ (_| / /_\\| |_| | (_| | | | (_| |
+\_/ \_/\__,_\____/ \__,_|\__,_|_|  \__,_|
+                                         
+```
+
 **Rôle :** Administrateur Réseau
 
 **Mission :**  AdGuard Home un DNS sinkhole.  Il fonctionne en redirigeant les domaines de publicité, de trackers et de malwares vers un « puits noir » (sinkhole), empêchant ainsi les appareils de notre réseau d’établir une connexion avec ces serveurs. Cette méthode bloque les requêtes DNS avant qu’elles n’atteignent le navigateur ou l’application, ce qui protège tous les appareils connectés — smartphones, tablettes, téléviseurs, IoT — sans nécessiter d’installation logicielle sur chaque appareil. Permet aussi d'accélérer la navigation.

@@ -1,5 +1,14 @@
 # 📊 LAB : Supervision de l'Infrastructure et Visibilité Réseau
 
+```txt
+_________ .__                   __            __    
+\_   ___ \|  |__   ____   ____ |  | __ _____ |  | __
+/    \  \/|  |  \_/ __ \_/ ___\|  |/ //     \|  |/ /
+\     \___|   Y  \  ___/\  \___|    <|  Y Y  \    < 
+ \______  /___|  /\___  >\___  >__|_ \__|_|  /__|_ \
+        \/     \/     \/     \/     \/     \/     \/
+```
+
 **Rôle :** Administrateur Réseau
 
 **Mission :** Déployer Checkmk (Raw Edition), une solution de supervision d'infrastructure hautes performances. Il fonctionne en interrogeant activement les équipements du réseau via des agents ultra-légers ou des protocoles standards (SNMP) pour remonter l'état de santé, la bande passante, et les erreurs de flux en temps réel. Cette méthode permet de cartographier instantanément l'architecture réseau (routeurs, switchs, hyperviseurs, serveurs) grâce à un puissant moteur d'auto-découverte, offrant ainsi une vue "hélicoptère" proactive pour détecter les goulots d'étranglement ou les pannes avant qu'elles n'impactent les utilisateurs.
