@@ -132,7 +132,9 @@ Cette fiche synthétise les notions fondamentales abordées durant les cours en 
 - [C304. Détection, Prévention et SIEM (Suricata & Wazuh)](#-c304-détection-prévention-et-siem-suricata--wazuh)
 - [C305. Sécurité Linux (Pare-feu & SSH)](#-c305-sécurité-linux-pare-feu--ssh)
 - [C306. PAM, Logs, Fail2ban & Port-Knocking](#️-c306-pam-logs-fail2ban--port-knocking)
-- [C307.](#-c307-reverse-proxy-load-balancer-https--anti-ddos)
+- [C307. Reverse-proxy, Load-balancer, HTTPS & Anti-DDoS](#-c307-reverse-proxy-load-balancer-https--anti-ddos)
+- [C308. SSO, IAM & WAF (Identités & Sécurité Web)](#️-c308-sso-iam--waf-identités--sécurité-web)
+- [Fin Saison C3 : QCM](#️-fin-saison-c3-sécurité-système--réseau)
 
 ### [Saison C4. Conteneurs et orchestration 📦](.)
 
@@ -6028,7 +6030,7 @@ Modifier `sshd_config` est très risqué. Voici la procédure stricte :
 
 > 📚 **Ressources** :
 >
-> - Récap commandes par Franck : <https://github.com/O-clock-Aldebaran/Oclock-Franck/blob/main/01-CoursOclock/SC3%20S%C3%A9curit%C3%A9%20des%20r%C3%A9seaux/SC3EP6%20-%20S%C3%A9curit%C3%A9%20Linux.md>
+> - Récap SSH par Franck : <https://github.com/elfranco33/CTF-Pentest/blob/main/05%20Pentest/Fiches%20Pentest/Fiche%20Outils%20Pentest%20(not%20use)/ssh.md>
 > - Exemple de configuration firewall et durcissement SSH : [ici](./challenges/Challenge_C305_demo-cmd.md)
 
 [Retour en haut](#-table-des-matières)
@@ -6135,7 +6137,7 @@ En entreprise, pour un serveur exposé de manière robuste, on combine 3 couches
 
 ---
 
-### 🌐 **C307. Reverse-proxy, Load-balancer, HTTPS & Anti-DDoS**
+### 🌐 C307. Reverse-proxy, Load-balancer, HTTPS & Anti-DDoS
 
 > **Objectif** : Créer un point d'entrée unique et robuste pour une infrastructure web. On chiffre les échanges (HTTPS), on masque les serveurs internes (Reverse-proxy), on répartit la charge en cas de fort trafic (Load-balancer) et on protège les ressources contre la saturation malveillante (Rate-limiting & Anti-DDoS).
 
@@ -6223,3 +6225,115 @@ Le schéma idéal :
 [Retour en haut](#-table-des-matières)
 
 ---
+
+### 🛡️ C308. SSO, IAM & WAF (Identités & Sécurité Web)
+
+> **Objectif** : Sécuriser les accès utilisateurs en centralisant l'authentification via un Fournisseur d'Identité (SSO/IAM), et protéger les applications web contre les vulnérabilités du code (comme les injections SQL) grâce à un pare-feu applicatif (WAF) et un CDN.
+
+---
+
+#### 1. IAM & SSO : La fin du cauchemar des mots de passe
+
+Gérer 10 applications avec 10 comptes différents pour un même utilisateur est un désastre en matière de sécurité (mots de passe faibles, réutilisation, post-its sous le clavier).
+
+- **IAM (Identity and Access Management)** : C'est la gouvernance complète. L'IAM gère le cycle de vie de l'utilisateur (arrivée, modification de droits, départ) et centralise les rôles et les accès.
+- **SSO (Single Sign-On)** : C'est la fonctionnalité visible par l'utilisateur. Il s'authentifie une seule fois sur un portail central, et accède automatiquement à toutes les autres applications sans avoir à se reconnecter.
+- **L'Architecture** :
+- **L'IdP (Identity Provider)** : Le composant central (ex: Keycloak) qui vérifie l'identité et émet les "jetons" d'accès.
+- **Le SP (Service Provider)** : L'application (ex: Nextcloud, GLPI) qui délègue l'authentification à l'IdP et consomme le jeton.
+
+---
+
+#### 2. Les Protocoles d'Authentification
+
+Pour que l'application (SP) et le serveur d'identité (IdP) se comprennent, ils utilisent des protocoles standards.
+
+- **SAML 2.0** : L'ancien standard, basé sur des échanges de fichiers XML. Il est lourd, mais reste la norme absolue dans les grandes entreprises (hôpitaux, banques).
+- **OAuth 2.0** : Ce n'est **pas** un protocole d'authentification, mais un *framework d'autorisation*. Il permet de donner accès à des ressources sans donner son mot de passe (ex: "Autoriser l'application X à lire mes contacts").
+- **OpenID Connect (OIDC)** : C'est la couche moderne d'authentification construite par-dessus OAuth 2.0. Plus léger que SAML, idéal pour les applications web modernes et mobiles.
+- **Le JWT (JSON Web Token)** : C'est le format du "badge d'accès" émis par OIDC. Il est auto-contenu et signé cryptographiquement. L'application peut vérifier la validité du JWT sans même avoir besoin de recontacter l'IdP.
+
+---
+
+#### 3. Les Outils : Keycloak & Authentik
+
+**Keycloak** (développé par Red Hat) et **Authentik** sont les leaders open-source pour construire son propre IdP (Identity Provider). Ils gèrent OIDC, SAML, et peuvent se connecter à un annuaire existant (comme LDAP ou Active Directory).
+
+**Concepts clés (exemple Keycloak)** :
+
+- **Realm (Royaume)** : Un espace isolé. Un serveur Keycloak peut héberger plusieurs Realms totalement indépendants (ex: un pour les employés, un pour les clients).
+- **Clients** : Ce sont les applications (SP) qui ont le droit de demander des authentifications au Realm.
+
+**⚙️ Durcissement (Hardening) de l'IdP** :
+Le serveur SSO devient la clé de voûte du réseau. S'il tombe, plus personne ne se connecte. Il faut le protéger :
+
+- Activer la **Brute Force Detection** (ex: bloquer après 5 échecs).
+- Gérer les **Sessions** (ex: déconnexion automatique après 30 min d'inactivité).
+- Imposer le **MFA** (Authentification multifacteur, ex: TOTP avec Google Authenticator).
+
+---
+
+#### 4. Le WAF (Web Application Firewall)
+
+Le pare-feu réseau (L3/L4) laisse passer les ports 80 et 443, il est donc **aveugle** face au contenu malveillant caché dans le trafic HTTP (injections SQL, failles XSS, traversée de répertoires - le fameux Top 10 OWASP).
+
+Le **WAF** opère sur la couche 7 (Applicative). Il ouvre chaque requête HTTP, l'analyse, et la bloque si elle contient un motif d'attaque.
+
+- **Fonctionnement par règles & score** : Le WAF compare la requête à des milliers de signatures (ex: le mot clé `UNION SELECT`). Si le "score d'anomalie" dépasse un seuil, la requête est rejetée (erreur 403 Forbidden).
+- **Les 2 Modes** :
+
+1. **Détection** : Analyse et log, mais ne bloque rien. (Toujours commencer par là en production pour repérer les faux positifs).
+2. **Prévention** : Bloque activement le trafic malveillant.
+
+- **L'outil On-Premise : ModSecurity**
+- Le WAF open-source de référence, qui s'intègre directement dans Nginx ou Apache.
+- Il s'accompagne de l'**OWASP CRS** (Core Rule Set) : un dictionnaire maintenu par la communauté regroupant les règles bloquant les attaques connues.
+
+---
+
+#### 5. CDN et Cloudflare (La solution Cloud)
+
+Plutôt que d'installer un WAF localement (ce qui consomme beaucoup de CPU sur le serveur), on peut le déporter dans le Cloud via un service comme **Cloudflare**.
+
+- **Le rôle du CDN (Content Delivery Network)** : Un réseau de serveurs répartis mondialement. Il met en cache les fichiers statiques (images, CSS). Si un utilisateur japonais demande votre site hébergé à Paris, c'est le serveur CDN de Tokyo qui lui répondra, soulageant ainsi votre propre serveur.
+- **Cloudflare (Proxy Cloud)** : En modifiant les DNS pour pointer vers Cloudflare (le fameux "Nuage Orange"), Cloudflare agit comme un immense Reverse-Proxy mondial.
+- **Avantages combinés** :
+- Il encaisse les gigantesques attaques DDoS volumétriques.
+- Il fait office de WAF managé (il filtre les attaques HTTP avant même qu'elles n'atteignent votre pays).
+- Il réduit la charge de votre infrastructure (CDN).
+
+---
+
+#### 💡 La "Big Picture" de la Saison 3 : La Défense en Profondeur
+
+Pour clôturer cette saison réseau et sécurité, voici l'architecture idéale complète d'un paquet réseau qui arrive sur votre infra :
+
+1. **Internet** (La source du trafic).
+2. **Cloudflare (CDN / Anti-DDoS / WAF Cloud)** : Absorbe les térabits de trafic et filtre les injections grossières.
+3. **Pare-feu Réseau (pfSense / Iptables)** : Bloque les ports illégitimes et les IPs malveillantes (L3/L4).
+4. **Reverse-Proxy Local (Nginx / HAProxy)** : Gère le Rate-Limiting, termine le chiffrement TLS et masque la topologie interne.
+5. **Serveur SSO (Keycloak)** : S'assure que l'utilisateur est bien authentifié (MFA) avant qu'il ne touche aux données.
+6. **L'Application (Back-end)** : Valide la logique métier.
+
+[Atelier C308](./challenges/Challenge_C308.md) : Déploiement d'un SSO Keycloak et intégration avec Vault,  intégration d'une deuxième application (Nextcloud), et sécurité couche 7 avec WAF ModSecurity + OWASP CRS
+
+> 📚 **Ressources** :
+>
+
+[Retour en haut](#-table-des-matières)
+
+---
+
+### 🛡️ Fin Saison C3. Sécurité système & réseau
+
+[QCM Saison C3](.)
+
+![Résultat QCM](.)
+
+[Retour en haut](#-table-des-matières)
+
+---
+
+## **📦 Saison C4. Conteneurs et orchestration**
+
+> **Objectif de la saison** :

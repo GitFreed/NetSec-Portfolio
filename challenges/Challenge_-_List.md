@@ -164,6 +164,8 @@ Commande utilisée pour extraire la liste du fichier [Resume.md](/RESUME.md)
 
 [Challenge C307](./Challenge_C307.md) : Mise en place de HTTPS sur une ou plusieurs apps, de reverse-proxy et load-balancer avec Nginx, Apache et HAProxy. Durcissement, Mitigation DDoS, et rate-limiting
 
+[Challenge C308](./Challenge_C308.md) : Déploiement d'un SSO Keycloak et intégration avec Vault,  intégration d'une deuxième application (Nextcloud), et sécurité couche 7 avec WAF ModSecurity + OWASP CRS
+
 ---
 
 [Homelab Adguard](./Homelab_AdGuard.md) : Déployer AdGuard Home, serveur DHCP et DNS sinkhole.
