@@ -17,7 +17,7 @@
 * **Performance Bare-Metal :** Installation directe sur le matériel (Type 1) pour une allocation brute et optimisée des ressources (CPU, RAM, I/O disques), sans la contrainte ni la latence d'un système d'exploitation hôte classique.
 * **Flexibilité de Déploiement (VMs & LXC) :** Capacité à instancier à la volée une grande variété de nœuds : des appliances réseau (pfSense), des machines clientes complètes, ou des conteneurs Linux ultra-légers dédiés à un service unique (microservices).
 * **Maîtrise des Flux (SDN) :** Exploitation native des commutateurs virtuels (Linux Bridges) pour dessiner des architectures L2/L3 complexes, isoler des domaines de diffusion et connecter les différentes machines virtuelles entre elles.
-* **Sécurité et Maquettage :** Centralisation de l'infrastructure permettant de tester, casser et reconstruire des architectures de bout en bout en toute sécurité, notamment grâce aux sauvegardes et aux instantanés (*Snapshots*) instantanés.
+* **Sécurité et Maquettage :** Centralisation de l'infrastructure permettant de tester, casser et reconstruire des architectures de bout en bout en toute sécurité, notamment grâce aux sauvegardes et aux instantanés (*Snapshots*).
 
 ---
 
@@ -32,6 +32,8 @@ L'infrastructure repose sur un micro-serveur optimisé et mis à niveau (*upgrad
 * **Stockage Données (Data) :** HDD Toshiba 2 To – Espace haute capacité dédié au stockage des images ISO, aux sauvegardes (Dumps) et aux futurs montages de volumes pour les services annexes.
 
 💰 *Budget : 300€* - Il fallait respecter un budget modeste malgré l'augmentation indécente du prix de la mémoire vive (Février 2026).
+
+![prodesk](/images/2026-03-05-01-10-17.png)
 
 ---
 
