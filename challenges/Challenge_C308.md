@@ -25,11 +25,11 @@ Nous allons greffer un module d'inspection (ModSecurity) sur notre point d'entr�
 
 ---
 
-[Déploiement d'un SSO Keycloak et intégration avec Vault](#déploiement-dun-sso-keycloak-et-intégration-avec-vault)
+[Déploiement d'un SSO Keycloak et intégration avec Vault](#-déploiement-dun-sso-keycloak-et-intégration-avec-vault)
 
-[Intégration d'une deuxième application (Nextcloud) dans le SSO Keycloak](#intégration-dune-deuxième-application-nextcloud-dans-le-sso-keycloak)
+[Intégration d'une deuxième application (Nextcloud) dans le SSO Keycloak](#-intégration-dune-deuxième-application-nextcloud-dans-le-sso-keycloak)
 
-[Intégration d'un module d'inspection (ModSecurity) sur notre point d'entrée](#)
+[Intégration d'un module d'inspection (ModSecurity) sur notre point d'entrée](#-intégration-dun-module-dinspection-modsecurity-sur-notre-point-dentrée)
 
 ---
 
@@ -59,7 +59,7 @@ Nous allons greffer un module d'inspection (ModSecurity) sur notre point d'entr�
 
 ---
 
-## Déploiement d'un SSO Keycloak et intégration avec Vault
+## 🔐 Déploiement d'un SSO Keycloak et intégration avec Vault
 
 ## Étape 1 — Installer Keycloak
 
@@ -750,7 +750,7 @@ vault read auth/oidc/role/reader
 ---
 ---
 
-## Intégration d'une deuxième application (Nextcloud) dans le SSO Keycloak
+## 🔐 Intégration d'une deuxième application (Nextcloud) dans le SSO Keycloak
 
 💡 Keycloak est déjà opérationnel (démo précédente). On ajoute Nextcloud comme **deuxième Service Provider** dans le même realm `demo`.
 
@@ -812,7 +812,7 @@ Cliquer **"Save"**
 ```sh
 # Exemple :
 Client ID     : nextcloud
-Client Secret : NcDeFg9876543210AbC
+Client Secret : ZAIpAgdWsnb8mHdd11bF4w2Xd8AwA5Gv
 ```
 
 > 💡 Ce secret sera utilisé pour configurer l'app OIDC dans Nextcloud.
@@ -872,13 +872,11 @@ apt install -y apache2 \
     php-gmp php-imagick php-apcu \
     libapache2-mod-php \
     mariadb-server \
-    unzip wget curl \
-    mariadb-client-compat bzip2
+    php-mysql \
+    unzip wget curl bzip2
 
 rm /var/www/html/index.html
 ```
-
---
 
 ### Configurer MariaDB
 
@@ -894,15 +892,12 @@ mysql_secure_installation
 ```bash
 # Créer la base de données Nextcloud
 mysql -u root -p << 'EOF'
-CREATE DATABASE nextcloud CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
-CREATE USER 'ncuser'@'localhost' IDENTIFIED BY 'NcDbPass42!';
+CREATE DATABASE IF NOT EXISTS nextcloud CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+CREATE USER IF NOT EXISTS 'ncuser'@'localhost' IDENTIFIED BY 'NcDbPass42!';
 GRANT ALL PRIVILEGES ON nextcloud.* TO 'ncuser'@'localhost';
 FLUSH PRIVILEGES;
-EXIT;
 EOF
 ```
-
---
 
 ### Télécharger et installer Nextcloud
 
@@ -918,8 +913,6 @@ chown -R www-data:www-data /var/www/html/nextcloud
 chmod -R 750 /var/www/html/nextcloud
 ```
 
---
-
 ### Générer un certificat auto-signé
 
 Nextcloud **impose HTTPS** pour utiliser OpenID Connect.
@@ -931,8 +924,6 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
     -out /etc/ssl/certs/nextcloud.crt \
     -subj "/CN=10.0.0.64/O=Lab/C=FR"
 ```
-
---
 
 ### Configurer Apache pour Nextcloud (HTTPS)
 
@@ -972,8 +963,6 @@ a2dissite 000-default.conf
 systemctl restart apache2
 ```
 
---
-
 ### Finaliser l'installation via CLI (occ)
 
 ```bash
@@ -988,11 +977,9 @@ sudo -u www-data php occ maintenance:install \
     --admin-pass="Admin123!"
 ```
 
-```
+```txt
 # → Nextcloud was successfully installed
 ```
-
---
 
 ### Ajouter l'IP dans les trusted domains
 
@@ -1016,11 +1003,11 @@ sudo -u www-data php occ config:system:set allow_local_remote_servers \
 >
 > ⚠️ Le navigateur affichera un avertissement de certificat auto-signé — cliquer **"Avancer quand même"**.
 
+![nexcloud](/images/2026-03-06-00-20-47.png)
+
 ---
 
 ## Étape 3 — Installer et configurer l'app OIDC dans Nextcloud
-
---
 
 ### Installer l'application `user_oidc`
 
@@ -1034,10 +1021,8 @@ sudo -u www-data php occ app:install user_oidc
 
 # Vérifier l'installation
 sudo -u www-data php occ app:list | grep user_oidc
-# → user_oidc: 6.x.x
+# → user_oidc: 8.x.x
 ```
-
---
 
 ### Activer l'application
 
@@ -1046,14 +1031,12 @@ sudo -u www-data php occ app:enable user_oidc
 # → user_oidc enabled
 ```
 
---
-
 ### Configurer le provider OIDC (Keycloak)
 
 ```bash
 sudo -u www-data php occ user_oidc:provider keycloak \
     --clientid="nextcloud" \
-    --clientsecret="NcDeFg9876543210AbC" \
+    --clientsecret="ZAIpAgdWsnb8mHdd11bF4w2Xd8AwA5Gv" \
     --discoveryuri="http://10.0.0.60:8080/realms/demo/.well-known/openid-configuration" \
     --unique-uid=0 \
     --check-bearer=0 \
@@ -1064,7 +1047,7 @@ sudo -u www-data php occ user_oidc:provider keycloak \
 ```
 
 | Paramètre | Signification |
-|-----------|---------------|
+| ----------- | --------------- |
 | `--clientid` | Client ID déclaré dans Keycloak |
 | `--clientsecret` | Secret récupéré dans Keycloak |
 | `--discoveryuri` | URL d'autodiscovery du realm Keycloak |
@@ -1074,8 +1057,6 @@ sudo -u www-data php occ user_oidc:provider keycloak \
 
 > ⚠️ En v8.5, le sous-commande `add` n'existe plus — l'identifiant (`keycloak`) est un argument positionnel direct.
 
---
-
 ### Vérifier la configuration OIDC
 
 ```bash
@@ -1083,7 +1064,7 @@ sudo -u www-data php occ user_oidc:provider keycloak \
 sudo -u www-data php occ user_oidc:provider keycloak
 ```
 
-```
+```sh
 identifier: keycloak
 clientid: nextcloud
 discoveryuri: http://10.0.0.60:8080/realms/demo/.well-known/openid-configuration
@@ -1108,15 +1089,11 @@ sudo -u www-data php occ config:app:set user_oidc allow_multiple_user_backends \
 
 ## Étape 4 — Tester l'authentification SSO
 
---
-
 ### Accéder à Nextcloud avec le SSO
 
-Depuis **Win11**, ouvrir un navigateur :
+Depuisle client, ouvrir un navigateur :
 
-```
-https://10.0.0.64
-```
+<https://10.0.0.64>
 
 1. La page de login Nextcloud affiche un bouton **"Se connecter avec keycloak"**
 2. Cliquer sur ce bouton
@@ -1124,32 +1101,34 @@ https://10.0.0.64
 4. Se connecter avec `alice` / `Alice123!`
 5. Être redirigé vers Nextcloud, connecté en tant qu'Alice
 
---
+![demo](/images/2026-03-06-00-24-20.png)
+
+![alice](/images/2026-03-06-00-28-40.png)
 
 ### Vérifier la session Alice dans Nextcloud
 
-Depuis **Win11** (connecté en tant qu'Alice) :
+Depuis le Client (connecté en tant qu'Alice) :
 
 1. Cliquer sur l'avatar en haut à droite → **"Paramètres personnels"**
 2. Vérifier :
 
 | Champ | Valeur attendue |
-|-------|----------------|
+| ------- | ---------------- |
 | Nom d'utilisateur | `alice` (ou le `sub` JWT) |
 | Nom affiché | `Alice Demo` |
 | Email | `alice@demo.local` |
 | Backend | `user_oidc` |
 
---
-
 ### Vérifier les groupes dans Nextcloud
 
 ```bash
 # Depuis nextcloud (10.0.0.64)
-sudo -u www-data php occ user:info alice
+sudo -u www-data php occ user:list
+
+sudo -u www-data php occ user:info <ID alice>
 ```
 
-```
+```sh
 user_id: alice
 display_name: Alice Demo
 email: alice@demo.local
@@ -1159,7 +1138,7 @@ groups:
 
 → ✅ Alice appartient au groupe `nextcloud-users` (hérité de Keycloak)
 
---
+![alice](/images/2026-03-06-00-33-35.png)
 
 ### Tester la déconnexion SSO
 
@@ -1176,11 +1155,9 @@ groups:
 
 ## Étape 5 — Vérification end-to-end (multi-applications)
 
---
-
 ### Flux SSO complet — deux applications
 
-```
+```txt
 Alice (navigateur)
     │
     ├─1─► Nextcloud : "Se connecter avec keycloak"
@@ -1200,12 +1177,10 @@ Alice (navigateur)
               → Pas de nouveau login requis ✅
 ```
 
---
-
 ### Tableau de vérification
 
 | Test | Résultat attendu |
-|------|-----------------|
+| ------ | ----------------- |
 | Keycloak opérationnel | `curl http://10.0.0.60:8080/realms/demo` → JSON |
 | Nextcloud accessible | `curl https://10.0.0.64` → page HTML |
 | Discovery OIDC Nextcloud | `occ user_oidc:provider keycloak` → config affichée |
@@ -1216,8 +1191,6 @@ Alice (navigateur)
 ---
 
 ## Dépannage
-
---
 
 ### Nextcloud ne trouve pas le provider OIDC
 
@@ -1230,8 +1203,6 @@ curl -s "http://10.0.0.60:8080/realms/demo/.well-known/openid-configuration" \
 sudo -u www-data php occ user_oidc:provider keycloak
 ```
 
---
-
 ### Erreur "redirect_uri mismatch"
 
 ```bash
@@ -1242,8 +1213,6 @@ sudo -u www-data php occ user_oidc:provider keycloak
 
 > Nextcloud envoie `/index.php/apps/user_oidc/code` (avec `index.php`) dans la requête OIDC.
 > La valeur configurée dans Keycloak doit correspondre exactement.
-
---
 
 ### L'utilisateur n'est pas créé après le premier login
 
@@ -1274,8 +1243,6 @@ print(json.dumps(json.loads(base64.b64decode(payload)), indent=2))
 
 → Vérifier la présence de `"email"`, `"name"` et `"groups"` dans le payload
 
---
-
 ### Les groupes ne se synchronisent pas dans Nextcloud
 
 Vérifier la configuration du mapper dans Keycloak :
@@ -1294,7 +1261,7 @@ sudo -u www-data php occ user_oidc:provider keycloak
 
 ## Récap' de la pratique
 
-```
+```txt
 Démo 2 (acquis) :
     Keycloak → realm "demo" + client "vault" + Alice + vault-readers
               │
@@ -1312,7 +1279,7 @@ Démo 3 (nouveau) :
 ```
 
 | Concept | Ce qu'on a fait |
-|---------|----------------|
+| --------- |---------------- |
 | **Multi-SP** | Deux Service Providers (Vault + Nextcloud) sur un seul IdP |
 | **Client OIDC** | Un client Keycloak par application |
 | **app user_oidc** | Module Nextcloud officiel pour l'auth OIDC |
@@ -1320,3 +1287,312 @@ Démo 3 (nouveau) :
 | **Group sync** | Groupes Keycloak propagés dans Nextcloud |
 | **SSO réel** | Un seul login Keycloak pour accéder aux deux apps |
 | **Least privilege** | Groupes distincts par application (`vault-readers` / `nextcloud-users`) |
+
+---
+---
+---
+
+## 🧱 Intégration d'un module d'inspection (ModSecurity) sur notre point d'entrée
+
+## Architecture
+
+```txt
+  [attacker]          [waf-proxy]            [web]
+  curl / nikto  →→→  Nginx + ModSec  →→→  Apache
+  10.0.0.83          10.0.0.80              10.0.0.81
+```
+
+| Machine | Type | IP | Rôle |
+|---------|------|----|------|
+| web | LXC Debian 12 | 10.0.0.81 | Apache — backend |
+| waf-proxy | LXC Debian 12 | 10.0.0.80 | Nginx + ModSecurity + OWASP CRS |
+
+Les attaques sont lancées **depuis waf-proxy lui-même** (pas besoin d'une 3e VM).
+
+---
+
+## Étape 1 — Préparer le backend (web)
+
+### Créer le conteneur web
+
+Dans Proxmox → **Créer CT** :
+
+| Champ | Valeur |
+|-------|--------|
+| CT ID | 181 |
+| Hostname | web |
+| Template | debian-12 |
+| Disque | 4 Go |
+| CPU | 1 |
+| RAM | 256 Mo |
+| Bridge | vmbr2 |
+| IPv4 | 10.0.0.81/24 |
+| GW | 10.0.0.1 |
+
+### Installer Apache
+
+```bash
+apt update && apt install -y apache2 curl
+echo "<h1>Web backend OK</h1>" > /var/www/html/index.html
+systemctl enable --now apache2
+```
+
+Vérification rapide :
+
+```bash
+curl http://10.0.0.81
+# → <h1>Web backend OK</h1>
+```
+
+---
+
+## Étape 2 — Préparer le proxy WAF
+
+### Créer le conteneur waf-proxy
+
+| Champ | Valeur |
+|-------|--------|
+| CT ID | 180 |
+| Hostname | waf-proxy |
+| Template | debian-12 |
+| Disque | 4 Go |
+| CPU | 1 |
+| RAM | 512 Mo |
+| Bridge | vmbr2 |
+| IPv4 | 10.0.0.80/24 |
+| GW | 10.0.0.1 |
+
+### Installer Nginx + ModSecurity + CRS
+
+Sur **waf-proxy** :
+
+```bash
+apt update && apt install -y \
+    nginx \
+    libnginx-mod-http-modsecurity \
+    modsecurity-crs curl
+```
+
+> `modsecurity-crs` installe le paquet Debian officiel qui place les règles dans `/usr/share/modsecurity-crs/`
+
+### Vérifier les fichiers installés
+
+```bash
+ls /usr/lib/nginx/modules/ | grep modsecurity
+# → ngx_http_modsecurity_module.so
+
+ls /usr/share/modsecurity-crs/rules/ | head -5
+# → règles CRS prêtes à l'emploi
+
+ls /etc/modsecurity/crs/
+# → crs-setup.conf
+# → REQUEST-900-EXCLUSION-RULES-BEFORE-CRS.conf
+# → RESPONSE-999-EXCLUSION-RULES-AFTER-CRS.conf
+```
+
+![rules](/images/2026-03-06-00-42-49.png)
+
+---
+
+## Étape 3 — Configurer ModSecurity
+
+### Créer la config de base
+
+Le paquet Debian ne fournit pas de `modsecurity.conf-recommended`. On le crée avec le minimum requis :
+
+```bash
+cat > /etc/modsecurity/modsecurity.conf << 'EOF'
+SecRuleEngine DetectionOnly
+SecRequestBodyAccess On
+SecResponseBodyAccess Off
+SecAuditEngine RelevantOnly
+SecAuditLog /var/log/modsec_audit.log
+SecAuditLogParts ABIJDEFHZ
+SecAuditLogType Serial
+EOF
+
+# Créer le fichier d'audit log (requis avant le démarrage)
+touch /var/log/modsec_audit.log
+```
+
+```bash
+# Vérifier le mode (DetectionOnly par défaut)
+grep SecRuleEngine /etc/modsecurity/modsecurity.conf
+# → SecRuleEngine DetectionOnly
+```
+
+### Créer le fichier de règles Nginx
+
+```bash
+cat > /etc/nginx/modsecurity.conf << 'EOF'
+Include /etc/modsecurity/modsecurity.conf
+Include /etc/modsecurity/crs/crs-setup.conf
+Include /usr/share/modsecurity-crs/rules/*.conf
+EOF
+```
+
+---
+
+## Étape 4 — Configurer Nginx en reverse proxy
+
+### Créer le VirtualHost
+
+```bash
+cat > /etc/nginx/sites-available/waf.conf << 'EOF'
+server {
+    listen 80;
+    server_name _;
+
+    modsecurity on;
+    modsecurity_rules_file /etc/nginx/modsecurity.conf;
+
+    location / {
+        proxy_pass http://10.0.0.81/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}
+EOF
+
+ln -s /etc/nginx/sites-available/waf.conf /etc/nginx/sites-enabled/
+rm -f /etc/nginx/sites-enabled/default
+```
+
+### Démarrer
+
+```bash
+nginx -t && systemctl reload nginx
+```
+
+Test — accès normal via le proxy :
+
+```bash
+curl http://10.0.0.80
+# → <h1>Web backend OK</h1>  ✅
+```
+
+---
+
+## Étape 5 — Observer les attaques (mode DetectionOnly)
+
+### Ouvrir les logs en temps réel
+
+**Terminal 1 :**
+
+```bash
+tail -f /var/log/modsec_audit.log
+```
+
+> Les détections ModSecurity vont dans l'audit log, pas dans le error.log nginx.
+
+**Terminal 2 (pour envoyer les attaques) :**
+
+### Test : Injection SQL
+
+```bash
+# Les guillemets simples doivent être encodés en %27
+curl "http://10.0.0.80/?id=1%27%20OR%20%271%27%3D%271"
+# Equivalent à : http://10.0.0.80/?id=1' OR '1'='1
+```
+
+→ La requête **passe** (DetectionOnly) mais l'audit log affiche :
+
+```log
+[id "949110"] [msg "Inbound Anomaly Score Exceeded (Total Score: 33)"]
+[id "942100"] [msg "SQL Injection Attack Detected via libinjection"]
+[severity "CRITICAL"] [tag "OWASP_CRS/3.3.7"]
+```
+
+![attack](/images/2026-03-06-00-57-00.png)
+
+> Le CRS utilise l'**anomaly scoring** : chaque règle ajoute des points (SQLi CRITICAL = +5).
+> Le score total (ici 33) est comparé au seuil (5 par défaut) — dépassé → alerte.
+
+### Test : XSS
+
+```bash
+# Les balises < > encodées en %3C %3E
+curl "http://10.0.0.80/?q=%3Cscript%3Ealert(1)%3C%2Fscript%3E"
+# Equivalent à : http://10.0.0.80/?q=<script>alert(1)</script>
+```
+
+→ Log :
+
+```log
+[id "941100"] [msg "XSS Attack Detected via libinjection"]
+```
+
+![attack](/images/2026-03-06-00-55-22.png)
+
+### Test : Path Traversal
+
+```bash
+curl "http://10.0.0.80/?file=../../../../etc/passwd"
+```
+
+→ Log :
+
+```log
+[id "930100"] [msg "Path Traversal Attack"]
+```
+
+![attack](/images/2026-03-06-00-58-24.png)![](/images/2026-03-06-00-58-24.png)
+
+---
+
+## Étape 6 — Bloquer les attaques (mode Prevention)
+
+### Passer en mode Prevention
+
+```bash
+sed -i 's/SecRuleEngine DetectionOnly/SecRuleEngine On/' \
+    /etc/modsecurity/modsecurity.conf
+
+nginx -t && systemctl reload nginx
+```
+
+### Vérifier que le trafic légitime passe toujours
+
+```bash
+curl http://10.0.0.80/
+# → 200 OK ✅
+
+curl "http://10.0.0.80/?nom=Alice&age=25"
+# → 200 OK ✅
+```
+
+### Les attaques sont maintenant bloquées
+
+```bash
+curl -v "http://10.0.0.80/?id=1%27%20OR%20%271%27%3D%271"
+# → HTTP/1.1 403 Forbidden  🚫
+
+curl -v "http://10.0.0.80/?q=%3Cscript%3Ealert(1)%3C%2Fscript%3E"
+# → HTTP/1.1 403 Forbidden  🚫
+
+curl -v "http://10.0.0.80/?file=../../../../etc/passwd"
+# → HTTP/1.1 403 Forbidden  🚫
+```
+
+![403](/images/2026-03-06-01-00-11.png)
+
+### Tableau récap'
+
+| Attaque | Sans WAF | DetectionOnly | Prevention |
+| -------- | --------- | -------------- | ----------- |
+| SQL Injection | passe | passe + log | 403 bloqué |
+| XSS | passe | passe + log | 403 bloqué |
+| Path Traversal | passe | passe + log | 403 bloqué |
+| Requête normale | passe | passe | passe |
+
+---
+
+## Récap' des étapes
+
+```text
+web (10.0.0.81)         Apache backend simple
+waf-proxy (10.0.0.80)   Nginx + ModSecurity + CRS (paquet apt)
+                        │
+                        ├─ DetectionOnly → log les attaques sans bloquer
+                        └─ Prevention   → HTTP 403 sur toute requête suspecte
+```
