@@ -136,7 +136,7 @@ Cette fiche synthétise les notions fondamentales abordées durant les cours en 
 - [C308. SSO, IAM & WAF (Identités & Sécurité Web)](#️-c308-sso-iam--waf-identités--sécurité-web)
 - [Fin Saison C3 : QCM](#️-fin-saison-c3-sécurité-système--réseau)
 
-### [Saison C4. Conteneurs et orchestration 📦](.)
+### [Saison C4. Conteneurs et orchestration 📦](#-saison-c4-conteneurs-et-orchestration)
 
 ### [Saison C5. Pentesting 🕵️](.)
 
@@ -6328,9 +6328,9 @@ Pour clôturer cette saison réseau et sécurité, voici l'architecture idéale 
 
 ### 🛡️ Fin Saison C3. Sécurité système & réseau
 
-[QCM Saison C3](.)
+[QCM Saison C3](https://forms.gle/U145LT97irETCuGJA)
 
-![Résultat QCM](.)
+![Résultat QCM](/images/2026-03-06-11-47-32.png)
 
 [Retour en haut](#-table-des-matières)
 
