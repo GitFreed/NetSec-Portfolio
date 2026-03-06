@@ -311,6 +311,27 @@ On peut retrouver les résultats du check dans Monitor > Overview > All Hosts
 
 ![activation](/images/2026-03-06-02-20-32.png)
 
+### 4. Ajout d'une VM
+
+* Voici comment ajuster les options pour activer la magie du **Piggyback** :
+
+  * **Host name** : le nom exact de la VM dans Proxmox
+  * **Network address** (Pour éviter que Checkmk ne cherche à pinguer la machine) :
+  * Cocher la petite case grise juste à gauche de **IP address family**.
+  * Le menu déroulant va s'activer : remplacer "IPv4 only" par **No IP**.
+
+* **Monitoring agents** (Pour désactiver l'interrogation directe) :
+
+  * Cocher la petite case grise à gauche de **Checkmk agent / API integrations**.
+  * Dans le menu déroulant, sélectionner **No API integrations, no Checkmk agent**.
+  * (Laisser la ligne "**Piggyback**" juste en dessous sur sa valeur par défaut, c'est elle qui autorise la récupération silencieuse des données !)
+
+Cliquer sur le bouton **Save & run service discovery** en haut de page.
+
+![add](/images/2026-03-06-12-32-10.png)
+
+![VM](/images/2026-03-06-12-34-41.png)
+
 ---
 
 ## Custom Dashboard
