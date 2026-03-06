@@ -271,12 +271,50 @@ On peut retrouver les résultats du check dans Monitor > Overview > All Hosts
 
 ---
 
+## Intégration API Proxmox VE
+
+**Objectif :** Permettre au serveur de supervision (Checkmk) d'interroger directement l'hyperviseur (Proxmox) via son API pour remonter l'état des interfaces réseaux virtuelles (`vmbr`) et des nœuds sans installer d'agent lourd sur chaque système.
+
+### 1. Préparation côté Proxmox (Sécurité & Pré-requis)
+
+* **Création du compte de service :** Créer un utilisateur `checkmk@pve` avec un mot de passe classique.
+* *⚠️ Piège de l'authentification :* La sonde native Checkmk utilise le chemin `/api2/json/access/ticket` qui attend un couple identifiant/mot de passe explicite. Les "API Tokens" modernes génèrent une erreur d'authentification.
+
+* **Droits d'accès :** Assigner le rôle `PVEAuditor` (lecture seule) à cet utilisateur sur le chemin racine `/`.
+* **Le correctif du fuseau horaire :** Dans `PVE-Server > System > Time`, resélectionner et valider le fuseau horaire (ex: *Europe/Paris*).
+* *⚠️ Piège du `StopIteration` :* Sans cette validation manuelle dans l'interface web, Proxmox ne génère pas le fichier `/etc/timezone`. L'API renvoie un champ vide, ce qui fait planter le script Python de Checkmk avec l'erreur critique `StopIteration`.
+
+![user](/images/2026-03-06-01-52-54.png)
+
+### 2. Configuration côté Checkmk (La Sonde API)
+
+* **Alignement d'identité :** Le nom de l'hôte dans Checkmk doit correspondre **exactement** au nom de l'hyperviseur (ex: `pve-server` en minuscules).
+* *⚠️ Piège de la casse :* Si le nom diffère (ex: majuscules), Checkmk ne trouvera pas les données correspondantes dans le fichier `.json` renvoyé par Proxmox et plantera.
+
+* **Création de la règle "Proxmox VE" (*Setup > Agents > VM, cloud, container*) :**
+* **Username :** `checkmk@pve`
+* **Password :** *Explicit* + le mot de passe créé sur Proxmox.
+* **Validation SSL :** Cocher la case principale `Disable SSL certificate validation` **ET** cocher obligatoirement la sous-option `SSL certificate validation is disabled`.
+* *⚠️ Piège du certificat local :* Oublier la sous-option déclenche l'erreur `[SSL: CERTIFICATE_VERIFY_FAILED]`, car Proxmox utilise un certificat auto-signé.
+* **Conditions :** Assigner la règle explicitement à l'hôte `pve-server`.
+
+![host](/images/2026-03-06-01-54-06.png)
+
+### 3. Finalisation (Le cumul des flux)
+
+* **Propriétés de l'hôte Checkmk :** Dans la section *Data sources*, forcer l'option **Configured API integrations AND Checkmk agent**.
+* *⚠️ Piège de l'écrasement :* Par défaut, l'ajout d'une API désactive l'écoute de l'agent TCP classique. Cumuler les deux permet d'avoir à la fois les métriques du système hôte et celles de l'hyperviseur.
+
+![agents](/images/2026-03-06-01-59-43.png)
+
+* **Activation :** Appliquer les changements (point d'exclamation jaune) et lancer une découverte de services (*Rescan*).
+
+![activation](/images/2026-03-06-02-20-32.png)
+
+---
+
 ## Custom Dashboard
 
 ![dash](/images/2026-02-27-15-29-01.png)
 
 to be continued...
-
----
-
-Suite Lab : interrogation des tes switchs / pfSense via SNMP
