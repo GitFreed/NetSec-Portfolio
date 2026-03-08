@@ -375,10 +375,10 @@ systemctl restart smbd
 
 #### 4. Connexion depuis Windows
 
-Sur le PC Windows `192.168.1.X` :
+Sur le PC Windows :
 
 1. Ouvrir l'Explorateur de fichiers.
-2. Dans la barre d'adresse en haut, taper : `\\192.168.1.241` *(L'IP du LXC Samba)* et appuyer sur Entrée.
+2. Dans la barre d'adresse en haut, taper : `\\192.168.1.242` *(L'IP du LXC Samba)* et appuyer sur Entrée.
 3. Windows demande des identifiants : saisir `admin` et le mot de passe configuré via `smbpasswd`.
 4. Le dossier **Medias** apparaît. Faire un clic droit dessus > **Connecter un lecteur réseau** pour lui attribuer une lettre (ex: `Z:`).
 
