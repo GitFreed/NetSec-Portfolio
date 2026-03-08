@@ -382,4 +382,6 @@ Sur le PC Windows :
 3. Windows demande des identifiants : saisir `admin` et le mot de passe configuré via `smbpasswd`.
 4. Le dossier **Medias** apparaît. Faire un clic droit dessus > **Connecter un lecteur réseau** pour lui attribuer une lettre (ex: `Z:`).
 
+![lecteur](/images/2026-03-08-15-55-51.png)
+
 ---
