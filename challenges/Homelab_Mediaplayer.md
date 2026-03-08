@@ -13,7 +13,7 @@
 
 **Rôle :** Administrateur d'Infrastructures Sécurisées / Ingénieur DevOps
 
-**Mission :** Concevoir et déployer un service de streaming multimédia performant et isolé, en s'affranchissant de la lourdeur d'un système NAS dédié, tout en exploitant le stockage de masse de l'hyperviseur de manière granulaire et sécurisée et sécurisé par une micro-segmentation réseau (DMZ) via pfSense.
+**Mission :** Concevoir et déployer un service de streaming multimédia performant et isolé, en s'affranchissant de la lourdeur d'un système NAS dédié, tout en exploitant le stockage de masse de l'hyperviseur de manière granulaire et sécurisé par une micro-segmentation réseau (DMZ) via pfSense.
 
 ---
 
@@ -141,7 +141,7 @@ systemctl status plexmediaserver
 
 Plex est isolé dans le réseau `10.0.0.0/24`. Les appareils du domicile (`192.168.1.X`) ne savent pas comment le joindre, et la Box Internet ne gère pas les routes statiques. Nous allons faire de Proxmox la porte d'entrée universelle.
 
-**Étape 1 : Le Port Forwarding sur pfSense (L'accès DMZ)**
+### Étape 1 : Le Port Forwarding sur pfSense (L'accès DMZ)
 
 1. Sur l'interface web de pfSense, aller dans **Firewall > NAT > Port Forward**.
 2. Cliquer sur Add :
@@ -154,7 +154,8 @@ Plex est isolé dans le réseau `10.0.0.0/24`. Les appareils du domicile (`192.1
 
 3. Sauvegarder et appliquer. *(pfSense génère automatiquement la règle de pare-feu associée).*
 
-**Étape 2 : Le Relais NAT sur Proxmox (La persistance)**
+### Étape 2 : Le Relais NAT sur Proxmox (La persistance)
+
 Sur le shell `root` de Proxmox, nous redirigeons le trafic arrivant sur l'hyperviseur vers pfSense.
 
 ```bash
@@ -273,5 +274,112 @@ Il est nécessaire de créer deux règles d'autorisation chirurgicales :
    * **Destination Port :** `1900`
 
 Une fois ces règles appliquées, l'application Plex apparaîtra automatiquement sur les écrans connectés du réseau principal, tout en restant confinée en toute sécurité derrière le routeur virtuel.
+
+---
+
+## 📁 Phase 7 : Mise en place du partage réseau (Alimentation de la bibliothèque)
+
+Pour envoyer les fichiers multimédias depuis le poste de travail Windows vers le stockage de l'hyperviseur, deux méthodes sont envisageables selon le besoin de transparence pour l'utilisateur.
+
+### Option A : La méthode "Sysadmin" (WinSCP / SFTP)
+
+Idéale pour des transferts ponctuels, sans aucune configuration supplémentaire requise sur le serveur. Elle exploite le protocole SSH natif de l'hyperviseur.
+
+1. Télécharger et installer le client **WinSCP** sur le poste Windows.
+2. Créer une nouvelle session avec les paramètres suivants :
+      * **Protocole :** `SFTP`
+      * **Hôte :** `192.168.1.240` *(IP de Proxmox)*
+      * **Port :** `22`
+      * **Identifiants :** `root` et le mot de passe de l'hyperviseur.
+
+3. Dans l'interface, naviguer à droite vers le dossier cible : `/mnt/pve/HDD-data/Medias/`.
+4. Glisser-déposer les fichiers depuis le panneau gauche (Windows) vers le panneau droit (Serveur).
+
+---
+
+### Option B : La méthode "Transparente" (Serveur Samba / SMB)
+
+Idéale pour un usage quotidien. Elle permet de monter le dossier du serveur comme un véritable disque dur (Disque Z:) directement dans l'Explorateur Windows.
+
+*Dans le respect des bonnes pratiques, nous déployons ce service dans un conteneur LXC dédié (Micro-service) pour ne pas polluer l'hôte Proxmox.*
+
+#### 1. Création du LXC "Serveur de Fichiers"
+
+Depuis l'interface Proxmox, créer un nouveau conteneur :
+
+* **Général :** Nom `samba-server`, cocher **Unprivileged container**.
+* **Template :** `debian-13-standard`.
+* **Ressources :** Très léger (1 vCPU, 512 Mo de RAM, 8 Go de disque).
+* **Réseau :** Pour simplifier la découverte par Windows, l'attacher au pont classique **`vmbr0`** (le réseau de la box) avec une IP statique comme `192.168.1.242/24` et la passerelle de la box.
+* *Ne pas démarrer le conteneur. Noter son ID (ex: 106).*
+
+#### 2. Le Bind Mount (en Lecture/Écriture)
+
+Contrairement à Plex, ce conteneur doit avoir le droit de modifier les fichiers.
+Sur le Shell `root` de Proxmox :
+
+```bash
+nano /etc/pve/lxc/10X.conf # Remplacer 10X par l'ID du LXC Samba
+
+```
+
+Ajouter la ligne de montage (sans le `ro=1`) :
+
+```text
+mp0: /mnt/pve/HDD-data/Medias,mp=/mnt/medias_share
+
+```
+
+*Démarrer le conteneur.*
+
+#### 3. Installation et Configuration de Samba
+
+Ouvrir la console du conteneur Samba en `root` :
+
+```bash
+# Installation du paquet
+apt update && apt install -y samba
+
+# Création d'un utilisateur sécurisé (ex: "admin")
+useradd admin
+smbpasswd -a admin # Définir un mot de passe pour le partage Windows
+
+```
+
+Éditer le fichier de configuration de Samba :
+
+```bash
+nano /etc/samba/smb.conf
+
+```
+
+Effacer tout le contenu (ou aller tout à la fin) et coller ce bloc de configuration strict :
+
+```ini
+[Medias]
+   path = /mnt/medias_share
+   writable = yes
+   valid users = admin
+   force user = root
+
+```
+
+*(L'astuce `force user = root` permet à Samba d'écrire les fichiers avec les mêmes droits que Plex, évitant tout conflit de permissions entre les deux conteneurs).*
+
+Redémarrer le service pour appliquer :
+
+```bash
+systemctl restart smbd
+
+```
+
+#### 4. Connexion depuis Windows
+
+Sur le PC Windows `192.168.1.X` :
+
+1. Ouvrir l'Explorateur de fichiers.
+2. Dans la barre d'adresse en haut, taper : `\\192.168.1.241` *(L'IP du LXC Samba)* et appuyer sur Entrée.
+3. Windows demande des identifiants : saisir `admin` et le mot de passe configuré via `smbpasswd`.
+4. Le dossier **Medias** apparaît. Faire un clic droit dessus > **Connecter un lecteur réseau** pour lui attribuer une lettre (ex: `Z:`).
 
 ---
