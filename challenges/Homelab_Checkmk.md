@@ -334,6 +334,95 @@ Cliquer sur le bouton **Save & run service discovery** en haut de page.
 
 ---
 
+## Intégration de pfSense avec le protocole SNMP
+
+### 1. Configuration de pfSense (Activation SNMP)
+
+#### Installer le paquet sécurisé
+
+1. Naviguer dans **System > Package Manager**, puis dans l'onglet **Available Packages**.
+2. Rechercher `net-snmp`.
+3. Cliquer sur **Install** puis **Confirm** pour lancer le déploiement du paquet.
+
+#### Configurer SNMPv3 via NET-SNMP
+
+Un nouveau menu de configuration est désormais disponible.
+
+1. Naviguer dans **Services > SNMP (NET-SNMP)**.
+2. Dans l'onglet **General** : Cocher *Enable the SNMP service* et sauvegarder.
+3. Se rendre dans l'onglet **Users** et cliquer sur le bouton **Add**.
+4. Renseigner les champs de sécurité :
+
+* **Username :** `srv_checkmk`
+* **Entry type :** `User entry (USM)`
+* **Read/Write Access :** `Read Only (GET, GETNEXT)` (*Application stricte du principe de moindre privilège*).
+* **Authentication Type :** `SHA`
+* **Password :** (Saisir le mot de passe d'authentification).
+* **Privacy Protocol :** `AES`
+* **Passphrase :** (Saisir la clé de chiffrement).
+
+1. Cliquer sur **Save**.
+
+### 2. Filtrage Réseau (Pare-feu pfSense)
+
+L'activation du service ne suffit pas ; il faut autoriser le flux réseau entre Checkmk et pfSense.
+
+1. Naviguer vers **Firewall > Rules**.
+2. Sélectionner l'interface sur laquelle Checkmk va interroger pfSense (généralement l'interface de Management ou le LAN, par exemple `vmbr1` ou `LAN`).
+3. Ajouter une règle avec les paramètres suivants :
+
+* **Action :** `Pass`
+* **Interface :** `LAN` (ou l'interface concernée)
+* **Address Family :** `IPv4`
+* **Protocol :** `UDP`
+* **Source :** `Single host or alias` -> Saisir l'adresse IP exacte de la machine Checkmk (ex: `192.168.1.X`).
+* **Destination :** `This Firewall (self)`
+* **Destination Port Range :** `SNMP (161)`
+
+1. Ajouter une description claire (ex: `Allow Checkmk to poll pfSense SNMP`).
+
+2. Sauvegarder et appliquer les changements.
+
+### 3. Intégration dans Checkmk (Administration Système)
+
+Une fois la couche réseau et le service préparés, il faut déclarer l'hôte dans l'outil de supervision.
+
+1. Se connecter à l'interface web de Checkmk.
+2. Aller dans **Setup > Hosts** et cliquer sur **Add host**.
+3. Remplir les informations de base :
+
+* **Hostname :** `pfsense-fw01`
+* **IPv4 address :** Saisir l'adresse IP de pfSense.
+
+Dans la section **Data Sources**, configurer comme suit :
+
+* **Checkmk agent :** Sélectionner `No API integrations, no Checkmk agent` (puisqu'aucun agent lourd n'est installé sur pfSense).
+* **SNMP :** Cocher la case et sélectionner `SNMP v2c or v3`.
+
+Dans les **SNMP credentials**, sélectionner **SNMPv3 (authPriv)** et reporter exactement les informations configurées sur pfSense
+:
+
+* Security level: `authPriv`
+* User name: `srv_checkmk`
+* Authentication protocol: `SHA-1`
+* Authentication password: (Le mot de passe défini)
+* Privacy protocol: `AES-128`
+* Privacy passphrase: (La clé définie)
+
+![agent](/images/2026-03-08-00-27-00.png)
+
+Cliquer sur **Save & run service discovery**
+
+Checkmk va envoyer des requêtes UDP 161. Si le pare-feu et SNMPv3 sont bien configurés, les services (Interfaces réseau, CPU, RAM, Uptime) vont apparaître.
+
+Accepter les services voulus (`Accept all`) et activer les changements (Bouton jaune **Activate on selected sites**).
+
+![OK](/images/2026-03-08-00-26-41.png)
+
+⚠️ Toujours vérifier le `timedatectl status` s'il y a un décalage les vérifications avec le `NTP` échoueront.
+
+---
+
 ## Custom Dashboard
 
 ![dash](/images/2026-02-27-15-29-01.png)
