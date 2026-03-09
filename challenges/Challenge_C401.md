@@ -4,7 +4,7 @@
 
 Challenge : <https://github.com/O-clock-Aldebaran/E01-SC4-exo-docker-GitFreed/tree/master>
 
-[Cours C401.](/RESUME.md#️-c401)
+[Cours C401.](/RESUME.md#-c401-introduction-à-la-conteneurisation-et-à-docker)
 
 > 📚 **Ressources** :
 >
