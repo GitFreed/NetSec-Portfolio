@@ -17,15 +17,15 @@ Challenge : <https://github.com/O-clock-Aldebaran/E01-SC4-exo-docker-GitFreed/tr
 ```sh
 OS : Debian 13 (trixie)
 SCSI VirtIO SCSI single
-cocher QEMU Guest Agent
+QEMU Guest Agent ✅
 Disque Virtuel : 32 Go
-cocher la case Discard
-cochern SSD emulation
+Discard ✅
+SSD emulation ✅
 Processeur (vCPU) : 2 cœurs.
 CPU Type : host (au lieu du défaut kvm64)
 Mémoire (RAM) : 2048 Mo (2 Go)
-Network : 
-Model : vmbr2 VirtIO (paravirtualisé)
+Network : 10.0.0.20/24
+Model : vmbr2 en VirtIO Para
 
 ```
 
