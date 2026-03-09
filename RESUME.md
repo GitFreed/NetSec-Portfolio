@@ -6417,7 +6417,7 @@ docker run -d --name ais_web_service -p 8080:80 nginx:alpine
 | **Analyse** | `docker logs -f <nom>` | Affiche les journaux du conteneur en temps réel (comme `tail -f`). |
 | | `docker exec -it <nom> /bin/bash` | Ouvre un terminal directement *à l'intérieur* du conteneur. |
 
-[Atelier C308](./challenges/Challenge_C401.md) : Déploiement Docker
+[Atelier C308](./challenges/Challenge_C401.md) : Déploiement Docker et découverte
 
 > 📚 **Ressources** :
 >
