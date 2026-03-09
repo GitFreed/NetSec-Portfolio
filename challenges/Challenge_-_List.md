@@ -166,6 +166,8 @@ Commande utilisée pour extraire la liste du fichier [Resume.md](/RESUME.md)
 
 [Challenge C308](./Challenge_C308.md) : Déploiement d'un SSO Keycloak et intégration avec Vault,  intégration d'une deuxième application (Nextcloud), et sécurité couche 7 avec WAF ModSecurity + OWASP CRS
 
+[Challenge C401](./Challenge_C401.md) : Déploiement Docker et découverte
+
 ---
 
 [Homelab Adguard](./Homelab_AdGuard.md) : Déployer AdGuard Home, serveur DHCP et DNS sinkhole.
