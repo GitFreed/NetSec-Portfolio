@@ -402,7 +402,7 @@ ls -l /dev/dri
 * Le résultat doit afficher un périphérique nommé `renderD128`. C'est l'interface de rendu d'accélération matérielle.
 * Il est crucial de noter le numéro de groupe (GID) propriétaire de `renderD128` (généralement le groupe `render`, avec un GID autour de 104 ou 108).
 
-### 2. Configuration du montage LXC (Démarche DevOps)
+### 2. Configuration du montage LXC
 
 Pour respecter le principe de sécurité du moindre privilège, on ne donne accès qu'au composant de rendu vidéo strict, sans exposer l'intégralité des bus matériels.
 
@@ -427,6 +427,45 @@ Si le conteneur LXC a été créé en mode "Non-Privilégié" (ce qui est la nor
 
 * Il faut se connecter à l'intérieur du conteneur Plex.
 * Ajouter l'utilisateur `plex` au groupe vidéo/render local. Si une erreur de droit persiste, il faudra mettre en place un *ID Mapping* (correspondance des UID/GID) entre le conteneur et l'hyperviseur.
+
+```sh
+# Ajouter l'utilisateur aux groupes gérant l'accélération graphique :
+usermod -aG video,render plex
+#redémarrer le service applicatif pour prendre en compte les nouveaux groupes :
+systemctl restart plexmediaserver
+```
+
+Il faut identifier le numéro exact du groupe render et video sur l'hôte physique :
+
+```sh
+getent group render
+# Exemple de retour : render:x:993:
+```
+
+Autorisation de mappage (Sur Proxmox)
+
+```sh
+nano /etc/subgid
+# ajouter la ligne
+root:993:1
+```
+
+Application au conteneur (Sur Proxmox)
+
+```sh
+nano /etc/pve/lxc/XXX.conf
+# Ajouter ces lignes complexes de mappage à la fin du fichier :
+
+# On mappe les UID (utilisateurs) normalement de 0 à 65536
+lxc.idmap: u 0 100000 65536
+
+# On mappe les GID (groupes) de 0 à 103 normalement
+lxc.idmap: g 0 100000 992
+# On fait un "trou" pour faire correspondre le GID 104 du LXC au GID 104 de l'hôte
+lxc.idmap: g 992 993 1
+# On reprend le mappage normal pour le reste (de 105 à 65536)
+lxc.idmap: g 993 100993 64543
+```
 
 ### 4. Activation applicative
 
