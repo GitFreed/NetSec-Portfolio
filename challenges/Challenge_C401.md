@@ -166,6 +166,89 @@ On peut facilement le stop maintenant avec le nom, et pour le relancer il suffit
 
 ![name](/images/2026-03-09-20-25-11.png)
 
-💡 *Astuce : on peut stopper et supprimer un conteneur en une seule commande : docker rm -f <name> ou docker rm -f <ID>*
+💡 *Astuce : on peut stopper et supprimer un conteneur en une seule commande : docker rm -f "name" ou docker rm -f "ID"*
 
 ### 4. Compiler nos propres images Docker
+
+Pour compiler une image Docker, nous allons avoir besoin de créer un fichier `Dockerfile`
+
+```sh
+# Préparation de l'arborescence
+mkdir -p ~/challenge-c401/src
+cd ~/challenge-c401
+
+# Création du fichier source (PHP)
+nano src/index.php
+# avec le code suivant :
+<?php
+echo "<h1>Hello-world !</h1>";
+echo "<p>Ceci est un conteneur Docker tournant sur Debian Trixie.</p>";
+phpinfo();
+?>
+
+# Création de la docker file
+nano Dockerfile
+
+# Instructions du fichier
+FROM php:7.2-apache
+WORKDIR /var/www/html
+COPY src .
+```
+
+La première instruction `FROM php:7.2-apache` indique à Docker que nous allons baser notre image sur une image existante : `php:7.2-apache`. Le nom de l'image c'est `php`, et après le `:` on vient préciser le **tag** de cette image que l'on souhaite utiliser. Les tags sont des "versions" des images, et dans notre cas la version `7.2-apache` est une image qui embarque PHP en version 7.2 avec le serveur web apache préconfiguré.
+
+La deuxième instruction `WORKDIR /var/www/html` permet de changer le dossier dans lequel on se trouve **à l'intérieur de l'image** (c'est comme si on lançait la commande `cd /var/www/html`). On indique ici qu'il faut se positionner dans le dossier `/var/www/html`, dossier "racine" du serveur web apache.
+
+La dernière instruction `COPY src .` effectue, comme son nom l'indique ... une copie ! C'est comme si on avait lancé la commande `cp src/* ./`, on demande à docker de copier le contenu du dossier `src/` (sur notre hôte !) dans un dossier à l'intérieur de l'image. Le dossier de destination `./` correspond au **dossier courant**, c'est à dire `/var/www/html`, vu qu'on vient de s'y déplacer avec l'instruction précédente.
+
+![docker](/images/2026-03-09-20-54-48.png)
+
+```sh
+# On instancie le conteneur en mappant le port 8888 de la VM vers le port 80 du conteneur
+sudo docker run -d -p 8888:80 --name challenge-container my-hello-docker
+
+# On verifie le container
+sudo docker ps
+```
+
+![ps](/images/2026-03-09-21-16-06.png)
+
+Vérification sur <http://10.0.0.20:8888/>
+
+![apache](/images/2026-03-09-21-08-08.png)
+
+### 5. DockerHub & Killercoda
+
+Sur <https://hub.docker.com/repositories/9cw0aidl0hzvviowpdrvcn0w> on choisi un nom pour notre dépôt, et clic sur Create. Sur la droite DockerHub nous donne la procédure à suivre pour pousser une image sur ce dépôt :
+
+```sh
+docker tag local-image:tagname new-repo:tagname
+docker push new-repo:tagname
+```
+
+**Docker & DockerHub fonctionnenent comme Git & GitHub** : nous avons des dépôts sur un serveur distant (DockerHub/GitHub), sur lesquels nous allons héberger nos images, mais aussi une sorte de **dépôt local** sur notre hôte, pour stocker les images que nous compilons et celles que nous récupérons depuis DockerHub.
+
+On peut voir les images en local sur notre machine en tapant la commande `docker image ls`. On peut supprimer une image locale avec `docker image rm <nom_image>` ou `docker image rm <id_image>`.
+
+On peut retrouver dans la liste des images locales notre image `my-hello-docker`, et on peut remarquer qu'elle a un tag `latest`, c'est le tag par défaut.
+
+Pour pousser cette image sur notre dépôt il faut se connecter depuis le terminal avec `docker login -u <user_dockerhub>`
+
+![login](/images/2026-03-09-21-35-12.png)
+
+On peut maintenant lancler la commande pour push notre image
+
+```sh
+docker tag my-hello-docker:latest <user_dockerhub>/my-hello-docker:latest
+docker push <user_dockerhub>/my-hello-docker:latest
+```
+
+![ok](/images/2026-03-09-22-44-52.png)
+
+Pour tester notre image, on va lancer une session Docker dans Killercoda
+
+On va lancer dans ce terminal la commande `docker run -dp 8888:80 <user_dockerhub>/my-hello-docker`
+
+On peut voir Docker récupérer et lancer l'image et vérifier avec `docker ps`
+
+![killercoda](/images/2026-03-09-22-50-25.png)
