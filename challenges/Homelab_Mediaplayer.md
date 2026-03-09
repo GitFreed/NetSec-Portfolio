@@ -385,3 +385,54 @@ Sur le PC Windows :
 ![lecteur](/images/2026-03-08-15-55-51.png)
 
 ---
+
+## Phase 8 : Device Mapping GPU (Intel QSV) pour LXC Plex
+
+### 1. Identification du périphérique sur l'Hyperviseur (Host)
+
+Il faut d'abord s'assurer que la carte graphique intégrée (iGPU) est reconnue par l'hôte Proxmox et identifier ses identifiants système.
+
+* Ouvrir un shell sur le nœud Proxmox et exécuter :
+
+```bash
+ls -l /dev/dri
+
+```
+
+* Le résultat doit afficher un périphérique nommé `renderD128`. C'est l'interface de rendu d'accélération matérielle.
+* Il est crucial de noter le numéro de groupe (GID) propriétaire de `renderD128` (généralement le groupe `render`, avec un GID autour de 104 ou 108).
+
+### 2. Configuration du montage LXC (Démarche DevOps)
+
+Pour respecter le principe de sécurité du moindre privilège, on ne donne accès qu'au composant de rendu vidéo strict, sans exposer l'intégralité des bus matériels.
+
+* Éditer le fichier de configuration du conteneur (remplacer `XXX` par l'ID du conteneur Plex) :
+
+```bash
+nano /etc/pve/lxc/XXX.conf
+
+```
+
+* Ajouter les lignes suivantes à la fin du fichier pour mapper le périphérique et lui accorder les droits de lecture/écriture/création (rwm) :
+
+```text
+lxc.cgroup2.devices.allow: c 226:128 rwm
+lxc.mount.entry: /dev/dri/renderD128 dev/dri/renderD128 none bind,optional,create=file
+
+```
+
+### 3. Gestion des Permissions (Sécurité Sysadmin)
+
+Si le conteneur LXC a été créé en mode "Non-Privilégié" (ce qui est la norme de sécurité standard pour isoler les flux), l'utilisateur interne exécutant le service Plex n'aura pas les droits pour écrire sur le périphérique `renderD128` de l'hôte.
+
+* Il faut se connecter à l'intérieur du conteneur Plex.
+* Ajouter l'utilisateur `plex` au groupe vidéo/render local. Si une erreur de droit persiste, il faudra mettre en place un *ID Mapping* (correspondance des UID/GID) entre le conteneur et l'hyperviseur.
+
+### 4. Activation applicative
+
+* Redémarrer le conteneur LXC.
+* Se connecter à l'interface d'administration web de Plex.
+* Naviguer dans **Paramètres > Transcodeur**.
+* Cocher l'option **"Utiliser l'accélération matérielle quand disponible"**.
+
+---
