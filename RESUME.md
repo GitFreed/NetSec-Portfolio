@@ -6407,15 +6407,15 @@ docker run -d --name ais_web_service -p 8080:80 nginx:alpine
 | Catégorie | Commande | Ce qu'elle fait |
 | --- | --- | --- |
 | **Images** | `docker pull <image>` | Télécharge une image depuis le Docker Hub. |
-|  | `docker images` | Liste toutes les images stockées sur votre machine. |
-|  | `docker rmi <id_image>` | Supprime une image locale. |
+| | `docker images` | Liste toutes les images stockées sur votre machine. |
+| | `docker rmi <id_image>` | Supprime une image locale. |
 | **Lancement** | `docker run -d --name <nom> -p <port_hôte>:<port_conteneur> <image>` | **La commande reine** : Crée et lance un conteneur en arrière-plan (`-d`), le nomme, et mappe les ports réseaux. |
 | **Gestion** | `docker ps` | Liste les conteneurs actuellement en cours d'exécution. |
-|  | `docker ps -a` | Liste **tous** les conteneurs (même arrêtés ou plantés). |
-|  | `docker stop <nom>` / `docker start <nom>` | Arrête proprement / Redémarre un conteneur. |
-|  | `docker rm <nom>` | Supprime définitivement un conteneur (doit être arrêté). |
+| | `docker ps -a` | Liste **tous** les conteneurs (même arrêtés ou plantés). |
+| | `docker stop <nom>` / `docker start <nom>` | Arrête proprement / Redémarre un conteneur. |
+| | `docker rm <nom>` | Supprime définitivement un conteneur (doit être arrêté). |
 | **Analyse** | `docker logs -f <nom>` | Affiche les journaux du conteneur en temps réel (comme `tail -f`). |
-|  | `docker exec -it <nom> /bin/bash` | Ouvre un terminal directement *à l'intérieur* du conteneur. |
+| | `docker exec -it <nom> /bin/bash` | Ouvre un terminal directement *à l'intérieur* du conteneur. |
 
 [Atelier C308](./challenges/Challenge_C401.md) : Déploiement Docker
 
