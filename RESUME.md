@@ -6338,4 +6338,92 @@ Pour clôturer cette saison réseau et sécurité, voici l'architecture idéale 
 
 ## **📦 Saison C4. Conteneurs et orchestration**
 
-> **Objectif de la saison** :
+> **Objectif de la saison** : Comprendre et maîtriser le déploiement applicatif moderne. L'infrastructure ne se limite plus aux routeurs et aux serveurs bare-metal ; les applications s'exécutent désormais dans des environnements isolés et éphémères. L'enjeu est de savoir comment ces environnements fonctionnent, communiquent, et s'intègrent dans l'architecture réseau globale.
+
+### 🐳 C401. Introduction à la conteneurisation et à Docker
+
+> **Objectif** : Saisir la différence fondamentale entre une machine virtuelle classique et un conteneur. Découvrir l'écosystème Docker, maîtriser les concepts d'Image et de Conteneur, et comprendre comment ces éléments s'isolent et s'exposent sur le réseau.
+
+#### 1. Virtualisation vs. Conteneurisation
+
+C'est la base pour comprendre la révolution apportée par les conteneurs. L'approche pour isoler les ressources est radicalement différente.
+
+- **La Virtualisation (Les Machines Virtuelles - VMs)** :
+- *Fonctionnement* : Un hyperviseur (comme Proxmox, VMware ou Hyper-V) découpe les ressources matérielles physiques (CPU, RAM). Par-dessus, **chaque VM embarque son propre système d'exploitation complet** (Noyau/Kernel, drivers, processus d'arrière-plan).
+- *Inconvénient* : C'est lourd. Démarrer une VM prend du temps (boot de l'OS), et cela gaspille des ressources (chaque VM consomme de la RAM juste pour faire tourner son propre noyau).
+- *Analogie* : C'est l'équivalent de déployer un routeur physique dédié pour isoler chaque nouveau client.
+
+- **La Conteneurisation (Docker)** :
+- *Fonctionnement* : Les conteneurs partagent directement le noyau (Kernel) du système d'exploitation hôte (généralement Linux). Il n'y a pas d'OS invité. Le système isole uniquement les processus, le système de fichiers et l'espace réseau (grâce aux *Namespaces* de Linux).
+- *Avantage* : C'est ultra-léger. Un conteneur démarre en quelques millisecondes et ne pèse que quelques mégaoctets, car il ne contient que l'application et ses dépendances strictes.
+- *Analogie* : C'est comme utiliser des **VRF** (Virtual Routing and Forwarding) sur un seul gros commutateur de cœur de réseau. Vous isolez les tables de routage et les flux (conteneurs) sans avoir à multiplier le matériel ou les systèmes d'exploitation (VMs).
+
+#### 2. Qu'est-ce que Docker ?
+
+Docker n'a pas inventé les conteneurs (ils existaient déjà sous Linux avec LXC), mais il a rendu la technologie accessible et standardisée.
+
+- **Le moteur (Docker Engine)** : C'est le service qui tourne sur la machine hôte. Il s'occupe de créer les environnements isolés, de monter les systèmes de fichiers, et surtout, de gérer les ponts réseaux virtuels (*bridges*) pour que les conteneurs puissent communiquer avec l'extérieur.
+- **Le standard** : Docker a créé un format standardisé. Une application "dockerisée" sur le PC d'un développeur fonctionnera exactement de la même manière sur un serveur de production. "Ça marche sur ma machine" n'est plus une excuse valable.
+
+#### 3. Le concept d'Image
+
+C'est le plan de construction, la recette.
+
+- **Nature** : Une image est un modèle figé (en lecture seule). Elle contient absolument tout ce qui est nécessaire pour faire tourner l'application : le code, les librairies, les variables d'environnement et les ports réseaux par défaut à exposer.
+- **Couches (Layers)** : Les images sont construites en couches superposées. Si plusieurs images utilisent la même base (ex: Ubuntu), cette base n'est téléchargée et stockée qu'une seule fois sur le disque.
+- *Exemple* : L'image `nginx:latest` contient un mini-environnement Linux, les binaires du serveur web Nginx, et un fichier de configuration de base prêt à écouter sur le port 80.
+
+#### 4. Le Conteneur
+
+C'est l'exécution vivante de l'Image.
+
+- **Nature** : Lorsqu'on démarre une Image, Docker crée une fine couche en "lecture/écriture" par-dessus : c'est le conteneur.
+- **Éphémère** : Un conteneur est conçu pour être jetable. Si on le supprime ou s'il plante, tout ce qui a été modifié à l'intérieur est perdu (sauf si l'on a explicitement monté un volume de stockage persistant depuis l'hôte).
+- **Connectivité et Isolation** :
+- Par défaut, un conteneur est isolé dans son propre sous-réseau interne (souvent `172.17.0.0/16`).
+- Pour le rendre joignable depuis le LAN de l'entreprise, on demande à Docker d'effectuer du **NAT (Redirection de port)**. Par exemple, on redirige le port `8080` de la machine hôte physique vers le port `80` privé du conteneur.
+
+**Exemple d'implémentation CLI :**
+
+```sh
+# Déploiement d'un service web Nginx léger (Alpine) en arrière-plan (-d)
+# -p 8080:80 -> Redirection du port 8080 (hôte physique) vers le port 80 (réseau interne du conteneur)
+# Le pare-feu iptables de l'hôte est automatiquement mis à jour.
+docker run -d --name ais_web_service -p 8080:80 nginx:alpine
+```
+
+#### 💡 Concepts Clés : Conteneurs vs VMs
+
+| Concept | Description |
+| --- | --- |
+| **Virtualisation (VM)** | Isole via un hyperviseur. Embarque un OS invité complet (lourd, lent à démarrer, consomme beaucoup de RAM). |
+| **Conteneurisation** | Partage directement le noyau (Kernel) de l'hôte. N'isole que l'application (ultra-léger, démarrage instantané). |
+| **Image** | Le modèle figé (en lecture seule). Contient le code, les dépendances et la configuration réseau par défaut. |
+| **Conteneur** | L'instance vivante et éphémère de l'image (couche lecture/écriture). |
+| **Docker Engine** | Le service sur la machine hôte qui fait tourner les conteneurs et gère leur réseau (NAT/Bridges). |
+
+#### 🛠️ Aide-mémoire : Commandes Docker Essentielles
+
+| Catégorie | Commande | Ce qu'elle fait |
+| --- | --- | --- |
+| **Images** | `docker pull <image>` | Télécharge une image depuis le Docker Hub. |
+|  | `docker images` | Liste toutes les images stockées sur votre machine. |
+|  | `docker rmi <id_image>` | Supprime une image locale. |
+| **Lancement** | `docker run -d --name <nom> -p <port_hôte>:<port_conteneur> <image>` | **La commande reine** : Crée et lance un conteneur en arrière-plan (`-d`), le nomme, et mappe les ports réseaux. |
+| **Gestion** | `docker ps` | Liste les conteneurs actuellement en cours d'exécution. |
+|  | `docker ps -a` | Liste **tous** les conteneurs (même arrêtés ou plantés). |
+|  | `docker stop <nom>` / `docker start <nom>` | Arrête proprement / Redémarre un conteneur. |
+|  | `docker rm <nom>` | Supprime définitivement un conteneur (doit être arrêté). |
+| **Analyse** | `docker logs -f <nom>` | Affiche les journaux du conteneur en temps réel (comme `tail -f`). |
+|  | `docker exec -it <nom> /bin/bash` | Ouvre un terminal directement *à l'intérieur* du conteneur. |
+
+[Atelier C308](./challenges/Challenge_C401.md) : Déploiement Docker
+
+> 📚 **Ressources** :
+>
+> - Docker Installation Manual : <https://docs.docker.com/engine/install/>
+> - Fiche Récap Kourou-Oclock : <https://kourou.oclock.io/ressources/fiche-recap/docker/>
+
+[Retour en haut](#-table-des-matières)
+
+---
