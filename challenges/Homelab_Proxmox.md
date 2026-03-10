@@ -213,3 +213,111 @@ chronyc sources -v
 ![NTP](/images/2026-03-05-00-12-49.png)
 
 ---
+
+## Correction perte de la config réseau
+
+### 1. Analyse de l'incident (Pourquoi `netfilter-persistent` a échoué)
+
+Bien que `netfilter-persistent` et `iptables-save` soient les standards absolus sur une distribution Debian classique, l'hyperviseur Proxmox VE possède son propre cycle de vie réseau.
+Lors d'un redémarrage, Proxmox reconstruit dynamiquement ses commutateurs virtuels (Linux Bridges comme `vmbr0` ou `vmbr1`). Durant cette phase, le service réseau interne (`ifupdown2`) prend le pas et peut écraser ou ignorer les règles chargées précédemment.
+
+Pour garantir une persistance absolue sur Proxmox, la bonne pratique DevOps consiste à attacher les règles de routage directement au cycle d'allumage des interfaces réseau.
+
+### 2. Procédure de remédiation : Restauration des règles persistantes
+
+Il est nécessaire de modifier le fichier central de configuration réseau de l'hyperviseur.
+
+**Étape A : Vérification du routage noyau**
+S'assurer que l'hyperviseur a toujours l'autorisation de router les paquets entre ses cartes réseaux (activé temporairement par le passé).
+
+* Éditer le fichier sysctl : `nano /etc/sysctl.conf`
+* Vérifier la présence et l'activation de la ligne : `net.ipv4.ip_forward=1`
+* Appliquer avec : `sysctl -p`
+
+Pour garantir que cette variable survive à tous les redémarrages et aux futures mises à jour de l'hyperviseur, la bonne pratique consiste à adopter une architecture modulaire. Il ne faut pas modifier que le fichier racine `/etc/sysctl.conf`, mais aussi créer un fichier prioritaire dédié dans le répertoire `/etc/sysctl.d/`.
+
+Les fichiers de ce répertoire sont lus à la toute fin de la séquence de démarrage, ce qui garantit qu'ils écraseront toute autre configuration contradictoire.
+
+Voici la procédure stricte à exécuter dans le shell de l'hôte Proxmox :
+
+**Création du fichier de routage prioritaire**
+La commande suivante crée un fichier nommé `99-routing.conf` (le préfixe `99` indique la priorité maximale) et y injecte la règle d'activation :
+
+```bash
+echo "net.ipv4.ip_forward=1" > /etc/sysctl.d/99-routing.conf
+
+```
+
+**Rechargement du noyau**
+Pour forcer le noyau Linux à lire immédiatement ce nouveau fichier sans avoir à redémarrer le serveur physiquement :
+
+```bash
+sysctl --system
+
+```
+
+*Le terminal retournera une liste des fichiers lus, et confirmera l'application de la règle `net.ipv4.ip_forward = 1`.*
+
+**Étape B : Injection des règles dans les interfaces**
+C'est ici que se joue la persistance. Les directives `post-up` s'exécutent dès que l'interface s'allume, et `post-down` nettoient la table lors de l'extinction.
+
+* Éditer le fichier des interfaces :
+
+```bash
+nano /etc/network/interfaces
+
+```
+
+* Localiser le bloc correspondant à `vmbr0` (l'interface WAN connectée au réseau domestique ).
+
+* Ajouter les lignes suivantes **à la fin de ce bloc** (en remplaçant `<IP_PLEX>` par l'adresse IP interne de destination) :
+
+```sh
+auto vmbr0
+iface vmbr0 inet static
+        address 192.168.1.240/24
+        gateway 192.168.1.254
+        bridge-ports eno1
+        bridge-stp off
+        bridge-fd 0
+        
+        # --- RÈGLES DE ROUTAGE (PERSISTANTES) ---
+        # --- 1. ROUTAGE GLOBAL (Masquerade pour le sous-réseau de transit) ---
+        post-up iptables -t nat -A POSTROUTING -s '192.168.10.0/24' -o vmbr0 -j MASQUERADE
+        post-down iptables -t nat -D POSTROUTING -s '192.168.10.0/24' -o vmbr0 -j MASQUERADE
+
+        # --- 2. FLUX PLEX (TCP & UDP vers pfSense) ---
+        # Redirection des requêtes entrantes vers l'IP WAN de pfSense
+        post-up iptables -t nat -A PREROUTING -p tcp --dport 32400 -j DNAT --to-destination 192.168.10.254:32400
+        post-up iptables -t nat -A PREROUTING -p udp --dport 32400 -j DNAT --to-destination 192.168.10.254:32400
+        # Masquage de la source (SNAT) pour forcer le retour par l'hyperviseur et éviter le routage asymétrique
+        post-up iptables -t nat -A POSTROUTING -p tcp -d 192.168.10.254 --dport 32400 -j MASQUERADE
+        post-up iptables -t nat -A POSTROUTING -p udp -d 192.168.10.254 --dport 32400 -j MASQUERADE
+        
+        # Nettoyage au démontage de l'interface
+        post-down iptables -t nat -D PREROUTING -p tcp --dport 32400 -j DNAT --to-destination 192.168.10.254:32400
+        post-down iptables -t nat -D PREROUTING -p udp --dport 32400 -j DNAT --to-destination 192.168.10.254:32400
+        post-down iptables -t nat -D POSTROUTING -p tcp -d 192.168.10.254 --dport 32400 -j MASQUERADE
+        post-down iptables -t nat -D POSTROUTING -p udp -d 192.168.10.254 --dport 32400 -j MASQUERADE
+
+        # --- 3. FLUX VPN (UDP 1194 vers pfSense) ---
+        post-up iptables -t nat -A PREROUTING -p udp --dport 1194 -j DNAT --to-destination 192.168.10.254:1194
+        post-up iptables -t nat -A POSTROUTING -p udp -d 192.168.10.254 --dport 1194 -j MASQUERADE
+        
+        post-down iptables -t nat -D PREROUTING -p udp --dport 1194 -j DNAT --to-destination 192.168.10.254:1194
+        post-down iptables -t nat -D POSTROUTING -p udp -d 192.168.10.254 --dport 1194 -j MASQUERADE
+
+```
+
+* Pour appliquer cette configuration sans redémarrer tout le serveur, il suffit de recharger la configuration réseau (attention, cela peut causer une micro-coupure) :
+
+```bash
+systemctl reload networking
+
+```
+
+### 3. Bilan d'Architecture (Security by Design) 🔒
+
+En inscrivant ces règles dans `/etc/network/interfaces`, l'hyperviseur conservera indéfiniment ses capacités de routage de bordure.
+
+Cependant, d'un point de vue cybersécurité, il est impératif de rappeler la finalité de l'architecture. La base de connaissances indique que Proxmox n'agit comme routeur de bordure que de manière **temporaire**. L'objectif final de la topologie est de déléguer tout le routage et le DHCP à la VM pfSense instanciée entre `vmbr1` (WAN) et `vmbr2` (LAN).
