@@ -364,3 +364,34 @@ iptables -t nat -A PREROUTING -i vmbr0 -p udp --dport 1194 -j DNAT --to 192.168.
 ```
 
 ---
+
+## IPsec Keep Alive dans pfSense
+
+Dans pfSense, le terme "Keep Alive" (qui sert à maintenir une connexion ouverte même quand il n'y a pas de trafic) s'utilise principalement dans deux cas de figure. Voici la méthode rapide pour les deux :
+
+### Option 1 : Le Keep Alive pour le VPN (OpenVPN)
+
+*Sert à éviter que le tunnel VPN ne se déconnecte tout seul quand on ne fait rien.*
+
+1. Sur l'interface web de pfSense, aller dans **VPN > OpenVPN > Servers**.
+2. Cliquer : éditer le serveur VPN.
+3. Descendre jusqu'à la section **Ping settings**.
+4. Remplir les champs ainsi :
+    * **Inactivity Timeout :** `600`
+    * **Ping interval :** `10` (envoie un ping toutes les 10 secondes).
+    * **Ping timeout :** `60` (considère la connexion morte après 60 secondes sans réponse).
+
+5. Sauvegarder en bas de page.
+
+### Option 2 : Le Keep Alive pour le Pare-feu (Firewall States)
+
+*Sert à éviter que pfSense ne coupe brutalement les connexions SSH (vers Proxmox) si elle restent silencieuses un moment.*
+
+1. Aller dans **System > Advanced > Firewall & NAT**.
+2. Chercher le menu déroulant nommé **Firewall Optimization Options**.
+3. Modifier la valeur par défaut (*Normal*) pour choisir **Conservative**.
+    * *Cela dit à pfSense d'être beaucoup plus patient avant de "tuer" une connexion inactive en mémoire.*
+
+4. Sauvegarder en bas de page.
+
+---
