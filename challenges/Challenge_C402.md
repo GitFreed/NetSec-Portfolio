@@ -439,6 +439,8 @@ Il faut compose down `sudo docker compose down -v` puis modifier le fichier yaml
 - Accéder à Adminer : `http://10.0.0.30:8081`.
 - Serveur : `db`, Utilisateur : `root` ou `glpiuser`.
 
+![admirer](/images/2026-03-10-18-53-08.png)
+
 ### 🏆 Bonus 2 — Fichier `.env`
 
 Déplacez tous les mots de passe et variables sensibles dans un fichier `.env` et utilisez la syntaxe `${VARIABLE}` dans votre `docker-compose.yml`. Ajoutez `.env` à un fichier `.gitignore` pour ne jamais le commiter.
