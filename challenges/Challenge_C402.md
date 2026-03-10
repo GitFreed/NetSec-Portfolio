@@ -2,7 +2,7 @@
 
 ## 🧑‍🏫 Pitch de l’exercice : 🐋 Déployer GLPI avec Docker Compose
 
-Challenge : <.>
+Challenge : <https://github.com/O-clock-Aldebaran/SC04E02-Deployer-GLPI-GitFreed/blob/master/README.md>
 
 [Cours C401.](/RESUME.md#-c402)
 
@@ -62,6 +62,10 @@ Consultez ces ressources si vous êtes bloqués — mais essayez d'abord par vou
 > 📚 **Ressources** :
 >
 > - GLPI Docker Images : <https://hub.docker.com/r/glpi/glpi>
+
+---
+
+[Voir 🐋 Déployer GLPI avec Docker Compose](#-déployer-glpi-avec-docker-compose)
 
 ---
 
@@ -257,10 +261,10 @@ nano .env
 *Contenu à insérer :*
 
 ```env
-MYSQL_ROOT_PASSWORD=RootPasswordSecure!
+MYSQL_ROOT_PASSWORD=Rootpassword!
 MYSQL_DATABASE=glpidb
 MYSQL_USER=glpiuser
-MYSQL_PASSWORD=GlpiUserPasswordSecure!
+MYSQL_PASSWORD=Glpiuserpassword!
 
 ```
 
@@ -321,15 +325,19 @@ networks:
 - Montez les volumes nécessaires pour les fichiers GLPI (config, fichiers uploadés...)
 
 ```sh
-# ÉTAPE 3 : Service GLPI
+  # ÉTAPE 3 : Service GLPI
   glpi:
     image: glpi/glpi:latest
     container_name: glpi-app
     ports:
-      # L'hôte écoute sur 8080 et redirige vers le port 80 du conteneur
       - "8080:80"
     environment:
       TIMEZONE: 'Europe/Paris'
+      # Ajout des variables exigées par l'Entrypoint de l'image GLPI
+      MARIADB_HOST: db
+      MARIADB_DATABASE: ${MYSQL_DATABASE}
+      MARIADB_USER: ${MYSQL_USER}
+      MARIADB_PASSWORD: ${MYSQL_PASSWORD}
     volumes:
       - glpi_data:/var/www/html
     depends_on:
@@ -337,6 +345,14 @@ networks:
         condition: service_healthy
     networks:
       - glpi-net
+
+volumes:
+  db_data:
+  glpi_data:
+
+networks:
+  glpi-net:
+
 ```
 
 ### Étape 4 — Réseau & Communication
@@ -391,9 +407,15 @@ sudo docker compose ps
 
 ![glpi](/images/2026-03-10-17-48-32.png)
 
+![slpiok](/images/2026-03-10-18-18-45.png)
+
 ### 🏆 Bonus 1 — Adminer
 
 Ajoutez le service **Adminer** à votre stack. Adminer est une interface web légère pour administrer des bases de données. Exposez-le sur le port `8081` et connectez-vous avec les identifiants de votre base GLPI.
+
+Il faut compose down `sudo docker compose down -v` puis modifier le fichier yaml
+
+![down](/images/2026-03-10-18-22-56.png)
 
 ```sh
 # BONUS 1 : Adminer
@@ -407,6 +429,8 @@ Ajoutez le service **Adminer** à votre stack. Adminer est une interface web lé
     networks:
       - glpi-net
 ```
+
+![admirer](/images/2026-03-10-18-23-48.png)
 
 **Test de l'interface d'administration de la BDD (Bonus) :**
 
