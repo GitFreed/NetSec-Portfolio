@@ -28,14 +28,14 @@ nano Dockerfile.v1
 ```sh
 FROM ubuntu:24.04
 
-# Prérequis d'installation
+# Prérequis d'installation et 
 RUN apt update
-RUN apt upgrade -y
+RUN  apt upgrade -y
+
 
 # Installation de NodeJS
-RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh | bash
-RUN \. "$HOME/.nvm/nvm.sh"
-RUN nvm install 24
+RUN  apt install nodejs -y
+RUN  apt install npm -y 
 
 # Je copie les fichiers de mon application dans mon conteneur
 COPY . /app
@@ -56,6 +56,8 @@ Build V1 :
 ```sh
 sudo docker build -t dockerdemo:v1 -f Dockerfile.v1 .
 ```
+
+![v1](/images/2026-03-10-12-58-10.png)
 
 ### Version 2
 
@@ -84,6 +86,8 @@ CMD npm run prod
 
 Build V2 : `sudo docker build -t dockerdemo:v2 -f Dockerfile.v2 .`
 
+![v2](/images/2026-03-10-12-40-42.png)
+
 ### Comparaison des versions
 
 La commande suivante permet de lister les images et d'observer la différence de taille en mégaoctets :
@@ -96,5 +100,7 @@ C'est ici qu'intervient la commande qui exploite le formatage Go-template pour e
 
 ```sh
 sudo docker image inspect dockerdemo:v1 --format "V1 Layers: {{len .RootFS.Layers}}"
-sudo docker image inspect dockerdemo:v2 --format "V2 Layers: {{len .RootFS.Layers}}".
+sudo docker image inspect dockerdemo:v2 --format "V2 Layers: {{len .RootFS.Layers}}"
 ```
+
+![images](/images/2026-03-10-12-59-21.png)
