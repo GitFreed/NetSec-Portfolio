@@ -139,6 +139,7 @@ Cette fiche synthétise les notions fondamentales abordées durant les cours en 
 ### [Saison C4. Conteneurs et orchestration 📦](#-saison-c4-conteneurs-et-orchestration)
 
 - [C401. Introduction à la conteneurisation et à docker](#-c401-introduction-à-la-conteneurisation-et-à-docker)
+- [C402. Construction d'Images et Orchestration avec Docker Compose](#️-c402-construction-dimages-et-orchestration-avec-docker-compose)
 
 ### [Saison C5. Pentesting 🕵️](.)
 
@@ -6344,7 +6345,7 @@ Pour clôturer cette saison réseau et sécurité, voici l'architecture idéale 
 
 ### 🐳 C401. Introduction à la conteneurisation et à Docker
 
-> **Objectif** : Saisir la différence fondamentale entre une machine virtuelle classique et un conteneur. Découvrir l'écosystème Docker, maîtriser les concepts d'Image et de Conteneur, et comprendre comment ces éléments s'isolent et s'exposent sur le réseau.
+> **Objectif** : Saisir la différence fondamentale entre une machine virtuelle classique et un conteneur. Découvrir l'écosystème Docker, maîtriser les concepts d'Image et de Conteneur, et comprendre comment ces éléments s'isolent et s'exposent sur le réseau en respectant les principes de sécurité.
 
 #### 1. Virtualisation vs. Conteneurisation
 
@@ -6374,15 +6375,16 @@ C'est le plan de construction, la recette.
 - **Nature** : Une image est un modèle figé (en lecture seule). Elle contient absolument tout ce qui est nécessaire pour faire tourner l'application : le code, les librairies, les variables d'environnement et les ports réseaux par défaut à exposer.
 - **Couches (Layers)** : Les images sont construites en couches superposées. Si plusieurs images utilisent la même base (ex: Ubuntu), cette base n'est téléchargée et stockée qu'une seule fois sur le disque.
 - *Exemple* : L'image `nginx:latest` contient un mini-environnement Linux, les binaires du serveur web Nginx, et un fichier de configuration de base prêt à écouter sur le port 80.
+- **Sécurité by Design** : Une bonne pratique consiste à utiliser des images minimalistes (comme `alpine` ou `distroless`) pour réduire drastiquement la surface d'attaque et limiter les vulnérabilités (CVE) potentielles.
 
 #### 4. Le Conteneur
 
-C'est l'exécution vivante de l'Image.
+Le conteneur est l'instanciation vivante de l'Image.
 
 - **Nature** : Lorsqu'on démarre une Image, Docker crée une fine couche en "lecture/écriture" par-dessus : c'est le conteneur.
 - **Éphémère** : Un conteneur est conçu pour être jetable. Si on le supprime ou s'il plante, tout ce qui a été modifié à l'intérieur est perdu (sauf si l'on a explicitement monté un volume de stockage persistant depuis l'hôte).
 - **Connectivité et Isolation** :
-- Par défaut, un conteneur est isolé dans son propre sous-réseau interne (souvent `172.17.0.0/16`).
+- Par défaut, un conteneur est isolé dans son propre sous-réseau interne (souvent `172.17.0.0/16`) inaccessible depuis le LAN de l'entreprise.
 - Pour le rendre joignable depuis le LAN de l'entreprise, on demande à Docker d'effectuer du **NAT (Redirection de port)**. Par exemple, on redirige le port `8080` de la machine hôte physique vers le port `80` privé du conteneur.
 
 **Exemple d'implémentation CLI :**
@@ -6394,15 +6396,15 @@ C'est l'exécution vivante de l'Image.
 docker run -d --name ais_web_service -p 8080:80 nginx:alpine
 ```
 
-#### 💡 Concepts Clés : Conteneurs vs VMs
+#### 5. Architecture Multi-Conteneurs (Introduction à Docker Compose)
 
-| Concept | Description |
-| --- | --- |
-| **Virtualisation (VM)** | Isole via un hyperviseur. Embarque un OS invité complet (lourd, lent à démarrer, consomme beaucoup de RAM). |
-| **Conteneurisation** | Partage directement le noyau (Kernel) de l'hôte. N'isole que l'application (ultra-léger, démarrage instantané). |
-| **Image** | Le modèle figé (en lecture seule). Contient le code, les dépendances et la configuration réseau par défaut. |
-| **Conteneur** | L'instance vivante et éphémère de l'image (couche lecture/écriture). |
-| **Docker Engine** | Le service sur la machine hôte qui fait tourner les conteneurs et gère leur réseau (NAT/Bridges). |
+Comme illustré dans la présentation, il est déconseillé d'insérer toute une infrastructure (Serveur Web + Code + Base de données) dans un seul conteneur.
+L'ingénierie moderne impose la **modularité** :
+
+- Un conteneur dédié au Front-end.
+- Un conteneur dédié au Back-end.
+- Un conteneur dédié à la Base de données.
+Chaque composant peut ainsi être mis à jour, sécurisé ou redimensionné de manière indépendante. L'orchestration de cette architecture fera l'objet du module suivant (Docker Compose).
 
 #### 🛠️ Aide-mémoire : Commandes Docker Essentielles
 
@@ -6419,12 +6421,96 @@ docker run -d --name ais_web_service -p 8080:80 nginx:alpine
 | **Analyse** | `docker logs -f <nom>` | Affiche les journaux du conteneur en temps réel (comme `tail -f`). |
 | | `docker exec -it <nom> /bin/bash` | Ouvre un terminal directement *à l'intérieur* du conteneur. |
 
-[Atelier C308](./challenges/Challenge_C401.md) : Déploiement Docker et découverte
+[Atelier C401](./challenges/Challenge_C401.md) : Déploiement Docker et découverte
 
 > 📚 **Ressources** :
 >
 > - Docker Installation Manual : <https://docs.docker.com/engine/install/>
 > - Fiche Récap Kourou-Oclock : <https://kourou.oclock.io/ressources/fiche-recap/docker/>
+
+[Retour en haut](#-table-des-matières)
+
+---
+
+### 🏗️ C402. Construction d'Images et Orchestration avec Docker Compose
+
+> **Objectif :** Maîtriser la création d'images personnalisées via des `Dockerfile`, assurer la persistance des données, et orchestrer des architectures multi-conteneurs sécurisées grâce à Docker Compose.
+
+#### 1. La Compilation d'Images (`Dockerfile` et `docker build`)
+
+L'utilisation d'images génériques (comme `ubuntu` ou `nginx`) n'est souvent pas suffisante en entreprise. Il est nécessaire de construire des images sur mesure contenant le code applicatif spécifique. Le `Dockerfile` est la recette d'infrastructure (IaC) permettant cette automatisation.
+
+- **Les Instructions Essentielles :**
+  - `FROM` : Définit l'image de base (le point de départ, ex: `php:8.2-apache`).
+  - `WORKDIR` : Définit le répertoire de travail interne au conteneur (équivalent à `cd`).
+  - `COPY` : Transfère les fichiers de l'hôte physique vers le système de fichiers de l'image.
+  - `RUN` : Exécute des commandes (comme `apt install` ou `npm install`) lors de la **phase de construction** (Build). Crée une nouvelle couche (Layer).
+  - `EXPOSE` : Déclare le port d'écoute (documentaire, n'ouvre pas le pare-feu de l'hôte).
+  - `CMD` : Définit le processus principal à exécuter au **démarrage du conteneur**.
+
+- **La Commande de Build :**
+
+```bash
+# Compilation de l'image en tagguant le résultat et en utilisant le dossier courant (.) comme contexte
+docker build -t mon-application:v1.0 .
+
+```
+
+- **Sécurité by Design (Sysadmin) :** Il faut toujours spécifier un tag précis (ex: `node:20-alpine`) au lieu de `latest`. L'utilisation de `latest` expose l'infrastructure à des mises à jour cassantes et imprévisibles lors des futures compilations.
+
+#### 2. La Persistance des Données (Volumes)
+
+Par conception, le système de fichiers d'un conteneur est éphémère. En cas de suppression (`docker rm`), les données internes disparaissent. Pour protéger l'information (comme une base de données), il faut extraire le stockage.
+
+Il existe deux mécanismes principaux :
+
+- **Les Volumes Nommés (Named Volumes) - *Standard de Production* :**
+  - Gérés intégralement par le moteur Docker (stockés nativement dans `/var/lib/docker/volumes/` sous Linux).
+  - *Avantage :* Hautes performances, indépendance vis-à-vis du système de fichiers de l'hôte, idéal pour les bases de données (MariaDB, PostgreSQL).
+
+- **Les Points de Montage (Bind-Mounts) - *Standard de Développement* :**
+  - Liaison directe d'un dossier de la machine hôte (ex: `./src`) vers un dossier du conteneur (ex: `/var/www/html`).
+  - *Avantage :* Permet de modifier le code source sur l'hôte et de voir les changements en temps réel dans le conteneur.
+  - *Risque Sécurité/Système :* Peut générer de graves conflits de permissions UNIX (droits `root` vs `www-data`) et permet théoriquement au conteneur d'interagir avec les fichiers de l'hôte. À proscrire en production pour des applications sensibles.
+
+#### 3. Orchestration Multi-Conteneurs (Docker Compose)
+
+Une architecture saine ne place jamais un serveur web et une base de données dans le même conteneur. La séparation des rôles est impérative. Docker Compose permet de déployer toute une pile applicative (Stack) via un seul fichier de configuration YAML (`docker-compose.yml`).
+
+- **Concepts Réseaux Avancés (Couche 3 & DNS) :**
+  - Lors de l'exécution, Compose crée un réseau virtuel isolé (Bridge) propre au projet.
+  - **Résolution DNS Interne :** Les conteneurs n'ont pas besoin de connaître leurs adresses IP respectives. Le serveur applicatif contacte la base de données simplement en utilisant le **nom du service** (ex: `db`).
+
+- **Segmentation (Firewalling interne) :**
+  - Il est possible de créer plusieurs réseaux virtuels (ex: `frontend` et `backend`).
+  - Le conteneur Web est rattaché au `frontend` et au `backend`. Le conteneur Base de Données n'est rattaché qu'au `backend`. Ainsi, le Web peut parler à la base, mais une application externe ne peut pas atteindre la base de données, même virtuellement.
+
+- **Gestion des Secrets (Fichier `.env`) :**
+  - Les mots de passe ne doivent **jamais** être écrits en clair dans le fichier YAML.
+  - L'utilisation d'un fichier caché `.env` (non versionné via `.gitignore`) permet d'injecter dynamiquement des variables (ex: `${MYSQL_ROOT_PASSWORD}`).
+
+- **Commandes Clés :**
+
+```bash
+docker compose up -d    # Démarre toute l'infrastructure en arrière-plan
+docker compose down -v  # Détruit l'infrastructure ET supprime les volumes associés
+docker compose logs -f  # Supervise les journaux centralisés de tous les services
+
+```
+
+#### 4. Le Registre Central : Docker Hub
+
+Le Docker Hub agit comme un référentiel (dépôt) public ou privé pour stocker et partager les images compilées.
+
+- **Mécanique :** Une fois l'image construite localement, elle peut être envoyée sur le registre (`docker push`). N'importe quel autre serveur (ou collègue) pourra alors la télécharger (`docker pull`) et l'exécuter, garantissant une parité absolue entre l'environnement de développement et de production.
+- **Sécurité (Supply Chain) :** Il est vital de ne télécharger que des images "Officielles" (Official Images) ou certifiées. Une image tierce peut contenir des malwares, des mineurs de cryptomonnaies ou des portes dérobées (Backdoors).
+
+[Atelier C402](./challenges/Challenge_C402.md) : Déployer GLPI avec Docker Compose
+
+> 📚 **Ressources** :
+>
+> - Glpi Docker Images : <https://hub.docker.com/r/glpi/glpi>
+> - Site compilant des déploiement docker pour de multiples applications : <https://belginux.com/applications/>
 
 [Retour en haut](#-table-des-matières)
 

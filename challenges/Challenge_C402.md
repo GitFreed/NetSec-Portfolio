@@ -4,7 +4,7 @@
 
 Challenge : <https://github.com/O-clock-Aldebaran/SC04E02-Deployer-GLPI-GitFreed/blob/master/README.md>
 
-[Cours C401.](/RESUME.md#-c402)
+[Cours C401.](/RESUME.md#️-c402-construction-dimages-et-orchestration-avec-docker-compose)
 
 ## 🗂 Contexte
 
