@@ -281,36 +281,35 @@ iface vmbr0 inet static
         bridge-stp off
         bridge-fd 0
         
-        # --- RÈGLES DE ROUTAGE (PERSISTANTES) ---
-        # --- 1. ROUTAGE GLOBAL (Masquerade pour le sous-réseau de transit) ---
-        post-up iptables -t nat -A POSTROUTING -s '192.168.10.0/24' -o vmbr0 -j MASQUERADE
-        post-down iptables -t nat -D POSTROUTING -s '192.168.10.0/24' -o vmbr0 -j MASQUERADE
+# --- RÈGLES DE ROUTAGE (PERSISTANTES) ---
+        
+        # 1. NAT INTERNET (pfSense vers Box)
+        post-up iptables -t nat -A POSTROUTING -s 192.168.10.0/24 -o vmbr0 -j MASQUERADE
+        post-down iptables -t nat -D POSTROUTING -s 192.168.10.0/24 -o vmbr0 -j MASQUERADE
 
-        # --- FLUX PLEX (TCP & UDP vers pfSense) ---
-        # Redirection des requêtes entrantes vers l'IP WAN de pfSense
-        post-up iptables -t nat -A PREROUTING -p tcp --dport 32400 -j DNAT --to-destination 192.168.10.254:32400
-        post-up iptables -t nat -A PREROUTING -p udp --dport 32400 -j DNAT --to-destination 192.168.10.254:32400
-        # Masquage de la source (SNAT) pour forcer le retour par l'hyperviseur et éviter le routage asymétrique
+        # 2. NAT PLEX (TCP/UDP 32400)
+        post-up iptables -t nat -A PREROUTING -i vmbr0 -p tcp --dport 32400 -j DNAT --to-destination 192.168.10.254:32400
+        post-up iptables -t nat -A PREROUTING -i vmbr0 -p udp --dport 32400 -j DNAT --to-destination 192.168.10.254:32400
         post-up iptables -t nat -A POSTROUTING -p tcp -d 192.168.10.254 --dport 32400 -j MASQUERADE
         post-up iptables -t nat -A POSTROUTING -p udp -d 192.168.10.254 --dport 32400 -j MASQUERADE
         
-        # Nettoyage au démontage de l'interface
-        post-down iptables -t nat -D PREROUTING -p tcp --dport 32400 -j DNAT --to-destination 192.168.10.254:32400
-        post-down iptables -t nat -D PREROUTING -p udp --dport 32400 -j DNAT --to-destination 192.168.10.254:32400
+        post-down iptables -t nat -D PREROUTING -i vmbr0 -p tcp --dport 32400 -j DNAT --to-destination 192.168.10.254:32400
+        post-down iptables -t nat -D PREROUTING -i vmbr0 -p udp --dport 32400 -j DNAT --to-destination 192.168.10.254:32400
         post-down iptables -t nat -D POSTROUTING -p tcp -d 192.168.10.254 --dport 32400 -j MASQUERADE
         post-down iptables -t nat -D POSTROUTING -p udp -d 192.168.10.254 --dport 32400 -j MASQUERADE
 
-        # --- FLUX VPN (UDP 1194 vers pfSense) ---
-        post-up iptables -t nat -A PREROUTING -p udp --dport 1194 -j DNAT --to-destination 192.168.10.254:1194
+        # 3. NAT VPN (UDP 1194)
+        post-up iptables -t nat -A PREROUTING -i vmbr0 -p udp --dport 1194 -j DNAT --to-destination 192.168.10.254:1194
         post-up iptables -t nat -A POSTROUTING -p udp -d 192.168.10.254 --dport 1194 -j MASQUERADE
         
-        post-down iptables -t nat -D PREROUTING -p udp --dport 1194 -j DNAT --to-destination 192.168.10.254:1194
+        post-down iptables -t nat -D PREROUTING -i vmbr0 -p udp --dport 1194 -j DNAT --to-destination 192.168.10.254:1194
         post-down iptables -t nat -D POSTROUTING -p udp -d 192.168.10.254 --dport 1194 -j MASQUERADE
 
-        # --- RÈGLES DE SUPERVISION CHECKMK (PLEX VIA PFSENSE) ---
-        post-up iptables -t nat -A PREROUTING -p tcp --dport 6557 -j DNAT --to-destination 192.168.10.254:6557
+        # 4. NAT CHECKMK (TCP 6557)
+        post-up iptables -t nat -A PREROUTING -i vmbr0 -p tcp --dport 6557 -j DNAT --to-destination 192.168.10.254:6557
         post-up iptables -t nat -A POSTROUTING -p tcp -d 192.168.10.254 --dport 6557 -j MASQUERADE
-        post-down iptables -t nat -D PREROUTING -p tcp --dport 6557 -j DNAT --to-destination 192.168.10.254:6557
+        
+        post-down iptables -t nat -D PREROUTING -i vmbr0 -p tcp --dport 6557 -j DNAT --to-destination 192.168.10.254:6557
         post-down iptables -t nat -D POSTROUTING -p tcp -d 192.168.10.254 --dport 6557 -j MASQUERADE
 
 ```
