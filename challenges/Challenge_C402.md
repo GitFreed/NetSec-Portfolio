@@ -65,7 +65,7 @@ Consultez ces ressources si vous êtes bloqués — mais essayez d'abord par vou
 
 ---
 
-[Voir 🐋 Déployer GLPI avec Docker Compose](#-déployer-glpi-avec-docker-compose)
+[⏬ Aller à : 🐋 Déployer GLPI avec Docker Compose](#-déployer-glpi-avec-docker-compose)
 
 ---
 
@@ -241,6 +241,8 @@ sudo docker compose up -d
 
 ![compose](/images/2026-03-10-14-38-36.png)
 
+---
+---
 ---
 
 ## 🐋 Déployer GLPI avec Docker Compose
