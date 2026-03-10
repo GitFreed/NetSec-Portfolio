@@ -168,6 +168,8 @@ Commande utilisée pour extraire la liste du fichier [Resume.md](/RESUME.md)
 
 [Challenge C401](./Challenge_C401.md) : Déploiement Docker et découverte
 
+[Challenge C402](./Challenge_C402.md) : Déployer GLPI avec Docker Compose
+
 ---
 
 [Homelab Adguard](./Homelab_AdGuard.md) : Déployer AdGuard Home, serveur DHCP et DNS sinkhole.

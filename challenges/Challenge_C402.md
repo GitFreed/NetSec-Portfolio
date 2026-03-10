@@ -1,6 +1,6 @@
 # Challenge C402 10/03/2026
 
-## 🧑‍🏫 Pitch de l’exercice : Build Dockerfile
+## 🧑‍🏫 Pitch de l’exercice : 🐋 Déployer GLPI avec Docker Compose
 
 Challenge : <.>
 
@@ -8,9 +8,11 @@ Challenge : <.>
 
 > 📚 **Ressources** :
 >
-> - Dockerdocs : <https://docs.docker.com/engine/install/debian/>
+> - GLPI Docker Images : <https://hub.docker.com/r/glpi/glpi>
 
 ---
+
+## Tests & démo Docker Build & Docker Compose
 
 ### Préparation
 
@@ -181,3 +183,7 @@ sudo docker compose up -d
 ```
 
 ![compose](/images/2026-03-10-14-38-36.png)
+
+---
+
+## 🐋 Déployer GLPI avec Docker Compose
