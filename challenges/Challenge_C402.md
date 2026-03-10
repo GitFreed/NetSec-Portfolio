@@ -104,3 +104,80 @@ sudo docker image inspect dockerdemo:v2 --format "V2 Layers: {{len .RootFS.Layer
 ```
 
 ![images](/images/2026-03-10-12-59-21.png)
+
+### Version 3
+
+```sh
+# ---- Stage 1 : Build ----
+FROM node:alpine AS builder
+
+WORKDIR /app
+
+# On copie uniquement les fichiers de dépendances d'abord (cache Docker optimisé)
+COPY package*.json ./
+
+# Installation de TOUTES les dépendances (dev incluses, nécessaires pour le build)
+RUN npm ci
+
+# On copie le reste du code
+COPY . .
+
+# Build de l'application
+RUN npm run build
+
+# ---- Stage 2 : Production ----
+FROM node:alpine AS production
+
+WORKDIR /app
+
+COPY package*.json ./
+
+# On installe UNIQUEMENT les dépendances de production
+RUN npm ci --omit=dev
+
+# On récupère uniquement le build depuis le stage précédent
+COPY --from=builder /app/dist ./dist
+
+EXPOSE 5173
+
+CMD ["node", "dist/index.js"]
+```
+
+Build V2 : `sudo docker build -t dockerdemo:v3 -f Dockerfile.v3 .`
+
+![v3](/images/2026-03-10-14-15-40.png)
+
+### Docker Compose
+
+```sh
+nano docker-compose.yaml
+```
+
+```sh
+services:
+  web:
+    image: php:8.2-apache
+    ports:
+      - "8080:80"
+    volumes:
+      - ./src:/var/www/html
+    depends_on:
+      - db
+
+  db:
+    image: mariadb:11
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: myapp
+    volumes:
+      - db_data:/var/lib/mysql
+
+volumes:
+  db_data:
+```
+
+```sh
+sudo docker compose up -d
+```
+
+![compose](/images/2026-03-10-14-38-36.png)
