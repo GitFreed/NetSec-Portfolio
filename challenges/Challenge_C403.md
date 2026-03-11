@@ -57,3 +57,24 @@ On peut voir le nombre de replicas (les 3 agents) et les ports
 On peut se connecter sur l'interface web Portainer du Leader via le port **9443** en **https**
 
 <https://10.0.0.30:9443/>
+
+Si *Your Portainer instance timed out for security purposes* il faut
+
+```sh
+docker stack rm portainer
+docker stack deploy -c portainer-agent-stack.yml portainer
+```
+
+![portainer](/images/2026-03-11-11-46-55.png)
+
+On retrouve notre environnement connecté avec tous les détails
+
+![environment](/images/2026-03-11-12-05-39.png)
+
+Son Dashboard
+
+![dash](/images/2026-03-11-12-06-48.png)
+
+Et le détail du Cluster dans le Swarm
+
+![cluster](/images/2026-03-11-12-07-26.png)
