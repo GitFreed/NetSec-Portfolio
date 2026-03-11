@@ -40,4 +40,12 @@ portainer
 
 ```sh
 curl -L https://downloads.portainer.io/ce-lts/portainer-agent-stack.yml -o portainer-agent-stack.yml
+
+docker stack deploy -c portainer-agent-stack.yml portainer
+
+docker service ls
 ```
+
+On peut voir le nombre de replicas (les 3 agents) et les ports
+
+![replicas](/images/2026-03-11-11-23-31.png)
