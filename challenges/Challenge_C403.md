@@ -78,3 +78,29 @@ Son Dashboard
 Et le détail du Cluster dans le Swarm
 
 ![cluster](/images/2026-03-11-12-07-26.png)
+
+Si on veut mettre en pause un agent : `sudo docker node update --availability pause docker3`
+
+![pause](/images/2026-03-11-13-31-26.png)
+
+Il ne sera pas réutilisé pour créer de nouveaux containers
+
+Créer des répliques :
+
+```sh
+docker service create nginx
+
+docker service create --replicas 10 nginx
+```
+
+![replicas](/images/2026-03-11-13-36-11.png)
+
+Pour que l'agent redevienne actif : `docker node update --availability active docker3`
+
+Pour vider un noeud par exemple le 2 : `docker node update --availability drain docker2`
+
+Tout est passé du 2 au 3 en instantané.
+
+![drain](/images/2026-03-11-13-47-30.png)
+
+Pour supprimer toutes les replicas sauf une : `docker service update --replicas 1 <ID>`
