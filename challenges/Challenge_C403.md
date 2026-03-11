@@ -53,6 +53,21 @@ Votre responsable veut maintenant **haute disponibilité** : si un serveur tombe
 
 ---
 
+## 🔍 Commandes utiles
+
+| Action | Commande |
+|---|---|
+| Voir les services de la stack | `docker service ls` |
+| Voir les replicas d'un service | `docker service ps glpi-swarm_glpi` |
+| Logs d'un service | `docker service logs -f glpi-swarm_glpi` |
+| Scaler un service | `docker service scale glpi-swarm_glpi=5` |
+| Mettre à jour la stack | Portainer → Stack → Editor → Update |
+| Supprimer la stack | `docker stack rm glpi-swarm` |
+| Quitter Swarm | `docker swarm leave --force` |
+| Lister les nœuds | `docker node ls` |
+
+---
+
 ## Étape 1 — Initialiser Docker Swarm 🐝
 
 ```sh
