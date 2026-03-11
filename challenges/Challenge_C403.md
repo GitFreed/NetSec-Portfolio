@@ -4,7 +4,7 @@
 
 Challenge : <.>
 
-[Cours C403.](/RESUME.md#️-c403)
+[Cours C403.](/RESUME.md#-c403-docker-swarm)
 
 > 📚 **Ressources** :
 >
