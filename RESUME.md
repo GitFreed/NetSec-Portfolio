@@ -6523,6 +6523,8 @@ Le Docker Hub agit comme un référentiel (dépôt) public ou privé pour stocke
 
 > **Objectif :**
 
+![swarm](/images/2026-03-11-11-25-54.png)
+
 [Atelier C403](./challenges/Challenge_C403.md) :
 
 > 📚 **Ressources** :

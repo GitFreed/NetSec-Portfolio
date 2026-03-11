@@ -1,6 +1,8 @@
-# Challenge C403 10/03/2026
+# Challenge C403 11/03/2026
 
 ## 🧑‍🏫 Pitch de l’exercice : 🐝 Déployer Docker Swarm
+
+![swarm](/images/2026-03-11-11-25-54.png)
 
 Challenge : <.>
 
