@@ -140,6 +140,7 @@ Cette fiche synthétise les notions fondamentales abordées durant les cours en 
 
 - [C401. Introduction à la conteneurisation et à docker](#-c401-introduction-à-la-conteneurisation-et-à-docker)
 - [C402. Construction d'Images et Orchestration avec Docker Compose](#️-c402-construction-dimages-et-orchestration-avec-docker-compose)
+- [C403. Docker Swarm](#-c403-docker-swarm)
 
 ### [Saison C5. Pentesting 🕵️](.)
 
@@ -6427,6 +6428,7 @@ Chaque composant peut ainsi être mis à jour, sécurisé ou redimensionné de m
 >
 > - Docker Installation Manual : <https://docs.docker.com/engine/install/>
 > - Fiche Récap Kourou-Oclock : <https://kourou.oclock.io/ressources/fiche-recap/docker/>
+> - Docker Cheatsheet : <https://cheatsheets.zip/docker>
 
 [Retour en haut](#-table-des-matières)
 
@@ -6511,6 +6513,7 @@ Le Docker Hub agit comme un référentiel (dépôt) public ou privé pour stocke
 >
 > - Glpi Docker Images : <https://hub.docker.com/r/glpi/glpi>
 > - Site compilant des déploiement docker pour de multiples applications : <https://belginux.com/applications/>
+> - Docker Cheatsheet : <https://cheatography.com/christian-knell/cheat-sheets/docker-docker-compose-and-docker-swarm/>
 
 [Retour en haut](#-table-des-matières)
 
@@ -6524,6 +6527,7 @@ Le Docker Hub agit comme un référentiel (dépôt) public ou privé pour stocke
 
 > 📚 **Ressources** :
 >
+> - Docker Swarm Cheatsheet : <https://cheatography.com/gauravpandey44/cheat-sheets/docker-swarm/>
 
 [Retour en haut](#-table-des-matières)
 
