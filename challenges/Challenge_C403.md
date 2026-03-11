@@ -112,3 +112,18 @@ docker service create --name web2 --replicas 3 nginx && publish 80:80 nginx
 ```
 
 Pour s'assurer qu'un service Docker Swarm s'exécute uniquement sur des nœuds workers (et non sur les nœuds managers) : `--constraint node.role==worker`
+
+Pour rolling update en version 1.25 les images nginx :
+
+```sh
+docker service update --image nginx:1.25 \
+--update-delay 10s \
+--update-parallelism 2 \
+web
+```
+
+Ajoute 3 images up en 1.25 et laisse 3 en latest pour pouvoir rollback
+
+![update](/images/2026-03-11-14-23-55.png)
+
+Pour rollback : `docker service update --rollback web`
