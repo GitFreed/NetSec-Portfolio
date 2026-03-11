@@ -23,7 +23,7 @@ docker node ls
 
 ![node](/images/2026-03-11-10-54-37.png)
 
-docker node promote/demomte xxxxx
+docker node promote/demote xxxxx
 
 ![manager](/images/2026-03-11-10-59-56.png)
 
