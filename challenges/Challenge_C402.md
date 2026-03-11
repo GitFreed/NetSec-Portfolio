@@ -4,7 +4,7 @@
 
 Challenge : <https://github.com/O-clock-Aldebaran/SC04E02-Deployer-GLPI-GitFreed/blob/master/README.md>
 
-[Cours C401.](/RESUME.md#️-c402-construction-dimages-et-orchestration-avec-docker-compose)
+[Cours C402.](/RESUME.md#️-c402-construction-dimages-et-orchestration-avec-docker-compose)
 
 ## 🗂 Contexte
 
@@ -62,6 +62,7 @@ Consultez ces ressources si vous êtes bloqués — mais essayez d'abord par vou
 > 📚 **Ressources** :
 >
 > - GLPI Docker Images : <https://hub.docker.com/r/glpi/glpi>
+> - Docker Cheatsheet : <https://cheatography.com/christian-knell/cheat-sheets/docker-docker-compose-and-docker-swarm/>
 
 ---
 
