@@ -56,7 +56,7 @@ Votre responsable veut maintenant **haute disponibilité** : si un serveur tombe
 ## 🔍 Commandes utiles
 
 | Action | Commande |
-|---|---|
+| --- | --- |
 | Voir les services de la stack | `docker service ls` |
 | Voir les replicas d'un service | `docker service ps glpi-swarm_glpi` |
 | Logs d'un service | `docker service logs -f glpi-swarm_glpi` |
@@ -194,6 +194,220 @@ Pour backup la config il faut sauvegarder le `/var/lib/docker/swarm/` et le `/va
 
 ## Étape 3 — Adapter le `compose.yaml` pour Swarm
 
+Le format est presque identique à Docker Compose, mais Swarm utilise la clé **`deploy`** pour configurer les replicas et la politique de redémarrage.
+
+Voici les modifications à apporter à votre fichier :
+
+- restart: n'existe pas en mode Swarm → remplacé par deploy.restart_policy
+- deploy replicas pour le nombre d'instances GLPI, 1 seul pour la BDD
+
+### Ajout de la configuration pour Swarm
+
+```yaml
+services:
+  # ==========================================================
+  # 🗄️ ÉTAPE 1 : Amorçage de la base de données
+  # (À déployer en premier. Attendre ~30 secondes après le déploiement)
+  # ==========================================================
+  db:
+    image: mariadb:10.11
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - glpi-net
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+
+  # ==========================================================
+  # 🖥️ ÉTAPE 2 : Déploiement Applicatif en Haute Disponibilité
+  # (Décommenter ce bloc et faire "Update the stack" une fois la DB prête)
+  # ==========================================================
+  # glpi:
+  #   image: glpi/glpi:latest
+  #   ports:
+        #- target: 80
+        #     published: 8080
+        #     protocol: tcp
+        #     mode: host
+  #     # Etape 3 le Load Balancer de Swarm (Routing Mesh) prend le relais ici
+  #     #- "8080:80"
+  #   environment:
+  #     TIMEZONE: 'Europe/Paris'
+  #     MARIADB_HOST: db
+  #     MARIADB_DATABASE: ${MYSQL_DATABASE}
+  #     MARIADB_USER: ${MYSQL_USER}
+  #     MARIADB_PASSWORD: ${MYSQL_PASSWORD}
+  #   volumes:
+  #     - glpi_data:/var/www/html
+  #   networks:
+  #     - glpi-net
+  #   deploy:
+  #     replicas: 1 # 3 instances à l'étape 3
+  #     placement:
+  #       constraints:
+  #         - node.role == manager
+
+  # 🛠️ Service Bonus : Adminer (À décommenter également à l'étape 2)
+  # adminer:
+  #   image: adminer:latest
+  #   ports:
+  #     - "8081:8080"
+  #   networks:
+  #     - glpi-net
+  #   deploy:
+  #     replicas: 1
+
+# ==========================================================
+# 💾 RÉSEAU ET STOCKAGE (Déclarations globales)
+# ==========================================================
+volumes:
+  db_data:
+  glpi_data:
+
+networks:
+  glpi-net:
+    driver: overlay
+```
+
 ---
 
 ## Étape 4 — Déployer la stack via Portainer
+
+Dans Portainer :
+
+1. **Stacks → Add stack**
+2. Donnez un nom au stack (ex: `glpi-swarm`)
+3. Coller le `compose.yaml` adapté dans l'éditeur (avec seulement MadiaDB, pas GLPI ni Adminer)
+4. Renseigner les variables du `.env` ou l'upload directement.
+5. Cliquer sur **Deploy the stack**
+6. Attendre 30s puis éditer le Stack avec la partie GLPI active, 1 seule replica, ports en mode Host, activer Adminer aussii
+7. Update
+8. Se connecter à GLPI lancer l'installation, créer la DB
+9. Re-éditer le Stack avec la partie GLPI active, 3 replicas, ports en mode 8080:80
+10. Update
+
+![stack](/images/2026-03-11-15-51-28.png)
+
+![stackOK](/images/2026-03-11-15-52-44.png)
+
+Suivez le déploiement dans **Containers** et attendez que tous les replicas soient `running`.
+
+![containers](/images/2026-03-11-16-04-46.png)
+
+---
+
+## Étape 5 — Vérifier le déploiement
+
+```bash
+# Lister les services de la stack
+docker service ls
+
+# Voir les replicas du service GLPI
+docker service ps glpi-swarm_glpi
+```
+
+![service](/images/2026-03-11-16-02-40.png)
+
+![slpiswarm](/images/2026-03-11-16-09-32.png)
+
+Accéder à GLPI depuis le navigateur sur `http://10.0.0.30:8080/` — l'installation initiale ne doit se faire qu'**une seule fois** grâce aux volumes.
+
+![glpi](/images/2026-03-11-17-47-59.png)
+
+---
+
+## Étape 6 — Observer le load balancer
+
+Docker Swarm intègre un **load balancer en mode Ingress** : chaque requête est automatiquement routée vers l'un des replicas disponibles.
+
+Ouvrez un terminal et observez sur quel replica atterrissent vos requêtes :
+
+```bash
+# Voir les logs de chaque replica en temps réel
+docker service logs -f glpi-swarm_glpi
+```
+
+Naviguez dans GLPI et rechargez plusieurs fois la page : vous pouvez voir les requêtes distribuées entre les replicas dans les logs.
+
+Ne fonctionne pas chez moi !!
+
+![load](/images/2026-03-11-18-54-29.png)
+
+- **THE END**
+
+![fail](/images/2026-03-11-18-55-00.png)
+
+---
+
+## Étape 7 — Simuler une panne
+
+Trouvez l'ID d'un des conteneurs GLPI :
+
+```bash
+docker ps | grep glpi
+```
+
+Supprimez-le brutalement :
+
+```bash
+docker rm -f <container_id>
+```
+
+Observez : Swarm doit **automatiquement recréer** un nouveau replica pour maintenir le nombre demandé. Vérifiez avec :
+
+```bash
+docker service ps glpi-swarm_glpi
+```
+
+GLPI doit rester accessible pendant toute l'opération ✅
+
+## ⭐ Bonus — Résoudre le problème de la BDD
+
+> 🚨 **Bonus complexe** — réservé aux plus avancés !
+
+Le problème de fond : **un service stateful (base de données) n'est pas fait pour être scalé horizontalement** sans mécanisme de réplication.
+
+### Pistes de solution
+
+- **Option A — Galera Cluster (réplication multi-master MariaDB)**
+
+Utiliser l'image `bitnami/mariadb-galera` qui intègre la réplication synchrone entre les nœuds :
+
+```yaml
+db:
+  image: bitnami/mariadb-galera
+  environment:
+    MARIADB_GALERA_CLUSTER_NAME: glpi_cluster
+    MARIADB_GALERA_CLUSTER_ADDRESS: gcomm://db
+    MARIADB_ROOT_PASSWORD: rootpass
+    MARIADB_DATABASE: glpi
+    MARIADB_USER: glpi
+    MARIADB_PASSWORD: glpipass
+  deploy:
+    replicas: 3
+```
+
+- **Option B — Contraindre la BDD à un seul nœud (solution simple)**
+
+Forcer tous les replicas GLPI à utiliser **une seule instance** de BDD en fixant le service `db` sur un nœud précis :
+
+```yaml
+db:
+  deploy:
+    replicas: 1
+    placement:
+      constraints:
+        - node.role == manager
+```
+
+- **Option C — Externaliser la BDD (solution pro)**
+
+Ne pas mettre la BDD dans Swarm du tout, et utiliser une BDD externe (RDS, Managed Database...) accessible par tous les replicas GLPI.
