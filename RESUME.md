@@ -140,7 +140,7 @@ Cette fiche synthétise les notions fondamentales abordées durant les cours en 
 
 - [C401. Introduction à la conteneurisation et à docker](#-c401-introduction-à-la-conteneurisation-et-à-docker)
 - [C402. Construction d'Images et Orchestration avec Docker Compose](#️-c402-construction-dimages-et-orchestration-avec-docker-compose)
-- [C403. Docker Swarm](#-c403-docker-swarm)
+- [C403. Docker Swarm & Portainer](#-c403-docker-swarm--portainer)
 
 ### [Saison C5. Pentesting 🕵️](.)
 
@@ -6519,13 +6519,13 @@ Le Docker Hub agit comme un référentiel (dépôt) public ou privé pour stocke
 
 ---
 
-### 🐝 C403. Docker Swarm
+### 🐝 C403. Docker Swarm & Portainer
 
 > **Objectif :**
 
 ![swarm](/images/2026-03-11-11-25-54.png)
 
-[Atelier C403](./challenges/Challenge_C403.md) :
+[Atelier C403](./challenges/Challenge_C403.md) : Déployer GLPI sur un cluster avec Portainer
 
 > 📚 **Ressources** :
 >
