@@ -127,3 +127,11 @@ Ajoute 3 images up en 1.25 et laisse 3 en latest pour pouvoir rollback
 ![update](/images/2026-03-11-14-23-55.png)
 
 Pour rollback : `docker service update --rollback web`
+
+Pour supprimer tout un service : `docker service rm <ID>`
+
+On peut également agir sur les services directement via l'interface web : nombre de Répliques, Updates, Rollback, Delete etc
+
+![services](/images/2026-03-11-14-30-18.png)
+
+Pour backup la config il faut sauvegarder le `/var/lib/docker/swarm/` et le `/var/lib/docker/volumes`, ou directement `/var/lib/docker/`
