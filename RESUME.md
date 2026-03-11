@@ -140,7 +140,7 @@ Cette fiche synthétise les notions fondamentales abordées durant les cours en 
 
 - [C401. Introduction à la conteneurisation et à docker](#-c401-introduction-à-la-conteneurisation-et-à-docker)
 - [C402. Construction d'Images et Orchestration avec Docker Compose](#️-c402-construction-dimages-et-orchestration-avec-docker-compose)
-- [C403. Docker Swarm & Portainer](#-c403-docker-swarm--portainer)
+- [C403. Docker Swarm & Portainer](#-c403-orchestration-avec-docker-swarm-et-portainer)
 
 ### [Saison C5. Pentesting 🕵️](.)
 
@@ -6519,9 +6519,74 @@ Le Docker Hub agit comme un référentiel (dépôt) public ou privé pour stocke
 
 ---
 
-### 🐝 C403. Docker Swarm & Portainer
+### 🚢 C403. Orchestration avec Docker Swarm et Portainer
 
-> **Objectif :**
+> **Objectif :** Dépasser les limites d'un serveur unique. Comprendre comment transformer un parc de machines en un cluster unifié garantissant la Haute Disponibilité (HA), la tolérance aux pannes, et découvrir la gestion graphique via Portainer.
+
+#### 1. Pourquoi l'Orchestration ? (Les limites de Compose)
+
+Docker Compose est parfait pour un seul serveur, mais il ne répond pas aux problématiques de production à grande échelle. Que se passe-t-il si le serveur physique tombe? Comment gérer une explosion du trafic web? Comment mettre à jour une application sans aucune coupure de service?
+C'est ici qu'intervient **Docker Swarm**, l'outil de clustering et d'orchestration intégré nativement à Docker. Il permet de piloter un ensemble de machines (nœuds) comme s'il s'agissait d'un seul et unique super-serveur Docker.
+
+#### 2. Architecture d'un Cluster Swarm (Topologie) 🐝
+
+Un cluster est composé de deux types d'acteurs:
+
+- **Les Managers (Les chefs d'orchestre) :** Ils gèrent le cluster et planifient la répartition des services. Parmi eux, un "Leader" est élu automatiquement via un algorithme de consensus (Raft). Si le leader tombe, un autre est immédiatement élu. (Note : Par défaut, un manager agit aussi comme un worker ).
+
+- **Les Workers (Les musiciens) :** Leur seul rôle est d'exécuter les conteneurs que les managers leur confient.
+
+⚠️ **La Règle d'Or du Quorum (Haute Disponibilité) :**
+Pour que le cluster fonctionne, il faut un nombre minimum de managers actifs, défini par la formule : `(nombre de managers / 2) + 1`.
+Il faut **toujours** concevoir une architecture avec un nombre impair de managers (1, 3, 5, etc.). Un nombre pair expose le cluster au risque de "Split-Brain" (cerveau divisé), ce qui bloque totalement l'infrastructure.
+
+#### 3. De l'Image au Service (Le changement de paradigme)
+
+Dans Swarm, on ne déploie plus de simples "conteneurs".
+
+- **Le Conteneur :** C'est une instance unique tournant sur une machine précise.
+
+- **Le Service :** C'est une abstraction (une définition) qui indique à Swarm le nombre de *réplicas* (conteneurs) désirés et comment ils doivent être répartis sur le cluster.
+
+**Fonctionnalités avancées des Services :**
+
+- **Mode Global :** Force l'exécution d'un réplica sur *chaque* nœud du cluster (idéal pour des agents de supervision comme Prometheus).
+
+- **Contraintes de Placement :** Permet d'obliger un service à tourner sur un nœud spécifique en fonction de son rôle (`node.role==worker`) ou de labels (`node.labels.env==production`). *(C'est exactement ce que nous avons utilisé pour lier MariaDB à son volume local).*
+
+- **Rolling Updates (Mise à jour continue) :** Permet de mettre à jour une image (ex: Nginx 1.18 vers 1.25) sans interruption. Swarm met à jour les conteneurs par lots (batchs) avec un délai entre chaque (`--update-delay`). En cas d'erreur, un "Rollback" automatique ramène l'infrastructure à la version précédente.
+
+#### 4. Administration et Maintenance des Nœuds
+
+Un administrateur système doit pouvoir intervenir sur le matériel physique sans casser les applications. Swarm propose des états de disponibilité :
+
+- **Drain :** La commande ultime pour la maintenance. Elle arrête tous les conteneurs présents sur le nœud et les fait immédiatement migrer (redémarrer) sur d'autres serveurs disponibles.
+
+- **Pause :** Le nœud n'accepte plus de nouvelles tâches, mais les conteneurs qui y tournent déjà ne sont pas coupés.
+
+#### 5. Portainer : La Tour de Contrôle 🏗️
+
+*(Notion abordée en challenge pratique)*
+Portainer est une interface graphique web (GUI) qui se branche sur le moteur Docker ou le cluster Swarm.
+
+- **Visualisation :** Il rend tangibles des concepts abstraits : on voit visuellement les nœuds (Endpoints), les services, et la répartition des tâches (Tasks).
+- **Stacks (Piles) :** C'est l'équivalent de Docker Compose dans Portainer. En collant un fichier YAML dans l'éditeur "Stacks", Portainer le traduit en commandes `docker service create` compréhensibles par Swarm.
+- **Gestion des Secrets :** Portainer permet d'injecter des variables d'environnement proprement lors du déploiement, évitant de laisser des fichiers `.env` en clair sur les serveurs.
+
+---
+
+#### 🛠️ Aide-mémoire CLI : Commandes Swarm Essentielles
+
+| Opération | Commande | Description |
+| --- | --- | --- |
+| **Cluster** | `docker swarm init --advertise-addr <IP>` | Créer un nouveau cluster (Le serveur devient Leader). |
+| | `docker swarm join-token manager/worker` | Afficher le mot de passe (Token) pour ajouter un serveur. |
+| **Nœuds** | `docker node ls` | Lister les serveurs du cluster et leur état. |
+| | `docker node update --availability drain <ID>` | Vider un nœud de ses conteneurs pour maintenance. |
+| | `docker node promote/demote <ID>` | Transformer un Worker en Manager, ou l'inverse. |
+| **Services** | `docker service ls` | Lister les services déployés. |
+| | `docker service ps <nom>` | Voir sur quels serveurs physiques tournent les réplicas. |
+| **Sauvegarde** | `tar -czvf backup.tar.gz /var/lib/docker/swarm/` | Sauvegarder l'état du cluster (⚠️ Ne sauvegarde pas les volumes de données des conteneurs !). |
 
 ![swarm](/images/2026-03-11-11-25-54.png)
 

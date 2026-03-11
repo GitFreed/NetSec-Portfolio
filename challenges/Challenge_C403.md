@@ -6,7 +6,7 @@
 
 Challenge : <https://github.com/O-clock-Aldebaran/SC04E03-Deployer-GLPI-sur-Docker-Swarm-GitFreed>
 
-[Cours C403.](/RESUME.md#-c403-docker-swarm--portainer)
+[Cours C403.](/RESUME.md#-c403-orchestration-avec-docker-swarm-et-portainer)
 
 > 📚 **Ressources** :
 >
