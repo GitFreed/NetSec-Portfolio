@@ -16,6 +16,8 @@ Challenge : <.>
 
 ---
 
+## Swarm 🐝
+
 ```sh
 docker swarm init --advertise-addr <IP-DU-MANAGER>
 ```
@@ -38,7 +40,7 @@ docker node promote/demote xxxxx
 
 ![demote](/images/2026-03-11-11-03-05.png)
 
-portainer
+## Portainer 🏗️
 
 ```sh
 curl -L https://downloads.portainer.io/ce-lts/portainer-agent-stack.yml -o portainer-agent-stack.yml
@@ -51,3 +53,7 @@ docker service ls
 On peut voir le nombre de replicas (les 3 agents) et les ports
 
 ![replicas](/images/2026-03-11-11-23-31.png)
+
+On peut se connecter sur l'interface web Portainer du Leader via le port **9443** en **https**
+
+<https://10.0.0.30:9443/>
