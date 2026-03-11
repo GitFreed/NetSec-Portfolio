@@ -339,13 +339,7 @@ docker service logs -f glpi-swarm_glpi
 
 Naviguez dans GLPI et rechargez plusieurs fois la page : vous pouvez voir les requêtes distribuées entre les replicas dans les logs.
 
-Ne fonctionne pas chez moi !!
-
-![load](/images/2026-03-11-18-54-29.png)
-
-- **THE END**
-
-![fail](/images/2026-03-11-18-55-00.png)
+![load](/images/2026-03-11-20-03-06.png)
 
 ---
 
@@ -370,6 +364,12 @@ docker service ps glpi-swarm_glpi
 ```
 
 GLPI doit rester accessible pendant toute l'opération ✅
+
+Sur l'interface web Portainer on voit le container disparaitre et un nouveau prendre sa place.
+
+![swarm](/images/2026-03-11-20-08-38.png)
+
+![containers](/images/2026-03-11-20-09-41.png)
 
 ## ⭐ Bonus — Résoudre le problème de la BDD
 
