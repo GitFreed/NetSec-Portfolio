@@ -1,12 +1,12 @@
 # Challenge C403 11/03/2026
 
-## 🧑‍🏫 Pitch de l’exercice : 🐝 Déployer Docker Swarm & Portainer 🏗️
+## 🧑‍🏫 Pitch de l’exercice : 🐝 Déployer GLPI sur un cluster avec Portainer 🏗️
 
 ![swarm](/images/2026-03-11-11-25-54.png)
 
-Challenge : <.>
+Challenge : <https://github.com/O-clock-Aldebaran/SC04E03-Deployer-GLPI-sur-Docker-Swarm-GitFreed>
 
-[Cours C403.](/RESUME.md#-c403-docker-swarm)
+[Cours C403.](/RESUME.md#-c403-docker-swarm--portainer)
 
 > 📚 **Ressources** :
 >
@@ -16,10 +16,47 @@ Challenge : <.>
 
 ---
 
-## Swarm 🐝
+## 🗂 Contexte
+
+Hier soir, vous avez déployé GLPI avec Docker Compose sur une seule machine. C'est bien, mais pas suffisant pour une infrastructure de production.
+
+Votre responsable veut maintenant **haute disponibilité** : si un serveur tombe, l'application doit continuer à fonctionner. Pour ça, on va passer à **Docker Swarm** — le mode cluster intégré à Docker — et déployer GLPI en plusieurs **replicas** gérés via **Portainer**.
+
+> 💡 **Docker Compose vs Docker Swarm**
+>
+> - Compose → un seul hôte, idéal pour le développement
+> - Swarm → plusieurs hôtes, orchestration, haute disponibilité
+> - La bonne nouvelle : la syntaxe reste très proche, on réutilise le `compose.yaml` que vous avez créer lors de votre challenge !
+
+---
+
+## 🎯 Objectifs
+
+À la fin de cet exercice, vous aurez :
+
+- Initialisé un cluster Docker Swarm
+- Déployé une stack via l'interface Portainer
+- Configuré GLPI pour tourner en **2 ou 3 replicas**
+- Observé le comportement du load balancer Ingress de Swarm
+- Compris pourquoi multiplier les replicas d'une BDD pose problème
+
+---
+
+## 📋 Contraintes & Règles du jeu
+
+> ⚠️ **Important**
+>
+> ✓ Repartir du `compose.yaml` corrigé ce matin comme base  
+> ✓ Utiliser **Portainer** pour déployer la stack (pas la CLI dans un premier temps)  
+> ✓ Tester l'accès à GLPI depuis le navigateur avant de passer à l'étape suivante  
+> ✗ Ne pas chercher à tout faire en CLI — Portainer est là pour ça  
+
+---
+
+## Étape 1 — Initialiser Docker Swarm 🐝
 
 ```sh
-docker swarm init --advertise-addr <IP-DU-MANAGER>
+docker swarm init --advertise-addr 10.0.0.30
 ```
 
 ![swarmanager](/images/2026-03-11-10-52-04.png)
@@ -40,7 +77,9 @@ docker node promote/demote xxxxx
 
 ![demote](/images/2026-03-11-11-03-05.png)
 
-## Portainer 🏗️
+---
+
+## Étape 2 — Déploiement Portainer 🏗️
 
 ```sh
 curl -L https://downloads.portainer.io/ce-lts/portainer-agent-stack.yml -o portainer-agent-stack.yml
@@ -135,3 +174,11 @@ On peut également agir sur les services directement via l'interface web : nombr
 ![services](/images/2026-03-11-14-30-18.png)
 
 Pour backup la config il faut sauvegarder le `/var/lib/docker/swarm/` et le `/var/lib/docker/volumes`, ou directement `/var/lib/docker/`
+
+---
+
+## Étape 3 — Adapter le `compose.yaml` pour Swarm
+
+---
+
+## Étape 4 — Déployer la stack via Portainer

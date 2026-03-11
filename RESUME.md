@@ -6422,7 +6422,7 @@ Chaque composant peut ainsi être mis à jour, sécurisé ou redimensionné de m
 | **Analyse** | `docker logs -f <nom>` | Affiche les journaux du conteneur en temps réel (comme `tail -f`). |
 | | `docker exec -it <nom> /bin/bash` | Ouvre un terminal directement *à l'intérieur* du conteneur. |
 
-[Atelier C401](./challenges/Challenge_C401.md) : Déploiement Docker et découverte
+[Challenge C401](./challenges/Challenge_C401.md) : Déploiement Docker et découverte
 
 > 📚 **Ressources** :
 >
@@ -6507,7 +6507,7 @@ Le Docker Hub agit comme un référentiel (dépôt) public ou privé pour stocke
 - **Mécanique :** Une fois l'image construite localement, elle peut être envoyée sur le registre (`docker push`). N'importe quel autre serveur (ou collègue) pourra alors la télécharger (`docker pull`) et l'exécuter, garantissant une parité absolue entre l'environnement de développement et de production.
 - **Sécurité (Supply Chain) :** Il est vital de ne télécharger que des images "Officielles" (Official Images) ou certifiées. Une image tierce peut contenir des malwares, des mineurs de cryptomonnaies ou des portes dérobées (Backdoors).
 
-[Atelier C402](./challenges/Challenge_C402.md) : Déployer GLPI avec Docker Compose
+[Challenge C402](./challenges/Challenge_C402.md) : Déployer GLPI avec Docker Compose
 
 > 📚 **Ressources** :
 >
@@ -6525,7 +6525,7 @@ Le Docker Hub agit comme un référentiel (dépôt) public ou privé pour stocke
 
 ![swarm](/images/2026-03-11-11-25-54.png)
 
-[Atelier C403](./challenges/Challenge_C403.md) : Déployer GLPI sur un cluster avec Portainer
+[Challenge C403](./challenges/Challenge_C403.md) : Déployer GLPI sur un cluster avec Portainer
 
 > 📚 **Ressources** :
 >
