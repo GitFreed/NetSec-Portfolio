@@ -237,7 +237,7 @@ services:
         #     published: 8080
         #     protocol: tcp
         #     mode: host
-  #     # Etape 3 le Load Balancer de Swarm (Routing Mesh) prend le relais ici
+  #     # Etape 3 : Effacer target et repasser en port 80
   #     #- "8080:80"
   #   environment:
   #     TIMEZONE: 'Europe/Paris'
@@ -247,6 +247,7 @@ services:
   #     MARIADB_PASSWORD: ${MYSQL_PASSWORD}
   #   volumes:
   #     - glpi_data:/var/www/html
+  #     - glpi_config:/var/glpi
   #   networks:
   #     - glpi-net
   #   deploy:
@@ -271,6 +272,7 @@ services:
 volumes:
   db_data:
   glpi_data:
+  glpi_config:
 
 networks:
   glpi-net:
