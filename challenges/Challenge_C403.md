@@ -104,3 +104,11 @@ Tout est passé du 2 au 3 en instantané.
 ![drain](/images/2026-03-11-13-47-30.png)
 
 Pour supprimer toutes les replicas sauf une : `docker service update --replicas 1 <ID>`
+
+Pour créer un service avec 3 répliques, avec nom + choix du port :
+
+```sh
+docker service create --name web2 --replicas 3 nginx && publish 80:80 nginx
+```
+
+Pour s'assurer qu'un service Docker Swarm s'exécute uniquement sur des nœuds workers (et non sur les nœuds managers) : `--constraint node.role==worker`
