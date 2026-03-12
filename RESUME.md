@@ -6595,6 +6595,31 @@ Portainer est une interface graphique web (GUI) qui se branche sur le moteur Doc
 > 📚 **Ressources** :
 >
 > - Docker Swarm Cheatsheet : <https://cheatography.com/gauravpandey44/cheat-sheets/docker-swarm/>
+> - Docker Samples : <https://github.com/dockersamples>
+
+[Retour en haut](#-table-des-matières)
+
+---
+
+### x C404. Linux Containers
+
+> **Objectif :**
+
+```sh
+apt install lxc lxc-templates 
+lxc-checkconfig 
+lxc-create -n mon-conteneur -t debian -- -r bookworm 
+lxc-start mon-conteneur
+lxc-attach mon-conteneur
+lxc-stop mon-conteneur 
+lxc-destroy mon-conteneur
+```
+
+[Challenge C404](./challenges/Challenge_C404.md) : 
+
+> 📚 **Ressources** :
+>
+> - LXC doc : <https://blog.stephane-robert.info/docs/conteneurs/moteurs-conteneurs/lxc/>
 
 [Retour en haut](#-table-des-matières)
 

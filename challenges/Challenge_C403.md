@@ -413,3 +413,86 @@ db:
 - **Option C — Externaliser la BDD (solution pro)**
 
 Ne pas mettre la BDD dans Swarm du tout, et utiliser une BDD externe (RDS, Managed Database...) accessible par tous les replicas GLPI.
+
+---
+
+## Correction
+
+```yaml
+services:
+
+  db:
+    image: "mariadb"
+    environment:
+      MARIADB_RANDOM_ROOT_PASSWORD: "yes"
+      MARIADB_DATABASE: glpi
+      MARIADB_USER: glpi
+      MARIADB_PASSWORD: glpi
+    volumes:
+       - db_data:/var/lib/mysql
+    deploy:
+      replicas: 1             # ← IMPORTANT : toujours 1 seul replica pour la BDD
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints:
+          - node.role == manager
+    networks:
+      - glpi
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 3
+  
+  adminer:
+    image: "adminer"
+    deploy:
+      restart_policy:
+        condition: on-failure
+    ports:
+      - 8081:8080
+    networks:
+      - glpi
+    depends_on:
+      - db
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080"]
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 3
+  
+  glpi:
+    image: "glpi/glpi:10"
+    deploy:
+      replicas: 4             # ← nombre d'instances GLPI
+      restart_policy:
+        condition: on-failure
+    volumes:
+       - glpi_data:/var/glpi
+       - glpi_plugins:/var/www/glpi/plugins
+       - glpi_marketplace:/var/www/glpi/marketplace
+    depends_on:
+      - db
+    ports:
+      - "80:80"
+    networks:
+      - glpi
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost"]
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+volumes:
+   glpi_data:
+   glpi_plugins:
+   glpi_marketplace:
+   db_data:
+
+networks:
+   glpi:
+```
