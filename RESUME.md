@@ -6662,27 +6662,13 @@ LXD brille particulièrement par sa posture de sécurité par défaut :
 
 | Action | Commande | Description |
 | --- | --- | --- |
-| **Création** | `lxc launch ubuntu:24.04 <nom>` | Télécharge l'image, crée et démarre un conteneur Ubuntu.
-
- |
-|  | `lxc launch images:debian/12 <nom>` | Idem pour une image Debian issue du dépôt communautaire.
-
- |
-| **Gestion** | `lxc list` | Liste tous les conteneurs et leurs adresses IP.
-
- |
-|  | `lxc exec <nom> bash` | Ouvre un terminal `bash` directement dans le conteneur.
-
- |
-| **Fichiers** | `lxc file push /local/file <nom>/root/` | Copie un fichier de l'hôte vers le conteneur (remplace `docker cp`).
-
- |
-| **Ressources** | `lxc config set <nom> limits.memory 512MB` | Limite la mémoire RAM allouée au conteneur à chaud.
-
- |
-| **Snapshots** | `lxc snapshot <nom> <nom_snap>` | Prend une empreinte instantanée de l'état du conteneur.
-
- |
+| **Création** | `lxc launch ubuntu:24.04 <nom>` | Télécharge l'image, crée et démarre un conteneur Ubuntu. |
+| | `lxc launch images:debian/12 <nom>` | Idem pour une image Debian issue du dépôt communautaire. |
+| **Gestion** | `lxc list` | Liste tous les conteneurs et leurs adresses IP. |
+| | `lxc exec <nom> bash` | Ouvre un terminal `bash` directement dans le conteneur. |
+| **Fichiers** | `lxc file push /local/file <nom>/root/` | Copie un fichier de l'hôte vers le conteneur (remplace `docker cp`). |
+| **Ressources** | `lxc config set <nom> limits.memory 512MB` | Limite la mémoire RAM allouée au conteneur à chaud. |
+| **Snapshots** | `lxc snapshot <nom> <nom_snap>` | Prend une empreinte instantanée de l'état du conteneur. |
 
 ```sh
 apt install lxc lxc-templates 
