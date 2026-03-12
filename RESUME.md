@@ -141,6 +141,7 @@ Cette fiche synthétise les notions fondamentales abordées durant les cours en 
 - [C401. Introduction à la conteneurisation et à docker](#-c401-introduction-à-la-conteneurisation-et-à-docker)
 - [C402. Construction d'Images et Orchestration avec Docker Compose](#️-c402-construction-dimages-et-orchestration-avec-docker-compose)
 - [C403. Docker Swarm & Portainer](#-c403-orchestration-avec-docker-swarm-et-portainer)
+- [C404. Conteneurs Systèmes : LXC et LXD](#-c404-conteneurs-systèmes--lxc-et-lxd-incus)
 
 ### [Saison C5. Pentesting 🕵️](.)
 
@@ -6601,9 +6602,87 @@ Portainer est une interface graphique web (GUI) qui se branche sur le moteur Doc
 
 ---
 
-### x C404. Linux Containers
+### 📦 C404. Conteneurs Systèmes : LXC et LXD (Incus)
 
-> **Objectif :**
+> **🎯 Objectif :** Comprendre la conteneurisation de systèmes d'exploitation complets (OS-level virtualization). Maîtriser les différences fondamentales avec Docker, et piloter des infrastructures légères et sécurisées via LXD ou son fork communautaire, Incus.
+
+#### 1. L'Architecture : VM vs LXC vs Docker (🧠 Théorie)
+
+Il est crucial de comprendre à quel niveau d'isolation opère chaque technologie pour faire les bons choix d'architecture.
+
+- **Machine Virtuelle (VM) :** C'est l'équivalent d'une maison individuelle. Elle embarque un OS complet, possède un noyau (Kernel) dédié et virtualise le matériel (isolation forte, poids en Go).
+
+- **LXC (Linux Containers) :** C'est un appartement complet. LXC conteneurise des systèmes complets, lance un processus d'initialisation (`systemd`), permet d'avoir des utilisateurs et des services résidents, mais partage le noyau avec l'hôte (poids ultra-léger, ~100 Mo).
+
+- **Docker :** C'est un studio meublé pour une seule application. Il n'y a pas d'OS complet ni de `systemd` ; Docker ne lance qu'un seul processus isolé (poids minimaliste, ~10 Mo).
+
+Docker et LXC ne sont pas concurrents, ils partagent exactement les mêmes briques technologiques intégrées au noyau Linux:
+
+- **Namespaces :** Assurent l'isolation logique (chaque conteneur a sa propre vue du réseau, des processus et des utilisateurs).
+
+- **Cgroups (Control Groups) :** Permettent de limiter et de monitorer la consommation des ressources matérielles (CPU, RAM, I/O).
+
+- **Chroot :** Isole le système de fichiers pour que le conteneur ait sa propre racine `/`.
+
+#### 2. LXC (Le standard sous Proxmox)
+
+- **Le Système Complet (OS-Level) :** Contrairement à Docker qui isole une simple application, LXC conteneurise un système Linux entier. Il lance un véritable processus d'initialisation (comme `systemd`), ce qui permet d'y gérer des utilisateurs et d'exécuter des services d'arrière-plan (`cron`, `sshd`).
+
+- **L'Analogie de l'Habitat :** Si Docker est un *studio meublé* (juste le nécessaire pour l'application) et la VM une *maison individuelle* (avec son propre terrain/matériel), LXC est un *appartement complet* (un vrai système confortable mais dans un immeuble partagé).
+
+- **Légèreté et Performance :** Puisque LXC partage le noyau (Kernel) de la machine hôte et ne virtualise pas le matériel , il ne pèse qu'une centaine de mégaoctets et démarre en quelques secondes. C'est une économie de ressources massive comparée aux Gigaoctets d'une Machine Virtuelle.
+
+- **L'Intégration Proxmox VE :** Proxmox utilise nativement LXC. Depuis son interface web, un administrateur peut déployer instantanément des serveurs à partir de *templates* pré-configurés (Debian, Ubuntu, Alpine). L'hyperviseur permet ainsi de faire cohabiter sur le même serveur physique des VMs lourdes et des conteneurs LXC ultra-rapides.
+
+**💡 Cas d'usage (Architecture) :** LXC est l'outil idéal pour déployer une infrastructure Linux légère, segmenter des services systèmes, ou créer un laboratoire de test réseau et cybersécurité sans saturer la RAM du serveur physique.
+
+#### 3. LXD & Incus : L'Orchestration Moderne (🏗️ Infrastructure)
+
+Si LXC est le moteur, **LXD** est la voiture complète (avec tableau de bord et options de confort). Il s'agit d'un gestionnaire de conteneurs (et de VMs) qui ajoute une API REST et un outil en ligne de commande (CLI) moderne par-dessus LXC.
+
+- **Le Fork "Incus" :** En 2023, suite à des décisions de Canonical, la communauté a créé un fork de LXD nommé **Incus**. Les commandes et la philosophie restent quasi identiques.
+
+- **Profils (Profiles) :** LXD permet de créer des configurations réutilisables (ex: limiter la RAM à 1Go) et de les appliquer à plusieurs conteneurs simultanément.
+
+- **Stockage (Storage Pools) :** LXD gère des pools de stockage avancés. L'utilisation du backend **ZFS** est fortement recommandée en production pour sa gestion ultra-rapide des Snapshots et de la compression.
+
+- **Machines Virtuelles :** Fonctionnalité surprenante, LXD peut également instancier de véritables VMs (via QEMU) en ajoutant simplement le flag `--vm` à la commande de lancement.
+
+#### 4. Sécurité by Design (🛡️ Hardening)
+
+LXD brille particulièrement par sa posture de sécurité par défaut :
+
+- **Conteneurs Non-Privilégiés :** Actif par défaut, ce mécanisme effectue un "mapping" des identifiants (UID/GID). L'utilisateur `root` à l'intérieur du conteneur correspond à un utilisateur non-privilégié (ex: UID 65536) sur la machine hôte. Cela réduit drastiquement la surface d'attaque en cas d'évasion.
+
+- **Blindage natif :** LXD applique automatiquement des profils **AppArmor** (restriction des accès fichiers) et **Seccomp** (filtrage des appels systèmes dangereux) sans aucune configuration préalable requise.
+
+#### 🛠️ Aide-mémoire CLI : Commandes LXD / Incus Essentielles
+
+(Note : Remplacer `lxc` par `incus` si utilisation du fork communautaire )
+
+| Action | Commande | Description |
+| --- | --- | --- |
+| **Création** | `lxc launch ubuntu:24.04 <nom>` | Télécharge l'image, crée et démarre un conteneur Ubuntu.
+
+ |
+|  | `lxc launch images:debian/12 <nom>` | Idem pour une image Debian issue du dépôt communautaire.
+
+ |
+| **Gestion** | `lxc list` | Liste tous les conteneurs et leurs adresses IP.
+
+ |
+|  | `lxc exec <nom> bash` | Ouvre un terminal `bash` directement dans le conteneur.
+
+ |
+| **Fichiers** | `lxc file push /local/file <nom>/root/` | Copie un fichier de l'hôte vers le conteneur (remplace `docker cp`).
+
+ |
+| **Ressources** | `lxc config set <nom> limits.memory 512MB` | Limite la mémoire RAM allouée au conteneur à chaud.
+
+ |
+| **Snapshots** | `lxc snapshot <nom> <nom_snap>` | Prend une empreinte instantanée de l'état du conteneur.
+
+ |
 
 ```sh
 apt install lxc lxc-templates 
@@ -6615,11 +6694,36 @@ lxc-stop mon-conteneur
 lxc-destroy mon-conteneur
 ```
 
-[Challenge C404](./challenges/Challenge_C404.md) :
-
 > 📚 **Ressources** :
 >
 > - LXC doc : <https://blog.stephane-robert.info/docs/conteneurs/moteurs-conteneurs/lxc/>
+
+[Retour en haut](#-table-des-matières)
+
+---
+
+### 🛡️ Fin Saison C4. Conteneurs et orchestration
+
+[QCM Saison C4](https://forms.gle/U145LT97irETCuGJA)
+
+![Résultat QCM](/images/2026-03-06-11-47-32.png)
+
+[Retour en haut](#-table-des-matières)
+
+---
+
+## **🕵️ Saison C5. Pentesting**
+
+> **Objectif de la saison** :
+
+### 🐳 C501. Introduction au Pentesting
+
+> **Objectif** :
+
+[Challenge C501](./challenges/Challenge_C501.md) :
+
+> 📚 **Ressources** :
+>
 
 [Retour en haut](#-table-des-matières)
 
