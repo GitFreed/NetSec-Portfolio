@@ -6692,7 +6692,7 @@ lxc-destroy mon-conteneur
 
 [QCM Saison C4](https://forms.gle/uJP45WomMQFiVoPU8)
 
-![Résultat QCM]()
+![Résultat QCM](/images/2026-03-13-11-58-45.png)
 
 [Retour en haut](#-table-des-matières)
 
