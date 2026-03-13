@@ -475,3 +475,26 @@ lxc.idmap: g 993 100993 64543
 * Cocher l'option **"Utiliser l'accélération matérielle quand disponible"**.
 
 ---
+
+## 📦 Maintenance : Mise à jour du dépôt (Repository) Plex
+
+Suite à une refonte de l'infrastructure de distribution par Plex, l'ancien dépôt de paquets pour les distributions Debian/Ubuntu est devenu obsolète. Pour que le serveur Plex (hébergé sur le conteneur LXC) continue de recevoir ses mises à jour automatiquement via le gestionnaire `apt`, il est nécessaire de pointer vers le nouveau serveur et d'installer la nouvelle clé de sécurité.
+
+> 📚 Documentation : <https://support.plex.tv/articles/235974187-enable-repository-updating-for-supported-linux-server-distributions/>
+
+**Procédure de migration (One-liner) :**
+
+* Ouvrir un terminal sur le conteneur LXC Plex (`10.0.0.10`).
+* Exécuter le script d'automatisation officiel de Plex :
+
+```sh
+curl -LsSf https://repo.plex.tv/scripts/setupRepo.sh | sudo bash
+```
+
+* Valider la bonne communication avec le nouveau dépôt :
+
+```sh
+apt update
+```
+
+---
