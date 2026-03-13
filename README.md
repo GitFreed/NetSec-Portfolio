@@ -7,7 +7,6 @@
 ![Domaine](https://img.shields.io/badge/Domaine-Réseaux%20%26%20Sécurité-C51A4A?style=flat-square&logo=shield&logoColor=white)
 ![Statut](https://img.shields.io/badge/Statut-En%20Formation-2ea44f?style=flat-square&logo=github&logoColor=white)
 
-
 ## 🎓 Formation AIS
 
 Bienvenue sur mon dépôt de suivi de formation ! 👋
