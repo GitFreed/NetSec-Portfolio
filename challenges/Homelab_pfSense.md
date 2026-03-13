@@ -9,6 +9,12 @@
 |_|
 ```
 
+![Type](https://img.shields.io/badge/Environnement-Machine%20Virtuelle-005085?style=flat-square&logo=virtualbox&logoColor=white)
+![OS](https://img.shields.io/badge/OS-pfSense-A81D33?style=flat-square&logo=pfsense&logoColor=white)
+![Role](https://img.shields.io/badge/Rôle-Routeur%20%2F%20Pare--feu-00B32C?style=flat-square)
+![VPN](https://img.shields.io/badge/Service-OpenVPN%20(1194)-EA7E20?style=flat-square&logo=openvpn&logoColor=white)
+![Network](https://img.shields.io/badge/Réseau-LAN-purple?style=flat-square&logo=web&logoColor=white)
+
 **Rôle :** Architecture / Ingénieur Réseau
 
 **Mission :** Concevoir et déployer une architecture réseau segmentée et virtualisée. L'objectif est d'isoler un domaine de diffusion local (LAN) d'un réseau externe (WAN) au travers d'une appliance de routage professionnelle (pfSense), en configurant le routage, le NAT, les services DHCP et les tunnels cryptographiques (OpenVPN), avec une approche strictement orientée flux et topologies.

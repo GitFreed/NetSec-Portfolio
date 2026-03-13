@@ -2,6 +2,8 @@
 
 ![IMG](/images/2026-01-09-14-12-05.png)
 
+![REPO](https://img.shields.io/badge/github-Repo-blue?style=flat-square&logo=Github&logoColor=white)
+
 ## 🎓 Formation AIS
 
 Bienvenue sur mon dépôt de suivi de formation ! 👋

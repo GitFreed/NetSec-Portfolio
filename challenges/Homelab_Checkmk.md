@@ -9,6 +9,12 @@ _________ .__                   __            __
         \/     \/     \/     \/     \/     \/     \/
 ```
 
+![Type](https://img.shields.io/badge/Environnement-Conteneur%20LXC-FFA500?style=flat-square&logo=linux&logoColor=white)
+![OS](https://img.shields.io/badge/OS-Debian-A81D33?style=flat-square&logo=debian&logoColor=white)
+![Service](https://img.shields.io/badge/Service-Checkmk-00B32C?style=flat-square)
+![Role](https://img.shields.io/badge/Rôle-Supervision-005085?style=flat-square)
+![Network](https://img.shields.io/badge/Réseau-LAN%20-purple?style=flat-square&logo=web&logoColor=white)
+
 **Rôle :** Administrateur Réseau
 
 **Mission :** Déployer Checkmk (Raw Edition), une solution de supervision d'infrastructure hautes performances. Il fonctionne en interrogeant activement les équipements du réseau via des agents ultra-légers ou des protocoles standards (SNMP) pour remonter l'état de santé, la bande passante, et les erreurs de flux en temps réel. Cette méthode permet de cartographier instantanément l'architecture réseau (routeurs, switchs, hyperviseurs, serveurs) grâce à un puissant moteur d'auto-découverte, offrant ainsi une vue "hélicoptère" proactive pour détecter les goulots d'étranglement ou les pannes avant qu'elles n'impactent les utilisateurs.

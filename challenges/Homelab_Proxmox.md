@@ -6,6 +6,11 @@
 ██     ██ ██ ▀███▀ ██ ██ ██   ██ ▀███▀ ██ ██
 ```
 
+![Hardware](https://img.shields.io/badge/Matériel-HP%20ProDesk%20600%20G4-0096D6?style=flat-square&logo=hp&logoColor=white)
+![OS](https://img.shields.io/badge/OS-Proxmox%20VE-E57000?style=flat-square&logo=proxmox&logoColor=white)
+![Role](https://img.shields.io/badge/Rôle-Hyperviseur-68bc71?style=flat-square)
+![Network](https://img.shields.io/badge/Réseau-LAN-purple?style=flat-square)
+
 **Rôle :** Hyperviseur Bare-Metal (Type 1) & Plateforme d'Infrastructure
 
 **Mission :** Déployer un environnement de virtualisation polyvalent (Homelab). L'objectif est double : fournir un véritable "bac à sable" pour concevoir des topologies réseau sur-mesure (segmentation, routage, pare-feu), tout en hébergeant efficacement des machines virtuelles et des conteneurs légers pour des services internes (supervision, multimédia, automatisation).

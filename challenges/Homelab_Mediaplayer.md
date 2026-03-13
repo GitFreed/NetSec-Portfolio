@@ -11,6 +11,12 @@
 |/       (_______/(_______/|/     \|
 ```
 
+![Type](https://img.shields.io/badge/Environnement-Conteneur%20LXC-FFA500?style=flat-square&logo=linux&logoColor=white)
+![OS](https://img.shields.io/badge/OS-Debian-A81D33?style=flat-square&logo=debian&logoColor=white)
+![Service](https://img.shields.io/badge/Service-Plex%20Media%20Server-00B32C?style=flat-square&logo=plex&logoColor=white)
+![Role](https://img.shields.io/badge/Rôle-Media%20Center-005085?style=flat-square)
+![Network](https://img.shields.io/badge/Réseau-DMZ%20-purple?style=flat-square&logo=web&logoColor=white)
+
 **Rôle :** Administrateur d'Infrastructures Sécurisées / Ingénieur DevOps
 
 **Mission :** Concevoir et déployer un service de streaming multimédia performant et isolé, en s'affranchissant de la lourdeur d'un système NAS dédié, tout en exploitant le stockage de masse de l'hyperviseur de manière granulaire et sécurisé par une micro-segmentation réseau (DMZ) via pfSense.
