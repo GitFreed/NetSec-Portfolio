@@ -6690,9 +6690,9 @@ lxc-destroy mon-conteneur
 
 ### 🛡️ Fin Saison C4. Conteneurs et orchestration
 
-[QCM Saison C4](https://forms.gle/U145LT97irETCuGJA)
+[QCM Saison C4](https://forms.gle/uJP45WomMQFiVoPU8)
 
-![Résultat QCM](/images/2026-03-06-11-47-32.png)
+![Résultat QCM]()
 
 [Retour en haut](#-table-des-matières)
 
