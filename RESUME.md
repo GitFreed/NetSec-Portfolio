@@ -4,6 +4,23 @@ Cette fiche synthétise les notions fondamentales abordées durant les cours en 
 
 ## 📖 Table des Matières
 
+![A1](https://img.shields.io/badge/Saison%20A1-Savoirs%20de%20Base-4B5563?style=flat-square)
+![A2](https://img.shields.io/badge/Saison%20A2-Support%20aux%20Utilisateurs-243B53?style=flat-square&logo=teamviewer&logoColor=white)
+![A3](https://img.shields.io/badge/Saison%20A3-Réseau-334E68?style=flat-square&logo=cisco&logoColor=white)
+![A4](https://img.shields.io/badge/Saison%20A4-Windows%20Server-0078D4?style=flat-square&logo=windows&logoColor=white)
+![A5](https://img.shields.io/badge/Saison%20A5-Linux-FCC624?style=flat-square&logo=linux&logoColor=black)
+
+![B1](https://img.shields.io/badge/Saison%20B1-Virtualisation-E57000?style=flat-square&logo=proxmox&logoColor=white)
+![B2](https://img.shields.io/badge/Saison%20B2-Stockage%20%26%20Sauvegarde-005085?style=flat-square&logo=synology&logoColor=white)
+![B3](https://img.shields.io/badge/Saison%20B3-Supervision-D32F2F?style=flat-square&logo=zabbix&logoColor=white)
+![B4](https://img.shields.io/badge/Saison%20B4-Scripting-4EAA25?style=flat-square&logo=gnubash&logoColor=white)
+
+![C1](https://img.shields.io/badge/Saison%20C1-Projets%20%26%20Risques-0052CC?style=flat-square&logo=jira&logoColor=white)
+![C2](https://img.shields.io/badge/Saison%20C2-Cloud-232F3E?style=flat-square&logo=amazonwebservices&logoColor=white)
+![C3](https://img.shields.io/badge/Saison%20C3-Sécurité%20Sys%20%26%20Réseau-C51A4A?style=flat-square&logo=wireshark&logoColor=white)
+![C4](https://img.shields.io/badge/Saison%20C4-Conteneurs%20%26%20Orchestration-2496ED?style=flat-square&logo=docker&logoColor=white)
+![C5](https://img.shields.io/badge/Saison%20C5-Pentesting-557C94?style=flat-square&logo=kalilinux&logoColor=white)
+
 ### [Saison A1. Savoirs de Base 💻](#-saison-a1-savoirs-de-base)
 
 - [A101. & A102. Introduction Formation & Titre Pro AIS](#-a101--a102-introduction-formation--titre-pro-ais)
