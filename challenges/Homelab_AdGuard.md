@@ -12,7 +12,7 @@
 ![Hardware](https://img.shields.io/badge/Matériel-Raspberry%20Pi-C51A4A?style=flat-square&logo=raspberrypi&logoColor=white)
 ![OS](https://img.shields.io/badge/OS-Raspbian-005085?style=flat-square&logo=linux&logoColor=white)
 ![Service](https://img.shields.io/badge/Service-AdGuard%20Home-68bc71?style=flat-square&logo=adguard&logoColor=white)
-![Role](https://img.shields.io/badge/Rôle-Serveur%20DNS-FFA500?style=flat-square)
+![Role](https://img.shields.io/badge/Rôle-Serveur%20DNS%20DHCP-FFA500?style=flat-square)
 ![Network](https://img.shields.io/badge/Réseau-LAN%20-purple?style=flat-square&logo=web&logoColor=white)
 
 **Rôle :** Administrateur Réseau
