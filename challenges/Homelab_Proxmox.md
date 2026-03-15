@@ -219,7 +219,7 @@ chronyc sources -v
 
 ---
 
-## Correction perte de la config réseau
+## Correction de la perte de configuration réseau
 
 ### 1. Analyse de l'incident (Pourquoi `netfilter-persistent` a échoué)
 
@@ -330,4 +330,71 @@ systemctl reload networking
 
 En inscrivant ces règles dans `/etc/network/interfaces`, l'hyperviseur conservera indéfiniment ses capacités de routage de bordure.
 
-Cependant, d'un point de vue cybersécurité, il est impératif de rappeler la finalité de l'architecture. La base de connaissances indique que Proxmox n'agit comme routeur de bordure que de manière **temporaire**. L'objectif final de la topologie est de déléguer tout le routage et le DHCP à la VM pfSense instanciée entre `vmbr1` (WAN) et `vmbr2` (LAN).
+Cependant, d'un point de vue cybersécurité, il est impératif de rappeler la finalité de l'architecture. Proxmox n'agit comme routeur de bordure que de manière **temporaire**. L'objectif final de la topologie est de déléguer tout le routage à la VM pfSense instanciée entre `vmbr1` (WAN) et `vmbr2` (LAN).
+
+---
+
+## Mise à jour du BIOS et reboot intempestifs
+
+### 1. Description de l'Incident (Le Problème Observé)
+
+* **Symptômes :** Déconnexions aléatoires des services et redémarrages intempestifs des machines virtuelles constatés sur l'hyperviseur Proxmox VE.
+* **Événement déclencheur :** Mise à jour du firmware de la carte mère (BIOS) du serveur physique (HP ProDesk 600 G4).
+* **Impact Sécurité (DIC) :** Perte critique du pilier **Disponibilité**. L'arrêt brutal de la machine entraîne une perte de tous les services.
+
+### 2. Investigation et Analyse des Logs (Couche Système)
+
+Pour poser un diagnostic précis, il faut s'appuyer sur les journaux système de l'hyperviseur Linux. L'analyse a révélé que la panne n'était pas logicielle, mais matérielle.
+
+**Commandes d'investigation exécutées :**
+
+```bash
+# Vérification de l'état de l'hôte physique
+uptime
+
+# Vérification des journaux depuis le début de la journée (minuit)
+journalctl --since today
+
+# Filtrage des erreurs critiques depuis le précédent démarrage
+journalctl -p 3 -xb -1
+
+# Filtrage des erreurs critiques de la journée
+journalctl --since today -p err
+
+# Vérification des journaux d'une plage horaire spécifique (ex: lors du dernier crash)
+journalctl --since "15:00" --until "16:00"
+
+# Filtrage si le système a tué des processus par manque de RAM aujourd'hui
+journalctl --since today | grep -i "oom-killer"
+journalctl --since today | grep -i "killed process"
+
+# Filtrage des pertes de connexion avec les disques
+journalctl --since today | grep -iE "I/O error|ext4|xfs"
+
+```
+
+**Résultat de l'analyse :**
+
+* Le retour de la commande `uptime` (ex: `up 37 min`) a prouvé que c'est le **serveur physique complet** qui redémarrait, et non pas seulement les VMs.
+* La présence de multiples marqueurs de démarrage (`-- Boot [hash] --`) dans les logs `journalctl` a confirmé une série de crashs successifs.
+* L'absence totale de messages d'erreurs (comme le *OOM Killer* pour la RAM ou des erreurs `I/O` pour les disques) juste avant ces redémarrages indique un arrêt électrique brutal (**Hard Lock**). Le noyau Linux n'a pas eu le temps d'écrire l'erreur sur le disque.
+
+### 3. Cause Racine (Le conflit Matériel / OS)
+
+Le flash du BIOS a réinitialisé les paramètres d'usine de la carte mère, réactivant des profils d'économie d'énergie conçus pour de la bureautique, ce qui est incompatible avec un serveur de production (Bare-Metal) .
+
+* **L'impact CPU (C-States) :** Le processeur est autorisé à entrer en veille très profonde (états d'inactivité). Lorsque le trafic réseau arrive (ex: flux VPN entrant), l'hyperviseur KVM sollicite le processeur. Le délai de réveil matériel provoque une désynchronisation, ce qui entraîne une panique du système et un redémarrage d'urgence (Watchdog).
+* **L'impact Réseau (ASPM) :** La gestion de l'alimentation du bus PCIe met la carte réseau physique en veille, provoquant des pertes de paquets et la chute de la topologie réseau de Niveau 2 (Linux Bridges).
+
+### 4. Remédiation et Durcissement (La Correction)
+
+Pour stabiliser l'infrastructure et garantir un taux de disponibilité adapté aux exigences de l'administration système, une reconfiguration stricte de la gestion d'alimentation du BIOS (Advanced Power Management) a été appliquée :
+
+* **États d'inactivité prolongé (C-States) ➔ Désactivé :** Oblige le processeur à rester éveillé et disponible en permanence pour traiter les requêtes de l'hyperviseur sans latence.
+* **Gestion alimentation PCI Express (ASPM) ➔ Désactivé :** Empêche le micro-contrôleur de couper l'alimentation de la carte réseau, garantissant un flux constant pour pfSense.
+* **Gestion alimentation SATA ➔ Désactivé :** Empêche la mise en veille des liaisons avec les disques (SSD/HDD) pour éviter la corruption des systèmes de fichiers (Ext4/ZFS) des machines virtuelles lors des accès I/O.
+* **Économie d'énergie en fonctionnement ➔ Désactivé :** Permet d'allouer la puissance maximale du CPU pour orchestrer la charge entre les différents conteneurs (LXC) et machines virtuelles.
+
+### 5. Validation de l'Architecture (Sécurité by Design)
+
+En appliquant ces modifications (sauvegarde via `F10` et redémarrage), le matériel empêchera l'hyperviseur Proxmox de s'endormir. La stabilité électrique et matérielle est la condition *sine qua non* pour maintenir l'intégrité de la segmentation réseau (les ponts virtuels) et le filtrage opéré par la machine virtuelle pfSense. Sans une couche physique robuste, aucune politique de cybersécurité logicielle ne peut tenir.

@@ -401,3 +401,31 @@ Dans pfSense, le terme "Keep Alive" (qui sert à maintenir une connexion ouverte
 4. Sauvegarder en bas de page.
 
 ---
+
+## Évolution Topologique et Simplification du Routage
+
+### 1. Contexte et Objectif Architectural (Vision 360°)
+
+* **Architecture Initiale :** pfSense était isolé derrière un pont virtuel de transit (`vmbr1`), obligeant l'hyperviseur Proxmox à agir comme un routeur intermédiaire (NAT/PAT via `iptables`).
+* **Nouvelle Architecture :** Suppression du pont de transit. L'interface WAN du routeur virtuel pfSense est désormais rattachée directement au réseau local physique (`vmbr0`) avec une adresse IP statique (`192.168.1.251`).
+* **Bénéfice Sécurité & Performance :** Élimination du "Double NAT", réduction de la charge processeur sur l'hyperviseur, et simplification de la chaîne de dépannage (*Troubleshooting*).
+
+### 2. Actions Réseau (Couche 2 / Couche 3)
+
+* **Suppression du commutateur virtuel :** Destruction de l'interface `vmbr1` dans les paramètres réseau de l'hyperviseur Proxmox.
+* **Reconfiguration de la VM pfSense :** * Modification de la carte réseau virtuelle (Hardware) pour la basculer sur `vmbr0`.
+* Réaffectation de l'adresse IP de l'interface WAN depuis la console pfSense vers la nouvelle adresse locale : `192.168.1.251/24` (Passerelle : `192.168.1.254` - Box).
+
+### 3. Nettoyage de la Dette Technique (Système / Sécurité by Design)
+
+Conserver des règles de pare-feu obsolètes expose l'infrastructure à des comportements imprévisibles et des failles potentielles. Il a fallu purger la configuration du fichier `interfaces` de l'hyperviseur.
+
+### 4. Reconfiguration du Routage Externe (NAT Box FAI)
+
+Puisque l'hyperviseur ne gère plus la translation, le transfert de ports doit être effectué directement par le routeur de bordure du FAI (Box) vers la nouvelle adresse de pfSense.
+
+### 5. Rétablissement de la Supervision (DevOps / Checkmk)
+
+Le changement d'adresse IP de l'équipement surveillé (pfSense) a provoqué une rupture des flux de supervision (SNMP). Il a fallu reconfigurer l'outil central pour rétablir la visibilité.
+
+**Point d'évaluation de l'ingénierie :** Cette simplification illustre le principe d'**Efficience** de l'infrastructure. Moins il y a de nœuds de translation (NAT) entre Internet et le pare-feu, plus le réseau gagne en robustesse et en lisibilité, ce qui est une exigence fondamentale pour un Administrateur d'Infrastructures Sécurisées (AIS).
