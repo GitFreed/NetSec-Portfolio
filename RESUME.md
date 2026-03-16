@@ -6717,13 +6717,102 @@ lxc-destroy mon-conteneur
 
 ## **🕵️ Saison C5. Pentesting**
 
-> **Objectif de la saison** :
+> **Objectif de la saison** : Découvrir le test d'intrusion (Penetration Testing) et maîtriser les attaques web les plus répandues pour mieux s'en défendre.
 
-### 🐳 C501. Introduction au Pentesting
+### 💉 C501. Introduction au Pentesting & Faille XSS
 
-> **Objectif** :
+> **Objectif** : Comprendre le cadre légal et la méthodologie du Hacker Éthique, mettre en place son laboratoire d'attaque, et exploiter sa première vulnérabilité applicative : le Cross-Site Scripting (XSS).
+
+#### 1. Qu'est-ce que le PenTest ? (Méthodologie & Légalité)
+
+Le test d'intrusion (Penetration Testing) consiste à attaquer un système avec autorisation pour en identifier les failles avant qu'un vrai attaquant ne le fasse. C'est du hacking légal et commandité.
+Ces attaques ciblent généralement la couche applicative (couche 7). Elles exploitent souvent un manque de validation des données fournies par l'utilisateur.
+
+**La Règle d'Or (Cadre Légal) :**
+
+Tout PenTest doit être couvert par une autorisation écrite du propriétaire du système. Sans cette autorisation, c'est un délit informatique puni par l'article 323-1 du Code pénal en France.
+
+**Le cycle de vie d'un PenTest (Les 4 phases) :**
+
+1. **Reconnaissance :** Collecter un maximum d'informations sur la cible (OSINT, scan...).
+
+2. **Scan & énumération :** Identifier les services exposés, les versions, et les points d'entrée potentiels.
+
+3. **Exploitation :** Exploiter les vulnérabilités identifiées pour obtenir un accès ou exfiltrer des données.
+
+4. **Post-exploitation & rapport :** Mesurer l'impact réel, documenter et recommander des correctifs. C'est cette dernière étape qui donne toute la valeur au travail du penTesteur.
+
+#### 2. La Boîte à Outils (Le Lab)
+
+Pour s'entraîner sans risquer la prison, on utilise des environnements contrôlés :
+
+- **Kali Linux :** La distribution Debian de référence maintenue par Offensive Security, dédiée au PenTest avec des centaines d'outils préinstallés.
+
+- **Burp Suite :** Un proxy HTTP qui se place entre le navigateur et le serveur. Il permet d'intercepter, de lire et de modifier les requêtes web à la volée.
+
+- **DVWA (Damn Vulnerable Web App) :** Une application web PHP/MySQL intentionnellement trouée, conçue pour l'apprentissage et la pratique des attaques.
+
+#### 3. Focus Vulnérabilité : Le XSS (Cross-Site Scripting)
+
+**Définition :** Le XSS est une vulnérabilité qui permet à un attaquant d'injecter et d'exécuter du code JavaScript dans le navigateur d'une victime.
+
+⚠️ **Concept clé :** Le code ne s'exécute **pas** sur le serveur, il s'exécute côté client (dans le navigateur de la personne qui visite la page).
+
+**À quoi ça sert pour un attaquant ?**
+
+- Voler des cookies de session (pour prendre le contrôle d'un compte).
+
+- Rediriger la victime vers un site malveillant.
+
+- Modifier le contenu de la page à la volée (defacement).
+
+- Exfiltrer des données saisies dans des formulaires.
+
+#### 4. Les 3 Saveurs de l'XSS (Anatomie de l'attaque)
+
+Il existe 3 grandes familles de XSS, classées selon le chemin emprunté par le script malveillant.
+
+- **Type 0 : DOM-based (Le script furtif)**
+  - Le script malveillant n'est jamais envoyé au serveur.
+  - Il est injecté directement dans l'URL et interprété localement par le JavaScript de la page.
+  - *Exemple :* `https://example.com/page?name=<script>alert(1)</script>`.
+
+- **Type 1 : Reflected (Le script réfléchi)**
+  - Le script est envoyé au serveur via une requête HTTP (URL, formulaire...).
+  - Le serveur est complice malgré lui : il renvoie le script tel quel dans sa réponse HTML, sans le stocker.
+  - *Condition :* L'attaque n'est pas persistante, la victime doit obligatoirement cliquer sur un lien piégé (via email, phishing).
+
+- **Type 2 : Stored (Le script persistant)**
+  - Le script malveillant est enregistré en dur sur le serveur (base de données, fichier...).
+  - Il est exécuté automatiquement à chaque fois qu'une victime charge la page concernée.
+  - *Gravité :* C'est le type le plus dangereux car une seule injection fait des victimes en masse.
+
+#### 5. Hardening : Comment s'en protéger ?
+
+En tant qu'Admin Sys, la règle d'or est de ne **jamais** faire confiance à une donnée externe (qu'elle vienne de l'URL, d'un formulaire ou d'une base de données). Voici les contre-mesures :
+
+- **Échapper les sorties :** Encoder les caractères spéciaux HTML (transformer `<` en `&lt;`) pour que le navigateur ne les lise pas comme du code.
+
+- **CSP (Content Security Policy) :** Une règle côté serveur pour restreindre les sources de scripts autorisées.
+
+- **HttpOnly sur les cookies :** Un flag de sécurité qui empêche totalement le JavaScript d'accéder au cookie de session.
 
 [Challenge C501](./challenges/Challenge_C501.md) :
+
+> 📚 **Ressources** :
+>
+> - Kali Docs : <https://www.kali.org/docs/>
+> - Burp Suite : <https://www.it-connect.fr/tuto-burpsuite-proxy-web-local/>
+> - OWASP XSS Cheatsheet : <https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html>
+> - OWASP DOM-based XSS Cheatsheet : <https://cheatsheetseries.owasp.org/cheatsheets/DOM_based_XSS_Prevention_Cheat_Sheet.html>
+
+[Retour en haut](#-table-des-matières)
+
+---
+
+### C502
+
+[Challenge C502](./challenges/Challenge_C502.md) :
 
 > 📚 **Ressources** :
 >
