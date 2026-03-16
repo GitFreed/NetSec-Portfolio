@@ -219,7 +219,7 @@ chronyc sources -v
 
 ---
 
-## Correction de la perte de configuration réseau
+## Correction de la perte de configuration réseau ❌
 
 ### 1. Analyse de l'incident (Pourquoi `netfilter-persistent` a échoué)
 
@@ -334,7 +334,7 @@ Cependant, d'un point de vue cybersécurité, il est impératif de rappeler la f
 
 ---
 
-## Mise à jour du BIOS et reboot intempestifs
+## Mise à jour du BIOS et reboot intempestifs 💥
 
 ### 1. Description de l'Incident (Le Problème Observé)
 

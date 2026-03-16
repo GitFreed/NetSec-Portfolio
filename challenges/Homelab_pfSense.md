@@ -371,7 +371,7 @@ iptables -t nat -A PREROUTING -i vmbr0 -p udp --dport 1194 -j DNAT --to 192.168.
 
 ---
 
-## IPsec Keep Alive dans pfSense
+## IPsec Keep Alive dans pfSense 🛟
 
 Dans pfSense, le terme "Keep Alive" (qui sert à maintenir une connexion ouverte même quand il n'y a pas de trafic) s'utilise principalement dans deux cas de figure. Voici la méthode rapide pour les deux :
 
@@ -402,7 +402,7 @@ Dans pfSense, le terme "Keep Alive" (qui sert à maintenir une connexion ouverte
 
 ---
 
-## Évolution Topologique et Simplification du Routage
+## Évolution Topologique et Simplification du Routage 🔗
 
 ### 1. Contexte et Objectif Architectural (Vision 360°)
 
