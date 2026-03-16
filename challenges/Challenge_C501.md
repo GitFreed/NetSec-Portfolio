@@ -2,13 +2,21 @@
 
 ## 🧑‍🏫 Pitch de l’exercice
 
-Challenge : <.>
+Le challenge du jour consiste à :
+
+- Mettre en place un lab de PenTest (Kali Linux + DVWA),
+- Découvrir de Burp Suite (proxy HTTP),
+- Créer votre compte sur la [plateforme de CTF Root-Me](https://www.root-me.org/?lang=fr),
+- Réaliser les [3 premiers challenges XSS Portswigger](https://portswigger.net/web-security/all-labs#cross-site-scripting),
+- Réaliser le challenge XSS-DOM-Based-Introduction.
+- Réaliser les 3 exploitations de XSS Sur [DVWA](http://10.0.0.20:4280/).
 
 [Cours C501.](/RESUME.md#-c501)
 
 > 📚 **Ressources** :
 >
 > - Kali Docs : <https://www.kali.org/docs/>
+> - Burp Suite : <https://www.it-connect.fr/tuto-burpsuite-proxy-web-local/>
 
 ---
 
@@ -32,10 +40,6 @@ Une fois l'installation terminée, on doit préparer le système pour qu'il soit
 # MISE À JOUR DU SYSTÈME
 sudo apt update && sudo apt upgrade -y
 
-# OPTIMISATION PROXMOX
-sudo apt install qemu-guest-agent -y
-sudo systemctl enable --now qemu-guest-agent
-
 # CONFIGURATION RÉSEAU & ACCÈS SSH
 # Configuration de l'interface Ethernet en statique
 auto eth0
@@ -51,10 +55,23 @@ ip a
 sudo apt install openssh-server -y
 sudo systemctl enable --now ssh
 
-# NETTOYAGE
-sudo apt autoremove -y && sudo apt clean
+(se connecter en SSH)
+
+# OPTIMISATION PROXMOX
+sudo apt install qemu-guest-agent -y
+sudo systemctl enable --now qemu-guest-agent
+
+# BUREAU A DISTANCE
+sudo apt install xrdp -y
+sudo systemctl enable --now xrdp
 
 ```
+
+**Optimisation XFCE pour le RDP :**
+
+- Aller dans Paramètres > Peaufinage des fenêtres (ou Window Manager Tweaks en anglais).
+- Aller dans le dernier onglet : Compositeur (ou Compositor).
+- Décocher la case : Activer le compositeur d'affichage (Enable display compositing).
 
 ---
 
@@ -116,6 +133,52 @@ docker ps
 
 ---
 
-## Burpsuite PortSwigger
+## Déploiement Symfony & VulnerableSymfony
+
+### 1. Qu'est-ce que Symfony ?
+
+**Symfony** est un **framework PHP** professionnel (créé en France) utilisé pour bâtir des applications web robustes et évolutives.
+
+- **Standard Industriel** : Il motorise des plateformes comme BlaBlaCar ou Spotify, et sert de base à des outils comme Drupal.
+- **Structure MVC** : Il sépare les données (Modèle), l'affichage (Vue) et la logique (Contrôleur) pour un code propre et sécurisé.
+- **Composants** : Il est composé de briques logicielles réutilisables que l'on retrouve dans de nombreux autres projets PHP.
+
+### 2. Objectif : VulnerableSymfony
+
+C'est un "laboratoire" sous forme d'application Symfony réelle, mais contenant volontairement des failles de sécurité.
+
+- **Réalisme** : Contrairement à DVWA (très simple), ce projet simule une application d'entreprise moderne.
+- **Challenge** : On y apprend à exploiter des vulnérabilités spécifiques aux frameworks (mauvaises configurations, failles dans les composants tiers).
+
+> Intended Vulnerable Symfony : <https://github.com/Secureaks/VulnerableSymfony>
+
+### 3. Déploiement Docker
+
+On l'installe dans la zone LAN isolée (`vmbr2`) pour isoler les flux.
+
+```bash
+# 1. Récupération du lab
+git clone https://github.com/Secureaks/VulnerableSymfony.git
+cd VulnerableSymfony
+
+# 2. Construction de l'image (Build)
+# Cette étape assemble l'environnement Symfony/PHP/Apache
+docker build -t vulnerable-symfony .
+
+# 3. Lancement du conteneur
+# On mappe le port 8000 pour éviter les conflits avec DVWA
+docker run -d --name symfony-lab -p 8000:80 vulnerable-symfony
+
+```
+
+- **Accès Web** : `http://10.0.0.30:8000`
+
+> Direct via docker hub : <https://hub.docker.com/r/secureaks/vulnerablesymfony>
+
+---
+
+## Portswigger
 
 <https://portswigger.net/>
+
+XSS challenges : <https://portswigger.net/web-security/all-labs#cross-site-scripting>
