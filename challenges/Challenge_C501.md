@@ -116,12 +116,4 @@ docker ps
 
 ![DVWA](/images/2026-03-16-12-08-55.png)
 
-Il faut adapter le niveau de sécurité (low)
-
-![seclevel](/images/2026-03-16-12-12-26.png)
-
-Excellente initiative ! Installer **DVWA** (Damn Vulnerable Web Application) est l'étape logique après avoir configuré Kali. C'est la cible idéale pour s'exercer aux injections SQL ou aux failles XSS en toute sécurité dans l'environnement isolé.
-
-Comme on est sur une machine **Kali** (ou une autre VM Debian dans ton LAN), on va utiliser **Docker** pour simplifier le déploiement et l'isolation.
-
 ---
