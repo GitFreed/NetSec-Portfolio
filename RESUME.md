@@ -160,7 +160,9 @@ Cette fiche synthétise les notions fondamentales abordées durant les cours en 
 - [C403. Docker Swarm & Portainer](#-c403-orchestration-avec-docker-swarm-et-portainer)
 - [C404. Conteneurs Systèmes : LXC et LXD](#-c404-conteneurs-systèmes--lxc-et-lxd-incus)
 
-### [Saison C5. Pentesting 🕵️](.)
+### [Saison C5. Pentesting 🕵️](#️-saison-c5-pentesting)
+
+- [C501. Introduction aau Pentesting & Faille XSS](#-c501-introduction-au-pentesting--faille-xss)
 
 ---
 

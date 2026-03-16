@@ -11,7 +11,7 @@ Le challenge du jour consiste à :
 - Réaliser le challenge XSS-DOM-Based-Introduction.
 - Réaliser les 3 exploitations de XSS Sur [DVWA](http://10.0.0.20:4280/).
 
-[Cours C501.](/RESUME.md#-c501)
+[Cours C501.](/RESUME.md#-c501-introduction-au-pentesting--faille-xss)
 
 > 📚 **Ressources** :
 >
