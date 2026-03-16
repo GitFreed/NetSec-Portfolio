@@ -172,6 +172,8 @@ Commande utilisée pour extraire la liste du fichier [Resume.md](/RESUME.md)
 
 [Challenge C403](./Challenge_C403.md) : Déployer GLPI sur un cluster avec Portainer
 
+[Challenge C501](./Challenge_C501.md) : Déployer Kali, DVWA et
+
 ---
 
 [Homelab Adguard](./Homelab_AdGuard.md) : Déployer AdGuard Home, serveur DHCP et DNS sinkhole.
