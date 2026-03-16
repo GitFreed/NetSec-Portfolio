@@ -17,6 +17,8 @@ Le challenge du jour consiste à :
 >
 > - Kali Docs : <https://www.kali.org/docs/>
 > - Burp Suite : <https://www.it-connect.fr/tuto-burpsuite-proxy-web-local/>
+> - OWASP XSS Cheatsheet : <https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html>
+> - OWASP DOM-based XSS Cheatsheet : <https://cheatsheetseries.owasp.org/cheatsheets/DOM_based_XSS_Prevention_Cheat_Sheet.html>
 
 ---
 
