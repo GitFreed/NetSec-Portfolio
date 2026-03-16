@@ -177,8 +177,58 @@ docker run -d --name symfony-lab -p 8000:80 vulnerable-symfony
 
 ---
 
-## Portswigger
+## Portswigger XSS Labs
 
-<https://portswigger.net/>
+![Portswigger](/images/2026-03-16-17-29-39.png)
 
-XSS challenges : <https://portswigger.net/web-security/all-labs#cross-site-scripting>
+Les XSS challenges sur Portswigger : <https://portswigger.net/web-security/all-labs#cross-site-scripting>
+
+### Lab: Reflected XSS into HTML context with nothing encoded
+
+*This lab contains a simple reflected cross-site scripting vulnerability in the search functionality.*
+
+*To solve the lab, perform a cross-site scripting attack that calls the alert function.*
+
+La commande `<script>alert(1)</script>` entraîne bien **alert(1)** sur la page, proof of concept d'avoir trouvé la faille.
+
+![alert](/images/2026-03-16-17-37-04.png)
+
+**Explication :**
+
+Le navigateur a lu la page de haut en bas, a vu la balise `<script>`, a cru que c'était une instruction officielle du développeur, et l'a exécutée.
+
+### Lab: Stored XSS into HTML context with nothing encoded
+
+*This lab contains a stored cross-site scripting vulnerability in the comment functionality.*
+
+*To solve this lab, submit a comment that calls the alert function when the blog post is viewed.*
+
+Remplir le formulaire de commentaire avec `<script>alert(1)</script>` et le reste
+
+![comment](/images/2026-03-16-17-43-17.png)
+
+Au retour sur le blog l'alerte pop bien **alert(1)**
+
+**Explication :**
+
+Le serveur a sauvegardé le commentaire avec le script dans sa base de données. Maintenant, tous les utilisateurs qui visitent cet article vont télécharger le commentaire. Leurs navigateurs vont lire la balise `<script>` et faire popper l'alerte chez eux. C'est redoutable.
+
+### Lab: DOM XSS in document.write sink using source location.search
+
+*This lab contains a DOM-based cross-site scripting vulnerability in the search query tracking functionality. It uses the JavaScript document.write function, which writes data out to the page. The document.write function is called with data from location.search, which you can control using the website URL.*
+
+*To solve this lab, perform a cross-site scripting attack that calls the alert function.*
+
+![DOM](/images/2026-03-16-18-00-40.png)
+
+Remplir le formulaire de commentaire avec `"><svg onload=alert(1)>`, renvois bien **alert(1)**
+
+**Explication :**
+
+Le texte est inséré à l'intérieur d'une balise existante, ici une image, si on tapait juste `<script>`, ça ne marchait pas.
+
+---
+
+## Root Me : XSS DOM-based Lab
+
+<https://www.root-me.org/fr/Challenges/Web-Client/XSS-DOM-Based-Introduction>
