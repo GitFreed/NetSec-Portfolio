@@ -172,7 +172,9 @@ Commande utilisée pour extraire la liste du fichier [Resume.md](/RESUME.md)
 
 [Challenge C403](./Challenge_C403.md) : Déployer GLPI sur un cluster avec Portainer
 
-[Challenge C501](./Challenge_C501.md) : Déployer Kali, DVWA et exploitations XSS
+[Challenge C501](./Challenge_C501.md) : Déployer Kali, DVWA et exploitations XSS (Cross-site scripting)
+
+[Challenge C501](./Challenge_C501.md) : Exploitations de failles LFI (Local File Inclusion)
 
 ---
 
@@ -182,7 +184,9 @@ Commande utilisée pour extraire la liste du fichier [Resume.md](/RESUME.md)
 
 [Homelab Checkmk](./Homelab_Checkmk.md) : Déployer Checkmk (Raw Edition), supervision d'infrastructure.
 
-[Homelab pfSense](./Homelab_pfSense.md) : Déploiement d'un Routeur/Pare-feu pfSense sous Proxmox
+[Homelab pfSense](./Homelab_pfSense.md) : Déploiement d'un Routeur/Pare-feu pfSense sous Proxmox.
+
+[Homelab Scanopy](./Homelab_Scanopy.md) : Déploiement d'un outil de cartographie réseau distribuée et IPAM dynamique.
 
 ---
 

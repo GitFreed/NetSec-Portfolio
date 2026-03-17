@@ -162,7 +162,8 @@ Cette fiche synthétise les notions fondamentales abordées durant les cours en 
 
 ### [Saison C5. Pentesting 🕵️](#️-saison-c5-pentesting)
 
-- [C501. Introduction aau Pentesting & Faille XSS](#-c501-introduction-au-pentesting--faille-xss)
+- [C501. Introduction au Pentesting & Faille XSS](#-c501-introduction-au-pentesting--faille-xss)
+- [C502. Faille LFI : Local File Inclusion](#-c502-la-faille-lfi-local-file-inclusion)
 
 ---
 
@@ -6812,12 +6813,69 @@ En tant qu'Admin Sys, la règle d'or est de ne **jamais** faire confiance à une
 
 ---
 
-### C502
+### 📂 C502. La Faille LFI (Local File Inclusion)
+
+> **Objectif** : Comprendre comment un attaquant peut forcer un serveur web à divulguer ses fichiers internes les plus sensibles (voire à exécuter des commandes), et apprendre à sécuriser le code PHP et l'architecture pour bloquer ces attaques.
+
+#### 1. Qu'est-ce qu'une LFI ? (Le Principe)
+
+Une faille LFI (Local File Inclusion) permet à un attaquant de manipuler un paramètre non sécurisé pour forcer le serveur à lire, afficher, ou exécuter des fichiers locaux auxquels il ne devrait pas avoir accès. Ce type de vulnérabilité est répertorié sous la faille **CWE-98**.
+
+**Le problème à la source :**
+Tout vient d'une mauvaise pratique de développement, très courante en PHP, où l'entrée de l'utilisateur est injectée directement dans une fonction d'inclusion.
+*Code vulnérable classique :* `include($_GET['page']);`.
+Si l'URL est `?page=contact.php`, le serveur inclut la page de contact. Mais l'attaquant peut remplacer ce nom par le chemin d'un fichier système critique.
+
+#### 2. L'Arsenal du Hacker : Les Techniques d'Exploitation
+
+Pour exploiter cette faille, l'attaquant dispose de plusieurs techniques de contournement :
+
+- **Le Path Traversal (La traversée de répertoires) :** L'astuce consiste à utiliser les caractères `../` pour "remonter" dans l'arborescence des dossiers du serveur. En multipliant les `../../..`, on atteint la racine `/` du serveur Linux, puis on redescend vers le fichier cible.
+    *Exemple :* `?page=../../../etc/passwd`.
+- **Les Wrappers PHP (Pour lire du code) :**
+    Si on essaie d'inclure un fichier PHP (ex: `config.php`), le serveur va l'exécuter au lieu d'afficher son contenu. Pour contourner cela et lire les mots de passe dans le code source, on utilise un "wrapper" PHP.
+    *Exemple :* `php://filter/convert.base64-encode/resource=config.php`. Le serveur renverra le code source converti en texte Base64, qu'il suffira de décoder.
+- **Double encodage & Null Byte (Bypass de filtres) :** Si le pare-feu ou le code bloque les `../`, l'attaquant peut les encoder au format URL (ex: `%2e%2e%2f`) pour tromper la sécurité.
+- **Upload + Include :** Si le site permet d'uploader une image, l'attaquant y cache du code malveillant, puis utilise la faille LFI pour "inclure" cette fausse image et forcer le serveur à exécuter le code.
+
+#### 3. Le Butin : Quels fichiers cibler ?
+
+Sur une architecture Linux typique, l'attaquant va viser des fichiers standards :
+
+- `/etc/passwd` : Pour récupérer la liste des utilisateurs du système.
+- `/etc/shadow` : Pour voler les mots de passe hashés du serveur (si les droits sont mal gérés).
+- `/proc/self/environ` : Pour lire les variables d'environnement.
+- `/var/log/apache2/access.log` : Les journaux (logs) du serveur web.
+- Les fichiers `.php` locaux pour voler des credentials de base de données.
+
+#### 4. L'Escalade Ultime : LFI vers RCE
+
+La LFI n'est souvent qu'une première étape. L'escalade des privilèges se passe ainsi :
+
+1. **Lecture de fichiers**.
+2. **Vol de credentials** (identifiants BDD).
+3. **RCE (Remote Code Execution) via Log Poisoning**. L'attaquant envoie une requête web contenant du code PHP caché dans son "User-Agent". Le serveur web stocke cette requête dans ses logs (`access.log`). L'attaquant utilise ensuite la faille LFI pour inclure le fichier de log : le serveur lit le log, trouve le code PHP injecté, et l'exécute. C'est la prise de contrôle totale du serveur !
+
+*(Note sur la RFI - Remote File Inclusion : La RFI permet d'inclure directement un script hébergé sur le serveur du pirate, mais elle nécessite que l'option `allow_url_include` soit sur "On", ce qui est désactivé par défaut depuis PHP 5.2. La LFI est donc bien plus courante !)*
+
+#### 5. Hardening (Comment s'en protéger ?)
+
+En tant qu'Admin Sys et garant de la sécurité, voici comment bloquer les LFI :
+
+- **La Whitelist (Liste Blanche) :** C'est la règle d'or. Ne jamais faire confiance à l'entrée utilisateur. Le développeur doit créer un tableau strict des pages autorisées et vérifier si la requête s'y trouve (ex: fonction `in_array` en PHP).
+- **Utiliser `basename()` :** Cette fonction PHP extrait uniquement le nom du fichier et supprime automatiquement toute tentative de traversée de répertoires (les fameux `../`).
+- **Désactiver `allow_url_include` :** À vérifier systématiquement dans le fichier de configuration `php.ini`.
+- **Principe de moindre privilège :** S'assurer que l'utilisateur Linux qui fait tourner le serveur web (`www-data` par exemple) n'a absolument pas les droits de lecture sur `/etc/shadow` ou d'autres dossiers critiques.
 
 [Challenge C502](./challenges/Challenge_C502.md) :
 
 > 📚 **Ressources** :
 >
+> - Portswigger explication du Cross-site scripting (XXS) : <https://portswigger.net/web-security/cross-site-scripting>
+> - Owasp explication détaillée du path traversal : <https://owasp.org/www-community/attacks/Path_Traversal>
+> - Référence complète sur toutes les techniques LFI/RFI  : <https://hacktricks.wiki/en/pentesting-web/file-inclusion/index.html>
+> - Liste exhaustive de payloads classés par technique : <https://github.com/swisskyrepo/PayloadsAllTheThings/tree/master/File%20Inclusion>
+> - Documentation officielle PHP sur tous les wrappers disponibles : <https://www.php.net/manual/fr/wrappers.php>
 
 [Retour en haut](#-table-des-matières)
 
