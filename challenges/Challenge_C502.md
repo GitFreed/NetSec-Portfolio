@@ -124,7 +124,7 @@ L'application permet de naviguer dans des dossiers via le paramètre `?files=` (
 
 - Le mot de passe `XXXXXX` est le flag ! 🏁
 
-![OK](/images/2026-03-18-00-28-22.png)
+![OK](/images/2026-03-18-00-45-31.png)
 
 ---
 
