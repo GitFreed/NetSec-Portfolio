@@ -6867,7 +6867,7 @@ En tant qu'Admin Sys et garant de la sécurité, voici comment bloquer les LFI :
 - **Désactiver `allow_url_include` :** À vérifier systématiquement dans le fichier de configuration `php.ini`.
 - **Principe de moindre privilège :** S'assurer que l'utilisateur Linux qui fait tourner le serveur web (`www-data` par exemple) n'a absolument pas les droits de lecture sur `/etc/shadow` ou d'autres dossiers critiques.
 
-[Challenge C502](./challenges/Challenge_C502.md) :
+[Challenge C502](./challenges/Challenge_C502.md) : Exploitations de failles LFI (Local File Inclusion)
 
 > 📚 **Ressources** :
 >
