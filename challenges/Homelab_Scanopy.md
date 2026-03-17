@@ -229,3 +229,7 @@ Dans les journaux, le message `Connected to server` confirmera que le routage, l
 ![connecting](/images/2026-03-17-12-46-54.png)
 
 ![daemons](/images/2026-03-17-13-25-01.png)
+
+## Topologie
+
+![topo](/images/2026-03-17-19-43-39.png)
