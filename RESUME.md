@@ -6987,8 +6987,6 @@ Ils automatisent la recherche de failles de sécurité connues sur les infrastru
 - **Prise de notes :** Indispensable (Cherry Tree, OneNote, Markdown) pour rédiger le rapport final.
 - **Sécurité et éthique :** N'utiliser que des outils compris, sur des cibles autorisées. Nettoyer les traces (fichiers laissés par les outils), ne pas conserver les données sensibles trop longtemps, et avertir le client si un outil invasif est utilisé.
 
----
-
 #### PARTIE 2 : Sécurité Réseau & Attaques Man-In-The-Middle (MITM)
 
 Pour bien attaquer un réseau, il faut d'abord connaître les équipements de sécurité qui le protègent :
