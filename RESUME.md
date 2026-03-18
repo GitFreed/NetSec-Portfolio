@@ -7032,8 +7032,8 @@ Même si un attaquant réussit un MITM parfait, il ne pourra rien faire si les d
 
 > 📚 **Ressources** :
 >
-> - <https://gitbook.secureaks.com/pentest/>
-> - <https://docs.rapid7.com/metasploit/metasploitable-2/>
+> - Gitbook notes Secureaks : <https://gitbook.secureaks.com/pentest/>
+> - Metasploitable 2, environnement pentest & sec testing : <https://docs.rapid7.com/metasploit/metasploitable-2/>
 
 [Retour en haut](#-table-des-matières)
 
