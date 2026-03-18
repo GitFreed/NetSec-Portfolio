@@ -72,4 +72,66 @@ La phase finale ! Alice avait un accès distant (Reverse Shell) sur le serveur d
 
 ## 🕵️ Résolution Lab Nmap
 
-[TryHackMe - Nmap](https://tryhackme.com/room/furthernmap)
+[TryHackMe - Further Nmap](https://tryhackme.com/room/furthernmap)
+
+**Objectif :** Maîtriser les options avancées de Nmap, comprendre le fonctionnement des différents types de scans réseau et utiliser le Nmap Scripting Engine (NSE).
+
+### 1️⃣ Les arguments de base (Switches)
+
+- **`-p 80`** : Scanner un port spécifique (ex: 80).
+- **`-p 1000-1500`** : Scanner une plage de ports.
+- **`-p-`** : Scanner les 65 535 ports.
+- **`-O`** : Détecter le système d'exploitation (OS).
+- **`-sV`** : Détecter la version des services ouverts.
+- **`-v` / `-vv`** : Augmenter la verbosité (afficher plus d'infos en direct).
+- **`-A`** : Mode agressif (Combine OS, Versions, Traceroute et Scripts basiques).
+- **`-T5`** : Vitesse du scan (de T0 très lent à T5 très rapide/bruyant).
+
+### 2️⃣ Les formats d'exportation
+
+- **`-oN fichier`** : Format Normal (texte lisible).
+- **`-oG fichier`** : Format Grepable (idéal pour la ligne de commande/bash).
+- **`-oA fichier`** : Exporte dans les 3 formats majeurs (Normal, Grepable, XML).
+
+### 3️⃣ Les Types de Scans
+
+- **TCP Connect Scan (`-sT`)** : Effectue une connexion complète (3-way handshake : SYN -> SYN/ACK -> ACK). Très fiable mais laisse des traces dans les logs. *(Règle : RFC 9293)*.
+- **SYN "Half-open" Scan (`-sS`)** : Le scan furtif par défaut. Ne termine pas la connexion (SYN -> SYN/ACK -> RST). Nécessite les droits `sudo`.
+- **UDP Scan (`-sU`)** : Protocole sans connexion. Si pas de réponse = `open|filtered`. Si fermé = renvoie une erreur ICMP "Port Unreachable". Scan très lent.
+- **Scans Furtifs (`-sN`, `-sF`, `-sX`)** : Utilisés pour contourner les pare-feux en envoyant des paquets anormaux (Null = rien, FIN = fin, Xmas = PSH+URG+FIN). Attention : Windows répond par un `RST` à ces scans même si le port est ouvert.
+
+### 4️⃣ Découverte Réseau (Ping Sweep)
+
+- **`-sn`** : Désactive le scan des ports. Permet de trouver rapidement les machines allumées sur un réseau via ICMP.
+- **Exemple :** `nmap -sn 172.16.0.0/16` (Balaie tout le sous-réseau).
+
+### 5️⃣ Le Nmap Scripting Engine (NSE)
+
+Les scripts Nmap sont écrits en **Lua** et rangés par catégories (`safe`, `intrusive`, `vuln`, `exploit`...).
+
+- **`--script=vuln`** : Lance tous les scripts de la catégorie "vulnérabilités".
+- **`--script=ftp-anon`** : Lance un script spécifique.
+- **`--script-help ftp-anon`** : Affiche l'aide et les arguments d'un script.
+- **`--script-args`** : Permet de passer des arguments à un script.
+- **Où les trouver (Linux) :** `/usr/share/nmap/scripts/`
+
+### 6️⃣ Contournement de Pare-feu (Firewall Evasion)
+
+- **`-Pn`** : Considère que la machine est allumée et ignore l'étape du Ping (indispensable si l'ICMP est bloqué).
+- **`-f`** : Fragmente les paquets pour passer sous le radar des IDS/Pare-feux.
+- **`--data-length`** : Ajoute des données aléatoires à la fin des paquets pour modifier leur taille standard.
+
+### 🎯 Cas pratique de fin (Commandes utiles)
+
+- Test de pare-feu ICMP : `ping IP` ou `nmap -sn IP`
+- Scan Xmas sur les 999 premiers ports : `sudo nmap -sX -p 1-999 -Pn IP`
+- Scan SYN sur les 5000 premiers ports : `sudo nmap -sS -p 1-5000 -Pn IP`
+- Utilisation de script sans ping : `nmap -p 21 --script=ftp-anon -Pn IP`
+
+![Xmas](/images/2026-03-18-23-58-55.png)
+
+![SYNfurtif](/images/2026-03-18-23-54-18.png)
+
+![FTPano](/images/2026-03-18-23-59-52.png)
+
+![double](/images/2026-03-19-00-03-25.png)
