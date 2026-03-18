@@ -164,6 +164,7 @@ Cette fiche synthétise les notions fondamentales abordées durant les cours en 
 
 - [C501. Introduction au Pentesting & Faille XSS](#-c501-introduction-au-pentesting--faille-xss)
 - [C502. Faille LFI : Local File Inclusion](#-c502-la-faille-lfi-local-file-inclusion)
+- [503.](.)
 
 ---
 
@@ -6880,3 +6881,22 @@ En tant qu'Admin Sys et garant de la sécurité, voici comment bloquer les LFI :
 [Retour en haut](#-table-des-matières)
 
 ---
+
+### 📂 C503
+
+> **Objectif**
+
+[Challenge C503](./challenges/Challenge_C503.md) :
+
+> 📚 **Ressources** :
+>
+
+[Retour en haut](#-table-des-matières)
+
+---
+
+sudo nmap -sV -v -O -oA nmap IP_Network/CIDR
+
+sudo nmap -sC IPCIBLE ou sudo nmap --script vuln IP CIBLE
+
+ettercap + wireshark

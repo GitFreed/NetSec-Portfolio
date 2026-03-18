@@ -8,7 +8,7 @@ Le challenge du jour consiste à :
 - Réaliser le [challenge LFI root-me](https://www.root-me.org/fr/Challenges/Web-Serveur/Local-File-Inclusion)
 - Réaliser le [challenge LFI double encoding root-me](https://www.root-me.org/fr/Challenges/Web-Serveur/Local-File-Inclusion-Double-encoding).
 
-[Cours C501.](/RESUME.md#-c501-introduction-au-pentesting--faille-xss)
+[Cours C502.](/RESUME.md#-c502-la-faille-lfi-local-file-inclusion)
 
 > 📚 **Ressources** :
 >
