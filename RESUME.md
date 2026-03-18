@@ -164,7 +164,8 @@ Cette fiche synthétise les notions fondamentales abordées durant les cours en 
 
 - [C501. Introduction au Pentesting & Faille XSS](#-c501-introduction-au-pentesting--faille-xss)
 - [C502. Faille LFI : Local File Inclusion](#-c502-la-faille-lfi-local-file-inclusion)
-- [503.](.)
+- [C502.2 - Comprendre et exploiter les injections SQL (SQLi)](#-c5022---comprendre-et-exploiter-les-injections-sql-sqli)
+- [C503 - Pentest Interne : Outils, Commandes et Attaques MITM](#️-c503---pentest-interne--outils-commandes-et-attaques-mitm)
 
 ---
 
@@ -6882,21 +6883,158 @@ En tant qu'Admin Sys et garant de la sécurité, voici comment bloquer les LFI :
 
 ---
 
-### 📂 C503
+### 💉 C502.2 - Comprendre et exploiter les injections SQL (SQLi)
 
-> **Objectif**
+**Objectif :** Comprendre le mécanisme fondamental des vulnérabilités d'injection SQL (SQLi) liées à la confiance aveugle envers les entrées utilisateur. Découvrir les différentes familles d'attaques (Error-based, Blind, UNION) afin d'être capable d'exfiltrer des données ou contourner une authentification lors d'un audit, et maîtriser les contre-mesures incontournables (requêtes paramétrées, ORM, validation) pour sécuriser efficacement le code d'une application.
 
-[Challenge C503](./challenges/Challenge_C503.md) :
+#### **1. Le problème fondamental : La confiance aveugle**
 
-> 📚 **Ressources** :
->
+Une application web communique avec sa base de données (BDD) via des requêtes SQL. La vulnérabilité apparaît lorsque l'application utilise directement les saisies de l'utilisateur (comme un identifiant récupéré dans l'URL) pour construire sa requête par simple concaténation.
+
+- *Exemple vulnérable :* `$query = "SELECT * FROM users WHERE id = '$id'";`
+- Si un attaquant saisit du code SQL malveillant à la place d'un simple identifiant, le moteur de la base de données ne fera pas la différence : il interprétera et exécutera aveuglément l'entrée de l'utilisateur comme s'il s'agissait de code légitime.
+
+#### **2. Les objectifs d'une attaque SQLi**
+
+En détournant la requête initiale, l'attaquant peut prendre le contrôle des données. Ses objectifs principaux sont :
+
+- Contourner une authentification (ex: se connecter en tant qu'administrateur sans connaître le mot de passe).
+- Extraire et voler des données sensibles (base de clients, mots de passe).
+- Modifier ou supprimer des informations directement dans les tables.
+- Dans certains cas critiques, compromettre entièrement le serveur qui héberge la base de données.
+
+#### **3. Les différentes familles d'injections SQL**
+
+On classe les injections SQL selon la manière dont les résultats de l'attaque "remontent" jusqu'à l'écran de l'attaquant :
+
+- **Basée sur l'erreur (Error-based) :** C'est la plus visible. L'attaquant injecte un caractère (souvent une apostrophe `'`) qui ferme mal une chaîne de caractères et "casse" la requête d'origine. L'application affiche alors l'erreur renvoyée par la BDD, ce qui révèle de précieuses informations sur sa version ou sa structure.
+- **Aveugle booléenne (Blind - Boolean-based) :** L'application n'affiche aucune erreur, mais son comportement (affichage) change selon si on lui injecte une condition vraie ou fausse. L'attaquant doit deviner les données en posant des centaines de questions "vrai/faux" pour reconstituer les informations caractère par caractère. C'est un processus lent.
+- **Aveugle temporelle (Blind - Time-based) :** La page ne change absolument pas visuellement. L'attaquant injecte des commandes de pause (comme `SLEEP(5)`) et mesure le temps que met le serveur à répondre pour déduire si sa condition était vraie ou fausse. C'est la méthode la plus lente.
+- **Basée sur UNION (UNION-based) :** C'est la technique la plus puissante pour exfiltrer des données. L'opérateur SQL `UNION` permet d'accoler les résultats d'une seconde requête (malveillante) à la première. *Condition technique :* les deux requêtes doivent obligatoirement posséder le même nombre de colonnes (nombre que l'on trouve généralement en injectant la commande `ORDER BY`).
+
+#### **4. Comment s'en protéger ?**
+
+La règle d'or est stricte : ne **jamais** concaténer directement des entrées utilisateur dans une requête SQL.
+
+- **La protection principale : Les requêtes paramétrées.** On utilise des fonctions (comme `prepare()` et `execute()`) qui envoient d'abord le code SQL avec un emplacement réservé (souvent un `?`), puis qui envoient la valeur saisie par l'utilisateur séparément. Le moteur SQL sépare ainsi de manière étanche le "code" des "données", empêchant toute interprétation malveillante.
+- **L'utilisation d'ORM (Object-Relational Mapper) :** Des frameworks génèrent les requêtes à votre place et utilisent nativement des requêtes paramétrées par défaut, ce qui limite grandement les risques.
+- **La validation des entrées (en complément) :**
+  - Vérifier systématiquement le type attendu (est-ce que l'entrée est bien un nombre entier ? un email bien formaté ?).
+  - Rejeter ou nettoyer les caractères suspects de contrôle SQL (`'`, `"`, `--`, `;`).
+- **Le principe de moindre privilège :** L'utilisateur SQL configuré par l'application pour se connecter à la base ne doit avoir que les droits strictement nécessaires (il ne doit absolument pas être "root").
 
 [Retour en haut](#-table-des-matières)
 
 ---
 
-sudo nmap -sV -v -O -oA nmap IP_Network/CIDR
+### 🛠️ C503 - Pentest Interne : Outils, Commandes et Attaques MITM
 
-sudo nmap -sC IPCIBLE ou sudo nmap --script vuln IP CIBLE
+> **Objectif** : Découvrir et maîtriser les principaux outils utilisés lors d'un test d'intrusion (pentest) interne, comprendre les mécanismes de défense réseau classiques (Firewall, IDS/IPS), et plonger dans le fonctionnement détaillé des attaques de type "Man-in-the-Middle" (MITM) ciblant les réseaux locaux.
 
-ettercap + wireshark
+#### PARTIE 1 : Les outils du Pentest Interne
+
+La boîte à outils du pentester se divise en plusieurs catégories selon la phase de l'attaque. Pour être efficace, il faut choisir le bon outil au bon moment.
+
+##### **1. Outils de Reconnaissance et d'Énumération**
+
+L'objectif est de cartographier la cible, d'identifier les services actifs et de récolter un maximum d'informations avant d'attaquer.
+
+- **Nmap :** C'est le scanner réseau de référence. Il permet non seulement de découvrir les ports ouverts, mais aussi d'identifier le système d'exploitation et les versions précises des services. Il intègre un moteur de scripts (NSE) pour détecter des vulnérabilités.
+  - *Scan complet (versions, OS, tous les ports, verbeux) :* `sudo nmap -sV -p- -A -oA nmap_result -v 192.168.1.0/24`
+  - *Scan SYN (rapide et discret) avec détection de vulnérabilités :* `sudo nmap -sS -p 1-1024 -O -oA nmap_result -v --script vuln 192.168.1.0/24`
+  - *Découverte de machines simples (Ping scan / ARP) :* `sudo nmap -sn 192.168.1-4.0/24 -oA nmap_result -v`
+
+  - *Scan avec les scripts de reconnaissance par défaut :* `sudo nmap -sC IPCIBLE`
+  - *Scan ciblé sur la détection de vulnérabilités :* `sudo nmap --script vuln IP CIBLE`
+  - *Scan de réseau avec détection des versions et de l'OS (verbeux et sauvegardé) :* `sudo nmap -sV -v -O -oA nmap IP_Network/CIDR`
+
+- **Smbmap :** Outil en ligne de commande dédié à l'énumération des partages SMB (Windows). Il permet de lister les répertoires, vérifier les permissions (lecture/écriture) et trouver des fichiers sensibles.
+  - *Lister les partages avec un compte :* `./smbmap.py -H 192.168.86.214 -u Administrator -p asdf1234`
+  - *Exécuter une commande à distance (si droits suffisants) :* `python smbmap.py -u ariley -p 'P@$$w0rd1234!' -d ABC -x 'net group "Domain Admins" /domain' -H 192.168.2.50`
+
+- **Pingcastle :** Outil d'audit pour Active Directory (AD). Très rapide, il génère une cartographie et un rapport de santé (Healthcheck) avec un score de risque (sur 100), mettant en évidence les comptes à privilèges, les anomalies et les relations d'approbation (Trusts) dangereuses.
+  - *Lancer un bilan de santé :* `.\PingCastle.exe --server dc01.example.com -user user -password password --healthcheck`
+
+- **Bloodhound :** Outil graphique ultra-puissant qui extrait et cartographie les relations entre les objets d'un AD (utilisateurs, groupes, ordinateurs). Il permet de trouver visuellement les chemins les plus courts pour une escalade de privilèges vers le compte Administrateur du Domaine.
+  - *(Collecte de données avec SharpHound) :* `SharpHound.exe --CollectionMethod All`
+
+##### **2. Scanners de Vulnérabilités**
+
+Ils automatisent la recherche de failles de sécurité connues sur les infrastructures ou les applications web.
+
+- **Nikto :** Scanner web très simple, en ligne de commande, qui repère les fichiers dangereux, les serveurs obsolètes ou mal configurés.
+  - *Commande de base :* `nikto -h http://www.example.com`
+- **Nuclei :** Scanner de vulnérabilités moderne et collaboratif, basé sur des modèles (templates) au format YAML. Très rapide pour cibler des failles spécifiques.
+  - *Scanner avec un dossier de templates :* `nuclei -t templates-path/ -u http://www.example.com`
+- **WPScan :** Spécialisé exclusivement dans les sites WordPress. Il énumère les plugins vulnérables, les thèmes et les utilisateurs (nécessite un token API gratuit).
+  - *Scanner complet (failles, utilisateurs, thèmes) :* `wpscan --url http://www.example.com --api-token VULNDB_API_TOKEN -e v,u,t`
+- **OpenVAS & Nessus :** Solutions lourdes (souvent sur VM) pour scanner automatiquement des réseaux entiers. Nessus est particulièrement réputé pour sa base de données de failles constamment actualisée.
+
+##### **3. Exploitation et Fuzzing**
+
+- **Metasploit :** Le framework ultime d'exploitation. Il regroupe des milliers d'exploits prêts à l'emploi.
+  - *Chercher un exploit très fiable :* `msf6> search wordpress type:exploit rank:excellent`
+- **SQLMap :** Automatise la détection et l'exploitation complexe des failles d'injection SQL.
+  - *Tester un paramètre, forcer le HTTPS et lister les bases :* `sqlmap -u "http://www.example.com?id=1" -p id --level 3 --risk 2 --force-ssl --dbs`
+- **Hydra :** Outil de brute-force (et attaques par dictionnaire) très rapide pour tester massivement des mots de passe sur divers protocoles (HTTP, SSH, FTP...).
+  - *Brute-force d'une mire HTTP :* `hydra -l admin -P /usr/share/wordlists/rockyou.txt -s 80 -f example.com http-get /admin`
+- **Dirbuster / FFuF :** Outils de "fuzzing" web. Ils testent des milliers de mots issus d'un dictionnaire pour découvrir des fichiers ou dossiers cachés sur un serveur web.
+  - *Dirbuster (graphique/CLI) :* `dirbuster -u http://www.example.com -l /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt`
+  - *FFuF (ultra-rapide en Go) :* `ffuf -u http://www.example.com/FUZZ -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt`
+
+**💡 Bonnes pratiques du Pentester :**
+
+- **Prise de notes :** Indispensable (Cherry Tree, OneNote, Markdown) pour rédiger le rapport final.
+- **Sécurité et éthique :** N'utiliser que des outils compris, sur des cibles autorisées. Nettoyer les traces (fichiers laissés par les outils), ne pas conserver les données sensibles trop longtemps, et avertir le client si un outil invasif est utilisé.
+
+---
+
+#### PARTIE 2 : Sécurité Réseau & Attaques Man-In-The-Middle (MITM)
+
+Pour bien attaquer un réseau, il faut d'abord connaître les équipements de sécurité qui le protègent :
+
+- **Firewall (Pare-feu) :** Contrôle le trafic entre les réseaux via des règles (IP, Port, Protocole). Il segmente le réseau.
+- **IDS / IPS :** L'IDS (Détection) analyse le trafic et génère des alertes sur les comportements suspects. L'IPS (Prévention) va plus loin en bloquant activement ce trafic malveillant.
+- **WAF (Web Application Firewall) :** Un pare-feu spécialisé pour le web HTTP/HTTPS. Il bloque les attaques applicatives (Injections SQL, XSS, CSRF).
+- **VPN :** Encapsule et chiffre le trafic pour créer un tunnel sécurisé sur un réseau public.
+
+##### **1. Le concept du Man-in-the-Middle (MITM)**
+
+L'attaque MITM consiste à intercepter les communications entre deux machines sans qu'elles ne s'en rendent compte. L'attaquant, qui doit impérativement se trouver sur le même réseau local que la victime, s'intercale pour lire le trafic en clair, le modifier à la volée, ou y injecter des données malveillantes.
+
+##### **2. Les 3 techniques d'attaques MITM détaillées :**
+
+- **A. ARP Cache Poisoning (Empoisonnement ARP)**
+  - *Comment ça marche ?* Le protocole ARP associe une adresse IP (ex: 192.168.1.1) à une adresse physique MAC sur un réseau Ethernet.
+  - *La faille :* L'ARP est un vieux protocole sans aucune sécurité. Si une machine reçoit une réponse ARP (même sans l'avoir demandée), elle met à jour son cache. Les réponses ne sont pas authentifiées.
+  - *L'attaque :* L'attaquant envoie massivement de fausses réponses ARP à la victime (en disant "Je suis la box internet") et à la box (en disant "Je suis la victime"). Les deux machines mettent à jour leur table ARP et s'envoient désormais tout leur trafic via le PC de l'attaquant.
+  - *Outils :* `arpspoof`, `ettercap`, `bettercap`.
+  - *Protection :* Configurer les switchs pour bloquer les trames falsifiées, utiliser des EDR, monitorer le trafic réseau.
+
+- **B. DNS Spoofing (Usurpation DNS)**
+  - *Comment ça marche ?* Le DNS agit comme l'annuaire d'internet, traduisant les noms de domaine en adresses IP.
+  - *L'attaque :* L'attaquant intercepte la requête DNS de la victime. Si la victime demande l'adresse de sa banque, l'attaquant répond avec l'adresse IP de son propre serveur malveillant (Phishing).
+  - *Prérequis :* Pour intercepter cette requête, l'attaquant doit d'abord avoir réussi un ARP Poisoning, avoir accès au serveur DNS du réseau, ou exploiter une faille sur ce serveur.
+  - *Outils :* `dnsspoof`, souvent couplé à `ettercap` ou `bettercap`.
+  - *Protection :* Configuration DNS sécurisée et protection stricte contre l'ARP Spoofing.
+
+- **C. DHCP Spoofing**
+  - *Comment ça marche ?* Le DHCP (Dynamic Host Configuration Protocol) attribue automatiquement les IP aux nouvelles machines via 4 étapes (Discover, Offer, Request, ACK).
+  - *L'attaque :* L'attaquant lance un faux serveur DHCP sur sa machine. Lorsqu'une victime se connecte au réseau et demande une IP en broadcast (DHCP DISCOVER), l'attaquant répond *plus vite* que le vrai serveur avec un DHCP OFFER piégé. Il attribue une IP à la victime, mais surtout, il se désigne lui-même comme étant la passerelle par défaut et le serveur DNS ! C'est une méthode MITM redoutable et souvent plus discrète que l'ARP spoofing. Il peut aussi provoquer un déni de service (DoS) sur le vrai serveur DHCP pour s'assurer d'être le seul à répondre.
+  - *Outils :* `responder`.
+  - *Protection :* Surveiller le trafic DHCP et activer le "DHCP snooping" sur les switchs professionnels (qui bloque les paquets DHCP OFFER provenant de ports non autorisés).
+
+##### **🛡️ La protection ultime contre le MITM : le chiffrement**
+
+Même si un attaquant réussit un MITM parfait, il ne pourra rien faire si les données sont chiffrées de bout en bout. L'utilisation généralisée du HTTPS et des VPN rend l'interception des données illisible pour l'attaquant, ruinant ainsi ses efforts d'écoute.
+
+[Challenge C503](./challenges/Challenge_C503.md) :
+
+> 📚 **Ressources** :
+>
+> - <https://gitbook.secureaks.com/pentest/>
+> - <https://docs.rapid7.com/metasploit/metasploitable-2/>
+
+[Retour en haut](#-table-des-matières)
+
+---
