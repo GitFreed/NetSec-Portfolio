@@ -174,7 +174,9 @@ Commande utilisée pour extraire la liste du fichier [Resume.md](/RESUME.md)
 
 [Challenge C501](./Challenge_C501.md) : Déployer Kali, DVWA et exploitations XSS (Cross-site scripting)
 
-[Challenge C501](./Challenge_C501.md) : Exploitations de failles LFI (Local File Inclusion)
+[Challenge C502](./Challenge_C502.md) : Exploitations de failles LFI (Local File Inclusion)
+
+[Challenge C503](./Challenge_C503.md) : Attaque Man in the Middle et scans Nmap
 
 ---
 

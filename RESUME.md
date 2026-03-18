@@ -6802,7 +6802,7 @@ En tant qu'Admin Sys, la règle d'or est de ne **jamais** faire confiance à une
 
 - **HttpOnly sur les cookies :** Un flag de sécurité qui empêche totalement le JavaScript d'accéder au cookie de session.
 
-[Challenge C501](./challenges/Challenge_C501.md) :
+[Challenge C501](./challenges/Challenge_C501.md) : Déployer Kali, DVWA et exploitations XSS (Cross-site scripting)
 
 > 📚 **Ressources** :
 >
@@ -7026,7 +7026,7 @@ L'attaque MITM consiste à intercepter les communications entre deux machines sa
 
 Même si un attaquant réussit un MITM parfait, il ne pourra rien faire si les données sont chiffrées de bout en bout. L'utilisation généralisée du HTTPS et des VPN rend l'interception des données illisible pour l'attaquant, ruinant ainsi ses efforts d'écoute.
 
-[Challenge C503](./challenges/Challenge_C503.md) :
+[Challenge C503](./challenges/Challenge_C503.md) : Attaque Man in the Middle et scans Nmap
 
 > 📚 **Ressources** :
 >
