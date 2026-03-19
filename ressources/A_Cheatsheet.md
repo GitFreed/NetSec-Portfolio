@@ -40,6 +40,7 @@ Cette Cheatsheet est vivante ! Elle évolue au fur et à mesure de mon apprentis
 - [Networking](#-networking)
 - [Architecture](#️-architecture)
 - [Pentesting](#️-pentesting)
+- [Pentesting Cheatsheet](./A_Kali_Cheatsheet.md)
 - [SysAdmin](#️-administration-systèmes)
 
 ---

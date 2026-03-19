@@ -21,8 +21,7 @@ Ce répertoire est organisé pour refléter mon apprentissage quotidien :
 
 - **💻 `/challenges`** : Retrouvez [ici mes **labs**, exercices quotidiens et scripts](./challenges/Challenge_-_List.md) réalisés pour valider les concepts techniques abordés en cours.
 - **📝 `RESUME.md`** : [Fiche de synthèse](./RESUME.md) personnelle qui regroupe les **notions essentielles** que j'ai acquises.
-- **📌 `CHEATSHEET.md`** : [Aide-mémoire technique](./CHEATSHEET.md) (Quick Ref) centralisant les commandes CLI, schémas d'architecture et protocoles clés en Réseaux, Système et Sécurité.
-- **📚 `/ressources`** : Documentation technique et outils utiles pour l'administration réseau.
+- **📚 `/ressources`** : [Aide-mémoire](./ressources/A_Cheatsheet.md), documentation technique et outils utiles pour l'administration réseau.
 - **📸 `/images`** : Schémas et captures d'écran illustrant mes projets.
 
 ---
