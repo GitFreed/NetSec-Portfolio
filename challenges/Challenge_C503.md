@@ -8,10 +8,11 @@ Le challenge du jour consiste à créer un compte sur TryHackMe, puis réaliser 
 
 - Optionnel : Nmap <https://tryhackme.com/room/furthernmap>
 
-[Cours C503.](/RESUME.md#️-c503---pentest-interne--outils-commandes-et-attaques-mitm)
+[Cours C503.](/RESUME.md#️-c503---pentest-interne--de-la-reconnaissance-à-lexploitation-focus-mitm)
 
 > 📚 **Ressources** :
 >
+> - Gitbook notes Secureaks : <https://gitbook.secureaks.com/pentest/>
 
 ---
 

@@ -178,6 +178,8 @@ Commande utilisée pour extraire la liste du fichier [Resume.md](/RESUME.md)
 
 [Challenge C503](./Challenge_C503.md) : Attaque Man in the Middle et scans Nmap
 
+[Challenge C504](./Challenge_C504.md) : Framework Metasploit, faille EternalBlue, piratage de réseaux Wi-Fi et l'élévation de privilèges sous Linux
+
 ---
 
 [Homelab Adguard](./Homelab_AdGuard.md) : Déployer AdGuard Home, serveur DHCP et DNS sinkhole.

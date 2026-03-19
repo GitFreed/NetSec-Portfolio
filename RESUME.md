@@ -165,9 +165,9 @@ Cette fiche synthétise les notions fondamentales abordées durant les cours en 
 - [C501. Introduction au Pentesting & Faille XSS](#-c501-introduction-au-pentesting--faille-xss)
 - [C502. Faille LFI : Local File Inclusion](#-c502-la-faille-lfi-local-file-inclusion)
 - [C502.2 - Comprendre et exploiter les injections SQL (SQLi)](#-c5022---comprendre-et-exploiter-les-injections-sql-sqli)
-- [C503 - Pentest Interne : Outils, Commandes et Attaques MITM](#️-c503---pentest-interne--outils-commandes-et-attaques-mitm)
-- [C504 - Pentest Interne :](.)
-- [C505 - Pentest Interne : DoS et QCM Fin de Saison](.)
+- [C503 - Pentest Interne : De la Reconnaissance à l'Exploitation (Focus MITM)](#️-c503---pentest-interne--de-la-reconnaissance-à-lexploitation-focus-mitm)
+- [C504 - Vulnérabilités, Attaques Wi-Fi et Sécurité Active Directory](#️-c504---vulnérabilités-attaques-wi-fi-et-sécurité-active-directory)
+- [C505 - DoS et QCM Fin de Saison](.)
 
 ---
 
@@ -6929,7 +6929,7 @@ La règle d'or est stricte : ne **jamais** concaténer directement des entrées 
 
 ---
 
-### 🛠️ C503 - Pentest Interne : Outils, Commandes et Attaques MITM
+### 🛠️ C503 - Pentest Interne : De la Reconnaissance à l'Exploitation (Focus MITM)
 
 > **Objectif** : Découvrir et maîtriser les principaux outils utilisés lors d'un test d'intrusion (pentest) interne, comprendre les mécanismes de défense réseau classiques (Firewall, IDS/IPS), et plonger dans le fonctionnement détaillé des attaques de type "Man-in-the-Middle" (MITM) ciblant les réseaux locaux.
 
