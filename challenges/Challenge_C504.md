@@ -233,3 +233,5 @@ Voici le workflow complet et les commandes pour pirater un réseau Wi-Fi de type
 ## 🎯 Résolution Lab Linux Privilege
 
 [TryHackMe - Linux Privilege Escalation](https://tryhackme.com/room/linprivesc)
+
+TBC...
