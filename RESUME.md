@@ -7039,15 +7039,85 @@ Même si un attaquant réussit un MITM parfait, il ne pourra rien faire si les d
 
 ---
 
-### 🛠️ C504 - Pentest Interne : A
+### 🛡️ C504 - Vulnérabilités, Attaques Wi-Fi et Sécurité Active Directory
 
-> **Objectif**
+**Objectif :** Comprendre l'impact de la vulnérabilité historique EternalBlue, maîtriser les techniques d'audit et de défense des réseaux Wi-Fi, et identifier/corriger les mauvaises configurations courantes d'un environnement Active Directory (AD).
 
-[Challenge C505](./challenges/Challenge_C505.md) :
+#### 1️⃣ La Vulnérabilité EternalBlue (CVE-2017-0144)
+
+EternalBlue est une faille critique qui a profondément marqué l'histoire de la cybersécurité. Elle est le parfait exemple des conséquences désastreuses que peut avoir l'utilisation de protocoles obsolètes combinée à un manque de mises à jour.
+
+- **La vulnérabilité :** Il s'agit d'une faille d'exécution de code à distance (RCE) présente dans le protocole SMBv1 (Server Message Block), un très vieux protocole de partage de fichiers et d'imprimantes sous Windows.
+- **L'impact :** La faille est redoutable car elle ne nécessite aucune interaction de la part de l'utilisateur (pas de clic sur un lien ou de pièce jointe). Elle permet à un attaquant distant et non authentifié d'injecter des paquets malveillants pour exécuter du code arbitraire avec les privilèges maximum (SYSTEM) sur la machine cible.
+- **Origine :** L'exploit a été initialement découvert et développé en secret par la NSA américaine pour ses propres opérations de cyberespionnage.
+- **La fuite :** Le groupe de hackers "Shadow Brokers" a réussi à dérober cet outil cyber-offensif et l'a publié publiquement sur Internet en avril 2017, le mettant à la disposition de tous les cybercriminels.
+- **Conséquences mondiales :** Cette fuite a ouvert la boîte de Pandore. En mai et juin 2017, elle a permis la propagation de malwares dévastateurs de type "vers", notamment le ransomware **WannaCry** (qui a paralysé plus de 200 000 PC dans 150 pays, y compris des hôpitaux) et le malware destructeur **NotPetya**.
+- **La leçon à retenir :** L'ironie de cette crise est que Microsoft avait publié le bulletin de sécurité correctif (MS17-010) en mars 2017, soit un mois avant la fuite. C'est la lenteur des entreprises à appliquer les correctifs (patch management) et leur réticence à désactiver le vieux protocole SMBv1 qui ont rendu cette épidémie possible.
+
+#### 2️⃣ Les Attaques Wi-Fi
+
+Contrairement aux réseaux filaires, les ondes Wi-Fi voyagent dans l'air. N'importe qui se trouvant à portée physique du signal peut écouter ou interférer avec les communications, ce qui rend ces réseaux intrinsèquement vulnérables s'ils sont mal configurés.
+
+**Types d'attaques :**
+
+- **Déni de Service (DoS) :** L'attaquant n'a pas besoin d'être connecté au réseau. Il inonde le point d'accès (AP) ou les clients avec des trames de "désauthentification" falsifiées, forçant les utilisateurs légitimes à se déconnecter continuellement ou saturant totalement le matériel.
+- **Cracking :** Consiste à casser les clés de sécurité.
+  - Sur les réseaux WPA-PSK, cela se fait souvent en capturant le "Handshake" (la poignée de main en 4 temps lors de la connexion légitime d'un utilisateur), puis en réalisant une attaque par dictionnaire (brute-force) hors-ligne pour deviner le mot de passe.
+  - Les attaquants ciblent aussi souvent le WPS (Wi-Fi Protected Setup), un système de code PIN à 8 chiffres souvent vulnérable au brute-force.
+- **Evil Twin (Jumeau Maléfique) :** L'attaquant crée un faux point d'accès Wi-Fi portant exactement le même nom (SSID) que le réseau légitime de l'entreprise ou du café. Les appareils des victimes s'y connectent automatiquement. L'attaquant peut alors intercepter le trafic en clair ou afficher un faux portail de connexion (Phishing) pour voler des identifiants.
+- **KARMA / MANA :** Une attaque plus sournoise. Nos téléphones crient constamment dans le vide "Es-tu là, réseau de ma Box ?" ou "Es-tu là, réseau du McDo ?". Le routeur malveillant de l'attaquant (comme un Wi-Fi Pineapple) écoute ces requêtes et répond : "Oui, c'est moi !", forçant ainsi l'appareil à se connecter à lui.
+
+**Outils et Commandes essentielles :**
+
+- **Aircrack-ng :** La suite couteau suisse du pentest Wi-Fi.
+  - *Écoute et capture des paquets (Mode Monitor) :* `airodump-ng wlan0mon`.
+  - *Cassage d'une clé WPA via un fichier de capture :* `aircrack-ng handshake.cap -w wordlist.txt`.
+- **MDK4 :** Outil puissant pour générer des paquets malveillants, idéal pour tester la résilience d'un réseau.
+  - *Test de déni de service par désauthentification :* `mdk4 wlan0mon a -i [MAC] -m`.
+- **Reaver :** L'outil de référence pour automatiser l'exploitation et le brute-force des failles du code PIN WPS.
+  - *Lancement de l'attaque :* `reaver -i wlan1mon -b 00:C0:CA:78:B1:37 -c 9 -K 1 -N -vv`.
+- **Wifiphisher :** Automatise la création d'Evil Twins et de fausses pages de connexion (portails captifs) pour tromper les utilisateurs.
+  - *Attaque ciblée :* `wifiphisher -aI wlan0 -jI wlan1 -p firmware-upgrade --handshake-capture handshake.pcap`.
+
+**Contre-mesures :**
+
+- Passer au standard WPA3 (qui rend les attaques par dictionnaire hors-ligne impossibles) ou utiliser WPA2 avec un mot de passe très long et complexe.
+- Désactiver impérativement la fonctionnalité WPS sur tous les routeurs.
+- Segmenter le réseau : créer un réseau "Invité" totalement isolé du réseau interne de l'entreprise.
+- Déployer des systèmes de détection d'intrusion sans fil (WIDS) pour repérer l'apparition de Jumeaux Maléfiques ou d'attaques DoS.
+
+#### 3️⃣ Sécurité et Mauvaises Configurations d'Active Directory (AD)
+
+L'Active Directory (AD) est l'annuaire central des entreprises sous Windows. Il gère tous les utilisateurs, les ordinateurs et les droits d'accès. S'il tombe, c'est tout le système d'information qui est compromis. C'est donc la cible numéro 1 des attaquants une fois infiltrés sur un réseau.
+
+**Vulnérabilités et Configurations à risques :**
+
+- **Privilèges excessifs :** La règle du "moindre privilège" n'est souvent pas respectée. On trouve trop de comptes inutiles dans le groupe "Administrateurs du domaine" (DA). Parfois, les groupes sont tellement imbriqués (le groupe A est dans le groupe B qui est dans le groupe C...) que les administrateurs ne savent même plus qui a réellement les droits d'administration.
+- **Mots de passe faibles et exposés :** Des mots de passe de comptes de services (qui n'expirent jamais) sont parfois faciles à deviner. Pire, on trouve souvent des mots de passe écrits en clair dans des scripts (fichiers .bat, .ps1) ou laissés dans des dossiers partagés accessibles à tous.
+- **Protocoles obsolètes :** L'utilisation de vieux protocoles comme NTLMv1 (vulnérable au relais d'authentification) ou l'usage du LDAP en clair sur le port 389, qui permet à un attaquant d'écouter le réseau pour intercepter des requêtes sensibles.
+- **Permissions (ACL) mal configurées :** Des utilisateurs standards se retrouvent parfois avec des droits de modification sur des objets critiques de l'AD, leur permettant de s'octroyer eux-mêmes des droits d'administrateur.
+- **Manque d'isolation (Tiering) :** Les administrateurs se connectent avec leur compte à haut privilège sur des machines bureautiques standards. Si cette machine est infectée, l'attaquant vole les identifiants administrateur.
+
+**Attaques AD courantes :**
+
+- **Kerberoasting :** N'importe quel utilisateur du domaine peut demander un ticket d'accès (TGS) pour un service. L'attaquant demande ce ticket, l'exporte, et tente de casser la signature chiffrée de ce ticket sur sa propre machine (hors-ligne) pour retrouver le mot de passe en clair du compte de service.
+- **Pass-the-Hash (PTH) :** Windows ne stocke pas les mots de passe en clair, mais sous forme d'empreinte cryptographique (Hash NTLM). Le protocole NTLM accepte ce hash comme preuve d'identité valide. L'attaquant n'a donc pas besoin de déchiffrer le hash : il lui suffit de le voler en mémoire (via Mimikatz) et de le "passer" au serveur pour s'authentifier.
+- **Golden Ticket :** L'attaque post-exploitation absolue. Une fois que l'attaquant est devenu administrateur du domaine, il vole la clé maîtresse de l'AD (le hash du compte `krbtgt`). Il peut alors forger lui-même de faux tickets d'authentification Kerberos, se donnant un accès indétectable et illimité à n'importe quelle ressource du réseau, même si l'administrateur légitime change son mot de passe.
+
+**Outils d'évaluation et d'exploitation :**
+
+- **PingCastle :** Outil français de référence (Blue Team). Il génère un rapport de santé très visuel du domaine, attribue une note de risque et liste les vulnérabilités à corriger en priorité.
+  - *Commande :* `PingCastle.exe --healthcheck`.
+- **BloodHound :** L'outil favori des pentesters (Red Team). Il collecte toutes les données de l'AD (qui a le droit sur quoi, qui est connecté où) et dessine un immense graphe de relations. Il calcule ensuite automatiquement le chemin le plus court pour passer d'un simple utilisateur standard à un Administrateur du domaine.
+  - *Commande de collecte :* `SharpHound.exe --CollectionMethod All`.
+- **Mimikatz :** Le célèbre outil de post-exploitation de Benjamin Delpy. Utilisé pour extraire les mots de passe en clair ou les hashs directement depuis la mémoire RAM (processus LSASS) d'une machine Windows compromise, permettant ainsi les attaques Pass-the-Hash ou la création de Golden Tickets.
+
+[Challenge C504](./challenges/Challenge_C504.md) : framework Metasploit, faille EternalBlue, piratage de réseaux Wi-Fi et l'élévation de privilèges sous Linux
 
 > 📚 **Ressources** :
 >
-> - Audit AD aec Pingcastle : <https://www.it-connect.fr/comment-auditer-lactive-directory-avec-pingcastle/>
+> - Advanced Wifi scanning with crack-ng : <https://www.youtube.com/watch?v=uKZb3D-PHS0>
+> - Audit AD avec Pingcastle : <https://www.it-connect.fr/comment-auditer-lactive-directory-avec-pingcastle/>
 
 [Retour en haut](#-table-des-matières)
 
