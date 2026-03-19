@@ -166,6 +166,8 @@ Cette fiche synthétise les notions fondamentales abordées durant les cours en 
 - [C502. Faille LFI : Local File Inclusion](#-c502-la-faille-lfi-local-file-inclusion)
 - [C502.2 - Comprendre et exploiter les injections SQL (SQLi)](#-c5022---comprendre-et-exploiter-les-injections-sql-sqli)
 - [C503 - Pentest Interne : Outils, Commandes et Attaques MITM](#️-c503---pentest-interne--outils-commandes-et-attaques-mitm)
+- [C504 - Pentest Interne :](.)
+- [C505 - Pentest Interne : DoS et QCM Fin de Saison](.)
 
 ---
 
@@ -7032,6 +7034,35 @@ Même si un attaquant réussit un MITM parfait, il ne pourra rien faire si les d
 >
 > - Gitbook notes Secureaks : <https://gitbook.secureaks.com/pentest/>
 > - Metasploitable 2, environnement pentest & sec testing : <https://docs.rapid7.com/metasploit/metasploitable-2/>
+
+[Retour en haut](#-table-des-matières)
+
+---
+
+### 🛠️ C504 - Pentest Interne : A
+
+> **Objectif**
+
+[Challenge C505](./challenges/Challenge_C505.md) :
+
+> 📚 **Ressources** :
+>
+> - Audit AD aec Pingcastle : <https://www.it-connect.fr/comment-auditer-lactive-directory-avec-pingcastle/>
+
+[Retour en haut](#-table-des-matières)
+
+---
+
+### 🛠️ C505 - Pentest Interne : DOS et QCM Fin de saison
+
+> **Objectif**
+
+[QCM Saison C5](.)
+
+![Résultat QCM](.)
+
+> 📚 **Ressources** :
+>
 
 [Retour en haut](#-table-des-matières)
 
