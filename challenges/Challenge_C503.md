@@ -145,3 +145,9 @@ Les scripts Nmap sont écrits en **Lua** et rangés par catégories (`safe`, `in
 ![FTPano](/images/2026-03-18-23-59-52.png)
 
 ![double](/images/2026-03-19-00-07-55.png)
+
+---
+
+L'attaque ~~macof~~ McCain !
+
+![macof](/images/2026-03-19-10-37-32.png)
