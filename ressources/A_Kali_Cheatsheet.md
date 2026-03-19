@@ -1,6 +1,7 @@
 # 🏴‍☠️ Pentest & Kali Linux Cheatsheet
 
 > **"There is no patch for human stupidity."** — Kevin Mitnick
+>
 > *(Mais pour le reste des failles, on a Metasploit !)*
 
 ## 📋 À propos
