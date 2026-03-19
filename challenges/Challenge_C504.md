@@ -9,7 +9,7 @@ Réaliser les labs suivants sur TryHackMe :
 - Metasploit <https://tryhackme.com/room/metasploitintro>
 - Eternal Blue <https://tryhackme.com/room/blue> (optionnel)
 - Wifi Hack <https://tryhackme.com/room/wifihacking101>
-- Linus Privilege <https://tryhackme.com/room/linprivesc> (optionnel)
+- Linux Privilege <https://tryhackme.com/room/linprivesc> (optionnel)
 
 [Cours C504.](/RESUME.md#️-c504---vulnérabilités-attaques-wi-fi-et-sécurité-active-directory)
 
@@ -178,4 +178,58 @@ Voici l'ordre exact et les commandes utilisées pour compromettre un serveur Win
 
 ---
 
-## Résolution Lab tbc
+## 🎯 Résolution Lab Wifi Aircrack-ng
+
+[TryHackMe - Wifi Hacking 101](https://tryhackme.com/room/wifihacking101)
+
+### **Task 1 : The basics - An Intro to WPA**
+
+- **Concept :** Les réseaux WPA/WPA2 "Personal" (ceux de nos box internet avec une clé PSK - Pre-Shared Key) n'envoient jamais le mot de passe en clair. L'authentification se fait via un échange cryptographique appelé **4-way handshake**.
+- **Vulnérabilité :** La seule méthode d'attaque consiste à capturer ce *handshake*, puis à faire une attaque par **force brute** (ou dictionnaire) hors-ligne.
+- **Limites :** Un mot de passe WPA2 fait au minimum 8 caractères. Cette attaque classique ne fonctionne pas sur le WPA2-EAP (réseaux d'entreprises utilisant un serveur RADIUS).
+
+### **Task 2 : You're being watched - Capturing packets to attack**
+
+- **Objectif :** Écouter les ondes Wi-Fi environnantes pour intercepter le fameux *handshake* lorsqu'un appareil se connecte à la box.
+- **Méthode :** Il faut passer sa carte Wi-Fi physique en mode "Monitor" (espion). Ensuite, on cible spécifiquement l'adresse MAC (BSSID) de la box cible et son canal d'émission pour enregistrer tout son trafic dans un fichier de capture (`.cap`).
+
+### **Task 3 : Aircrack-ng - Let's Get Cracking**
+
+- **Objectif :** Casser le mot de passe contenu dans le fichier de capture.
+- **Méthode :** On utilise la puissance de calcul de notre machine pour tester des millions de mots de passe d'un dictionnaire (comme `rockyou.txt`) contre le *handshake*.
+- **Vitesse :** Pour aller encore plus vite, on peut utiliser la puissance d'une carte graphique (GPU) avec un outil comme *Hashcat*, ce qui nécessite de convertir le fichier `.cap` en `.hccapx` (via l'option `-j`).
+- **Résultat :** Mot de passe de la box *James Honor 8* trouvé en quelques secondes : `xxxxxxxxxxxx`.
+
+![crack](/images/2026-03-19-23-46-02.png)
+
+---
+
+## 📝 Fiche Récap : Suite Aircrack-ng (Attaque WPA/WPA2)
+
+Voici le workflow complet et les commandes pour pirater un réseau Wi-Fi de type WPA2-PSK.
+
+### **1. Préparation de la carte réseau (airmon-ng)**
+
+- `airmon-ng check kill` : Tue tous les processus Linux (comme NetworkManager) qui pourraient interférer avec l'écoute du Wi-Fi.
+- `airmon-ng start wlan0` : Passe la carte Wi-Fi `wlan0` en mode espion (monitor mode). La carte s'appelle désormais souvent `wlan0mon`.
+
+### **2. Repérage et Capture (airodump-ng)**
+
+- `airodump-ng wlan0mon` : Lance le radar global. Affiche tous les réseaux Wi-Fi autour de toi avec leur adresse MAC (BSSID) et leur canal (CH).
+- `airodump-ng --bssid <ADRESSE_MAC> --channel <NUM_CANAL> -w <nom_fichier> wlan0mon` :
+  - Cible une box précise.
+  - Écoute sur le bon canal.
+  - `-w` enregistre tous les paquets interceptés dans un fichier (qui aura l'extension `.cap`).
+  - *But : Attendre qu'un "WPA Handshake" s'affiche en haut à droite de l'écran.*
+
+### **3. Cassage du mot de passe (aircrack-ng)**
+
+- `aircrack-ng -b <ADRESSE_MAC_CIBLE> -w /chemin/vers/dictionnaire.txt <fichier_capture.cap>` :
+  - Lance l'attaque par dictionnaire (ex: avec `/usr/share/wordlists/rockyou.txt`) contre le handshake capturé.
+  - `-b` permet de préciser quelle box attaquer si le fichier de capture contient plusieurs réseaux.
+
+---
+
+## 🎯 Résolution Lab Linux Privilege
+
+[TryHackMe - Linux Privilege Escalation](https://tryhackme.com/room/linprivesc)
