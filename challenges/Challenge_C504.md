@@ -39,7 +39,7 @@ Réaliser les labs suivants sur TryHackMe :
 - **Fonctionnement :** C'est un terminal spécifique fonctionnant par "contexte". Quand on sélectionne un exploit, on "entre" dedans.
 - **Navigation :** Utilisation des commandes `search` (pour trouver un module via mot-clé ou CVE), `use` (pour le sélectionner), `info` (pour lire ses détails et sa fiabilité/rank) et `back` (pour quitter le module). L'auto-complétion (touche TAB) est ton meilleure amie.
 
-![console](/images/2026-03-19-17-47-58.png)
+![console](/images/2026-03-19-19-35-18.png)
 
 ### **Task 4 : Working with modules**
 
@@ -177,3 +177,5 @@ Voici l'ordre exact et les commandes utilisées pour compromettre un serveur Win
 - `john --format=NT --wordlist=/usr/share/wordlists/rockyou.txt hash.txt` : Lancer l'attaque par dictionnaire sur l'empreinte volée.
 
 ---
+
+## Résolution Lab tbc
