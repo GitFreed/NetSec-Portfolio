@@ -1,4 +1,32 @@
-#
+# 🏴‍☠️ Pentest & Kali Linux Cheatsheet
+
+> **"There is no patch for human stupidity."** — Kevin Mitnick
+> *(Mais pour le reste des failles, on a Metasploit !)*
+
+## 📋 À propos
+
+Ce document est mon "grimoire" personnel offensif. Il centralise les **workflows d'attaque**, les **commandes Kali Linux** et les **outils de pentest** que j'utilise au quotidien pour mes CTF et labs (TryHackMe, etc.).
+
+L'objectif : moins de par cœur, plus d'action. Avoir la bonne syntaxe sous la main en un clin d'œil.
+
+## 🚀 Contenu
+
+Tu y trouveras mes mémos sur les différentes phases d'un audit :
+
+- **Reconnaissance :** Scans Nmap (furtivité, scripts NSE), énumération.
+- **Exploitation :** Metasploit Framework, gestion des payloads (Meterpreter).
+- **Attaques Réseau & Wi-Fi :** MitM (ARP Spoofing), écoute (Aircrack-ng, TCPDump).
+- **Post-Exploitation :** Dump de base SAM, cracking de hashs (John The Ripper).
+
+---
+
+### ⚠️ Disclaimer Éthique
+
+Ce dépôt est strictement réalisé dans un but **éducatif**.
+
+Les techniques et outils présentés ici sont documentés pour comprendre comment sécuriser les systèmes en pensant comme un attaquant. Ils ne doivent être utilisés que dans des environnements de test (Labs) ou sur des cibles pour lesquelles vous avez une **autorisation explicite**.
+
+*Hack the planet, but stay out of jail!*
 
 ---
 
