@@ -7127,9 +7127,9 @@ L'Active Directory (AD) est l'annuaire central des entreprises sous Windows. Il 
 
 > **Objectif**
 
-[QCM Saison C5](.)
+[QCM Saison C5](https://docs.google.com/forms/d/e/1FAIpQLSc2C5TWV42APORUmwITj3Q_-g107WbihdGCBgmBTvW6Oo8IQQ/viewform?usp=publish-editor)
 
-![Résultat QCM](.)
+![Résultat QCM](/images/2026-03-20-11-42-10.png)
 
 > 📚 **Ressources** :
 >
