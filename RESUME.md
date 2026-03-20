@@ -159,6 +159,7 @@ Cette fiche synthétise les notions fondamentales abordées durant les cours en 
 - [C402. Construction d'Images et Orchestration avec Docker Compose](#️-c402-construction-dimages-et-orchestration-avec-docker-compose)
 - [C403. Docker Swarm & Portainer](#-c403-orchestration-avec-docker-swarm-et-portainer)
 - [C404. Conteneurs Systèmes : LXC et LXD](#-c404-conteneurs-systèmes--lxc-et-lxd-incus)
+- [Fin Saison C4 : QCM](#️-fin-saison-c4-conteneurs-et-orchestration)
 
 ### [Saison C5. Pentesting 🕵️](#️-saison-c5-pentesting)
 
@@ -167,7 +168,8 @@ Cette fiche synthétise les notions fondamentales abordées durant les cours en 
 - [C502.2 - Comprendre et exploiter les injections SQL (SQLi)](#-c5022---comprendre-et-exploiter-les-injections-sql-sqli)
 - [C503 - Pentest Interne : De la Reconnaissance à l'Exploitation (Focus MITM)](#️-c503---pentest-interne--de-la-reconnaissance-à-lexploitation-focus-mitm)
 - [C504 - Vulnérabilités, Attaques Wi-Fi et Sécurité Active Directory](#️-c504---vulnérabilités-attaques-wi-fi-et-sécurité-active-directory)
-- [C505 - DoS et QCM Fin de Saison](.)
+- [C505. Déni de Service (DoS) et Déni de Service Distribué (DDoS)](#-c505-déni-de-service-dos-et-déni-de-service-distribué-ddos)
+- [Fin Saison C5 : QCM](#️-fin-saison-c5-pentesting)
 
 ---
 
@@ -7123,13 +7125,84 @@ L'Active Directory (AD) est l'annuaire central des entreprises sous Windows. Il 
 
 ---
 
-### 🛠️ C505 - Pentest Interne : DOS et QCM Fin de saison
+### 💥 C505. Déni de Service (DoS) et Déni de Service Distribué (DDoS)
 
-> **Objectif**
+**Objectif :** Comprendre comment les attaquants font "tomber" des serveurs pour les rendre inaccessibles, apprendre à utiliser `hping3` pour tester la résilience d'un système, et surtout, savoir comment configurer ses défenses pour encaisser le choc.
 
-[QCM Saison C5](https://docs.google.com/forms/d/e/1FAIpQLSc2C5TWV42APORUmwITj3Q_-g107WbihdGCBgmBTvW6Oo8IQQ/viewform?usp=publish-editor)
+#### 1. La théorie : DoS vs DDoS (Le combat de David contre Goliath)
 
-![Résultat QCM](/images/2026-03-20-11-42-10.png)
+L'objectif principal d'une attaque de déni de service est très simple : rendre un système ou un service totalement indisponible pour les vrais utilisateurs. L'attaquant va chercher à saturer les ressources de sa cible (le processeur, la mémoire, ou la bande passante) jusqu'à ce que la machine plante ou ne puisse plus répondre. Les conséquences pour une entreprise sont directes : interruption de services critiques, perte d'argent et mauvaise image auprès des clients.
+
+Mais il y a une différence de taille selon l'arsenal utilisé :
+
+- **Le DoS (Déni de Service classique) :** C'est une attaque menée depuis une seule et unique machine. Comme la source est unique, c'est généralement plus facile à repérer et à bloquer (avec un bon pare-feu).
+- **Le DDoS (Déni de Service Distribué) :** C'est le niveau supérieur. L'attaque est orchestrée par un "botnet", c'est-à-dire une armée de milliers d'ordinateurs ou d'objets connectés infectés à travers le monde. C'est un véritable cauchemar à stopper car le trafic malveillant vient de partout en même temps et est dispersé géographiquement.
+
+#### 2. Les 4 grandes tactiques d'attaque
+
+Les pirates utilisent différentes stratégies selon ce qu'ils veulent casser :
+
+- **Saturer les tuyaux (Attaques volumétriques) :** Le but est de boucher la bande passante du réseau en envoyant une tonne de requêtes inutiles, comme un Ping flood (requêtes ICMP ou UDP).
+- **Épuiser le serveur (Épuisement de ressources) :** Ici, on vise le cœur de la machine. On envoie des requêtes spécifiques (comme HTTP Flood ou Slowloris) qui forcent le serveur à consommer toute sa mémoire RAM ou son CPU.
+- **Casser l'application (Couche application) :** On cible une fonctionnalité très lourde à calculer pour le serveur, comme en le bombardant de requêtes de recherche complexes (SQL) ou de requêtes DNS.
+- **Effet boule de neige (Amplification) :** L'attaquant envoie une petite requête trompeuse à un serveur légitime sur internet (ex: un serveur d'heure NTP). Ce serveur, croyant répondre à la victime, lui renvoie une réponse énorme. Le trafic est amplifié.
+
+**Comment repérer qu'on se fait attaquer ?**
+
+- Le trafic réseau explose soudainement sans raison.
+- Le site web devient extrêmement lent, puis totalement inaccessible.
+- Les ressources du serveur (CPU, RAM, espace disque) sont dans le rouge.
+- On observe des connexions venant de dizaines d'IP bizarres et inconnues.
+
+#### 3. Côté Red Team : Simuler l'attaque avec `hping3`
+
+Pour tester si un serveur tient la charge, l'outil de référence sous Linux est `hping3`. Il permet de forger des paquets sur mesure.
+
+- **Le déluge de Ping (ICMP Flood) :** Envoie massivement de gros paquets pour saturer la connexion.
+
+    ```bash
+    hping3 --flood -d 65495 --icmp <IP_de_la_cible>
+    ```
+
+- **La saturation des connexions (TCP SYN Flood) :** On lance des milliers de demandes de connexion au serveur web (port 80) sans jamais les terminer. Le serveur attend dans le vide et sature.
+
+    ```bash
+    hping3 -d 65495 --syn --flood <IP_de_la_cible> -p 80
+    ```
+
+- **Le bombardement aveugle (UDP Flood) :** Très efficace pour saturer des services comme le DNS (port 53).
+
+    ```bash
+    hping3 --flood --udp -d 65495 <IP_de_la_cible> -p 53
+    ```
+
+- **L'attaque bas niveau (RAW IP Flood) :** On envoie des paquets bruts directement sur la couche IP.
+
+    ```bash
+    hping3 --flood --rawip -d 65495 <IP_de_la_cible>
+    ```
+
+#### 4. Côté Blue Team : Mettre en place les boucliers
+
+Face à ces attaques, il faut combiner plusieurs couches de protection :
+
+**1. Verrouiller la configuration (Contre le DoS) :**
+
+- Toujours surveiller son trafic réseau et ses ressources en temps réel pour voir venir la vague.
+- Configurer les firewalls pour bloquer les requêtes malveillantes et utiliser le *Rate Limiting* (limiter le nombre de connexions par adresse IP).
+- Côté développeurs : optimiser le code de l'application (éviter les requêtes trop lourdes) et limiter la taille des fichiers que les utilisateurs peuvent uploader.
+
+**2. Encaisser le choc (Contre le DDoS) :**
+
+- Faire appel à des professionnels : utiliser des boucliers spécialisés de protection dédiés comme Cloudflare ou Akamai.
+- Mettre le site derrière un CDN (Content Delivery Network). Le réseau mondial du CDN absorbera le trafic à la place du petit serveur de l'entreprise.
+- Utiliser des systèmes de détection et prévention automatiques (IDS/IPS) pour analyser le trafic et bloquer les flux suspects.
+
+**3. Prévoir le pire (Résilience) :**
+
+- Avoir une infrastructure capable de grossir automatiquement et configurer des systèmes de redondance pour répartir la charge sur plusieurs serveurs.
+- Préparer un plan de réponse aux incidents pour que l'équipe sache exactement quoi faire quand l'attaque commence.
+- S'entendre avec son Fournisseur d'Accès Internet (FAI) pour qu'il filtre le mauvais trafic avant même qu'il n'arrive sur votre réseau.
 
 > 📚 **Ressources** :
 >
@@ -7137,3 +7210,15 @@ L'Active Directory (AD) est l'annuaire central des entreprises sous Windows. Il 
 [Retour en haut](#-table-des-matières)
 
 ---
+
+### 🕵️ Fin Saison C5. Pentesting
+
+[QCM Saison C5](https://docs.google.com/forms/d/e/1FAIpQLSc2C5TWV42APORUmwITj3Q_-g107WbihdGCBgmBTvW6Oo8IQQ/viewform?usp=publish-editor)
+
+![Résultat QCM](/images/2026-03-20-11-42-10.png)
+
+[Retour en haut](#-table-des-matières)
+
+---
+
+![End](/images/2026-03-20-16-31-25.png)
