@@ -161,6 +161,7 @@ Voici l'ordre exact et les commandes utilisées pour compromettre un serveur Win
 ### **7. Gestion de Projet & Base de Données (PostgreSQL)**
 
 *Pour ne pas se perdre quand on attaque plusieurs machines.*
+
 - `workspace -a <nom_projet>` : Crée un nouvel espace de travail ("workspace") pour isoler les données d'un audit (ex: `workspace -a TryHackMe`).
 - `workspace <nom_projet>` : Permet de basculer d'un espace à l'autre (taper juste `workspace` liste tous les espaces existants).
 
