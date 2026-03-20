@@ -123,6 +123,25 @@ Nmap est l'outil roi pour la phase de reconnaissance. Voici les commandes essent
 
 Voici l'ordre exact et les commandes utilisées pour compromettre un serveur Windows de A à Z avec Metasploit :
 
+### **Préparation Projet & Base de Données (PostgreSQL)**
+
+*Pour ne pas se perdre quand on attaque plusieurs machines.*
+
+- `workspace -a <nom_projet>` : Crée un nouvel espace de travail ("workspace") pour isoler les données d'un audit (ex: `workspace -a TryHackMe`).
+- `workspace <nom_projet>` : Permet de basculer d'un espace à l'autre (taper juste `workspace` liste tous les espaces existants).
+
+### **Scan Intégré et Mémorisation**
+
+- `db_nmap -sS -sV <IP_Cible>` : Lance un scan Nmap classique directement depuis msfconsole. La magie ? Absolument tous les résultats sont automatiquement rangés dans la base de données du workspace actuel !
+- `hosts` : Affiche la liste de toutes les machines (IP et OS) qu'on a scannées et enregistrées dans la base.
+- `services` : Affiche le résumé de tous les ports ouverts et services découverts sur nos cibles. C'est le catalogue de ce qu'on peut attaquer !
+
+### **Gain de temps (Configuration Globale)**
+
+- `setg VERBOSE true` : Active le mode "bavard" pour tous les modules. Metasploit affichera beaucoup plus de détails sur ce qu'il fait en arrière-plan (très utile pour comprendre pourquoi un exploit échoue).
+- `setg LHOST <Ton_IP_VPN>` : Configure ton IP d'attaquant globalement. Tu n'auras plus jamais besoin de taper `set LHOST` dans tes modules !
+- `save` : La commande indispensable. Elle enregistre toutes tes variables `setg` dans le fichier de configuration. Si tu fermes Metasploit et l'ouvres demain, ton `LHOST` et ton `VERBOSE` seront toujours configurés.
+
 ### **1. Préparation de l'attaque**
 
 - `msfconsole` : Démarrer le framework.
@@ -157,25 +176,6 @@ Voici l'ordre exact et les commandes utilisées pour compromettre un serveur Win
 
 - `sudo gunzip /usr/share/wordlists/rockyou.txt.gz` : Décompresser le dictionnaire (à faire une seule fois).
 - `john --format=NT --wordlist=/usr/share/wordlists/rockyou.txt hash.txt` : Lancer l'attaque par dictionnaire sur l'empreinte volée.
-
-### **7. Gestion de Projet & Base de Données (PostgreSQL)**
-
-*Pour ne pas se perdre quand on attaque plusieurs machines.*
-
-- `workspace -a <nom_projet>` : Crée un nouvel espace de travail ("workspace") pour isoler les données d'un audit (ex: `workspace -a TryHackMe`).
-- `workspace <nom_projet>` : Permet de basculer d'un espace à l'autre (taper juste `workspace` liste tous les espaces existants).
-
-### **8. Scan Intégré et Mémorisation**
-
-- `db_nmap -sS -sV <IP_Cible>` : Lance un scan Nmap classique directement depuis msfconsole. La magie ? Absolument tous les résultats sont automatiquement rangés dans la base de données du workspace actuel !
-- `hosts` : Affiche la liste de toutes les machines (IP et OS) qu'on a scannées et enregistrées dans la base.
-- `services` : Affiche le résumé de tous les ports ouverts et services découverts sur nos cibles. C'est le catalogue de ce qu'on peut attaquer !
-
-### **9. Gain de temps (Configuration Globale)**
-
-- `setg VERBOSE true` : Active le mode "bavard" pour tous les modules. Metasploit affichera beaucoup plus de détails sur ce qu'il fait en arrière-plan (très utile pour comprendre pourquoi un exploit échoue).
-- `setg LHOST <Ton_IP_VPN>` : Configure ton IP d'attaquant globalement. Tu n'auras plus jamais besoin de taper `set LHOST` dans tes modules !
-- `save` : La commande indispensable. Elle enregistre toutes tes variables `setg` dans le fichier de configuration. Si tu fermes Metasploit et l'ouvres demain, ton `LHOST` et ton `VERBOSE` seront toujours configurés.
 
 ---
 
