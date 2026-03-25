@@ -1,6 +1,6 @@
 # 🛡️ LAB : Déploiement CrowdSec — Sécurité Collaborative sur pfSense
 
-```txt                                             
+```txt
    ▄▄▄                           █   ▄▄▄▄               
  ▄▀   ▀  ▄ ▄▄   ▄▄▄  ▄     ▄  ▄▄▄█  █▀   ▀  ▄▄▄    ▄▄▄  
  █       █▀  ▀ █▀ ▀█ ▀▄ ▄ ▄▀ █▀ ▀█  ▀█▄▄▄  █▀  █  █▀  ▀ 
