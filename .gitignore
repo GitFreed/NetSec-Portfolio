@@ -24,3 +24,7 @@ connexions.conf
 # --- Réseau ---
 *.pcap
 *.pcapng
+
+# --- IA ---
+*.claude
+.claude
