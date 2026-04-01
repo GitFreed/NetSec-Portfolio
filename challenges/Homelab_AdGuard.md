@@ -75,9 +75,7 @@ Appareils LAN ────► │  AdGuard Home                            │
 
 La version **Lite** (sans bureau graphique) est impérative pour un serveur DNS. Pas d'interface graphique inutile qui consomme de la RAM et du CPU — le Pi est dédié à la performance réseau.
 
-Lancer **Raspberry Pi Imager** pour flasher la carte micro SD :
-
-![OS](/images/2026-01-21-00-08-30.png)
+Lancer **Raspberry Pi Imager** pour flasher la carte micro SD.
 
 Personnaliser la configuration : hostname (`adguard-pi`), user admin, mot de passe, et **activer le SSH** (indispensable pour l'administration à distance).
 
@@ -117,8 +115,6 @@ Lancer le script d'installation officiel :
 curl -s -S -L https://raw.githubusercontent.com/AdguardTeam/AdGuardHome/master/scripts/install.sh | sh -s -- -v
 ```
 
-![install](/images/2026-01-21-11-57-41.png)
-
 > ⚠️ **Sécurité :** configurer également une IP statique côté OS (en plus du bail statique de la box), pour garantir la stabilité même en cas de redémarrage de la box.
 
 Lancer `sudo nmtui` pour configurer l'interface réseau :
@@ -140,8 +136,6 @@ sudo apt update && sudo apt install btop -y
 ### 3. Configuration initiale (Interface Web)
 
 Ouvrir un navigateur sur `http://192.168.1.250:3000` pour accéder à l'assistant de configuration.
-
-![web](/images/2026-01-21-11-59-24.png)
 
 Configuration des interfaces d'écoute :
 
@@ -184,7 +178,7 @@ Le DNS upstream principal utilisait initialement **Quad9** en DoH (DNS-over-HTTP
 
 Des DNS de repli (Cloudflare et Quad9 classique, toujours en DoH) étaient configurés pour éviter un **SPOF** (Single Point Of Failure).
 
-> 💡 **Note :** depuis avril 2026, Quad9 et Cloudflare ont été remplacés par **Unbound** (résolveur récursif local) comme unique upstream. Voir la fiche [LAB Unbound](/challenges/Homelab_Unbound.md) pour le détail et les raisons de ce changement.
+> 💡 **Note :** depuis avril 2026, Quad9 et Cloudflare ont été remplacés par **Unbound** (résolveur récursif local) comme unique upstream. Voir la fiche [LAB Unbound](/challenges/Homelab_Unbound.md) pour le détail et les raisons de ce changement plus que conseillé.
 
 ---
 
@@ -253,8 +247,6 @@ Quatre listes complémentaires couvrent le spectre publicité + tracking + sécu
 | **AdAway Default Blocklist** | Pubs mobiles | Liste légère et historique, particulièrement efficace contre les publicités au sein des applications mobiles (Android/iOS). |
 | **OISD (The Big One)** | Pubs, Trackers, Télémétrie | La référence : liste massive qui agrège des milliers de sources tout en garantissant un taux de faux positifs quasi nul. <https://big.oisd.nl> |
 | **Abuse.ch / URLHaus** | Malwares & Botnets | Projet communautaire de référence pour traquer et bloquer les domaines servant à la distribution de malwares, virus et botnets. <https://urlhaus.abuse.ch/downloads/hostfile/> |
-
-![lists](/images/2026-01-26-14-20-42.png)
 
 ---
 
