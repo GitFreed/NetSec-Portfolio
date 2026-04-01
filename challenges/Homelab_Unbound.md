@@ -31,7 +31,7 @@
 Depuis 2024, la justice française (sous impulsion de Canal+ et de l'ARCOM) contraint les fournisseurs de DNS alternatifs publics à bloquer l'accès à certains domaines. Chronologie de l'escalade :
 
 | Année | Mesure |
-|---|---|
+| --- | --- |
 | 2022 | Blocage des sites pirates par les **FAI** (Orange, Free, SFR, Bouygues) |
 | 2024 | Extension aux **DNS alternatifs** (Google DNS, Cloudflare 1.1.1.1, Quad9, OpenDNS) |
 | 2025 | Extension aux **VPN commerciaux** (NordVPN, ExpressVPN, ProtonVPN, CyberGhost, Surfshark) et aux **CDN/Proxy** |
@@ -55,7 +55,7 @@ Un résolveur récursif local comme Unbound interroge directement les serveurs r
 
 ## 🛠️ Architecture du Lab
 
-* **Matériel :** Raspberry Pi 3B (même machine que AdGuard Home)
+* **Matériel :** Raspberry Pi 3B (même machine que [AdGuard Home](./Homelab_AdGuard.md))
 * **OS :** Raspberry Pi OS (Lite)
 * **Position :** En aval d'AdGuard Home, en amont des serveurs racine
 * **Port d'écoute :** 5335/UDP+TCP (localhost uniquement)
@@ -64,7 +64,7 @@ Un résolveur récursif local comme Unbound interroge directement les serveurs r
 
 ### Chaîne DNS complète
 
-```
+```txt
                         ┌─────────────────────────────────────────────┐
                         │          Raspberry Pi (192.168.1.250)       │
                         │                                             │
@@ -85,7 +85,7 @@ Appareils LAN ────────► │  AdGuard Home :53                 
 ### Comparatif : Avant / Après
 
 | | Avant (Quad9 DoH) | Après (Unbound) |
-|---|---|---|
+| --- | --- | --- |
 | **Résolveur** | Quad9 (tiers, Suisse) | Local (Raspberry Pi) |
 | **Intermédiaire** | Oui — requêtes envoyées à Quad9 | Non — résolution directe depuis la racine |
 | **Censure externe** | Possible (injonctions ARCOM) | Impossible (aucun tiers dans la chaîne) |
@@ -100,7 +100,7 @@ Appareils LAN ────────► │  AdGuard Home :53                 
 
 ### Pré-requis
 
-* Raspberry Pi avec AdGuard Home installé et fonctionnel (cf. fiche LAB AdGuard)
+* Raspberry Pi avec AdGuard Home installé et fonctionnel ([cf. fiche LAB AdGuard](./Homelab_AdGuard.md))
 * Accès SSH au Pi
 * AdGuard Home en écoute sur le port 53
 
