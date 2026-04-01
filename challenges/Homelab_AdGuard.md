@@ -276,3 +276,7 @@ Read-Host "Appuyez sur Entree pour fermer..."
 * Moyenne des blocages sur une semaine
 
 ![blocked](/images/2026-02-24-00-19-54.png)
+
+### Ajout d'Unbound
+
+[Souveraineté DNS — Résolution Récursive avec Unbound](/challenges/Homelab_Unbound.md)
