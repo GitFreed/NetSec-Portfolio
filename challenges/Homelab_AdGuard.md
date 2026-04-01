@@ -1,4 +1,4 @@
-# 🛡️ LAB : Maîtrise du flux DNS et Sécurisation
+# 🛡️ LAB : Maîtrise du flux DNS et Sécurisation avec AdGuard Home
 
 ```txt
    _       _   ___                     _ 
@@ -9,15 +9,15 @@
                                          
 ```
 
-![Hardware](https://img.shields.io/badge/Matériel-Raspberry%20Pi-C51A4A?style=flat-square&logo=raspberrypi&logoColor=white)
-![OS](https://img.shields.io/badge/OS-Raspbian-005085?style=flat-square&logo=linux&logoColor=white)
+![Hardware](https://img.shields.io/badge/Matériel-Raspberry%20Pi%203B-C51A4A?style=flat-square&logo=raspberrypi&logoColor=white)
+![OS](https://img.shields.io/badge/OS-Raspberry%20Pi%20OS%20Lite-005085?style=flat-square&logo=linux&logoColor=white)
 ![Service](https://img.shields.io/badge/Service-AdGuard%20Home-68bc71?style=flat-square&logo=adguard&logoColor=white)
-![Role](https://img.shields.io/badge/Rôle-Serveur%20DNS%20DHCP-FFA500?style=flat-square)
-![Network](https://img.shields.io/badge/Réseau-LAN%20-purple?style=flat-square&logo=web&logoColor=white)
+![Role](https://img.shields.io/badge/Rôle-Serveur%20DNS%20%2B%20DHCP-FFA500?style=flat-square)
+![Network](https://img.shields.io/badge/Réseau-LAN%20192.168.1.0%2F24-purple?style=flat-square&logo=web&logoColor=white)
 
 **Rôle :** Administrateur Réseau
 
-**Mission :**  AdGuard Home un DNS sinkhole.  Il fonctionne en redirigeant les domaines de publicité, de trackers et de malwares vers un « puits noir » (sinkhole), empêchant ainsi les appareils de notre réseau d’établir une connexion avec ces serveurs. Cette méthode bloque les requêtes DNS avant qu’elles n’atteignent le navigateur ou l’application, ce qui protège tous les appareils connectés — smartphones, tablettes, téléviseurs, IoT — sans nécessiter d’installation logicielle sur chaque appareil. Permet aussi d'accélérer la navigation.
+**Mission :** AdGuard Home est un **DNS sinkhole** réseau. Il intercepte toutes les requêtes DNS du réseau local et redirige celles pointant vers des domaines de publicité, de trackers et de malwares vers un « puits noir » (sinkhole), empêchant les appareils d'établir une connexion avec ces serveurs. Le filtrage s'applique au niveau DNS — avant même que le navigateur ou l'application n'envoie une seule requête HTTP — ce qui protège l'ensemble des appareils connectés (PC, smartphones, tablettes, téléviseurs, IoT) sans nécessiter d'installation logicielle sur chaque appareil.
 
 > 📚 Documentation : <https://github.com/AdguardTeam/AdguardHome>
 
@@ -25,258 +25,341 @@
 
 ## L'intérêt technique 🎯
 
-1. **Visibilité Réseau (Layer 7) :** Intercepter, analyser et filtrer le trafic.
-2. **Performance (Caching) :** AdGuard garde en mémoire les réponses DNS. Réponse en **1ms** (local) au lieu de **20ms** (Internet).
-3. **Sécurité :** Bloquer les domaines malveillants avant même que le pare-feu n'ait à traiter le paquet IP. C'est la première ligne de défense.
+1. **Visibilité Réseau (Layer 7) :** Intercepter, analyser et filtrer le trafic DNS de l'ensemble du réseau. Chaque requête est journalisée — on voit exactement quel appareil communique avec quel domaine.
+2. **Performance (Caching) :** AdGuard Home conserve en cache les réponses DNS. Les requêtes suivantes sont servies localement en **~1ms** au lieu de **~20ms** via un résolveur distant. Les domaines bloqués ne génèrent aucun trafic réseau.
+3. **Sécurité (Première ligne de défense) :** Les domaines malveillants, de phishing ou de C2 (Command & Control) sont bloqués avant même que le pare-feu n'ait à traiter le paquet IP. Un appareil IoT compromis qui tente de contacter son serveur C2 sera bloqué au niveau DNS.
+4. **Contrôle DHCP :** En reprenant le rôle de serveur DHCP de la box FAI, AdGuard Home garantit que chaque appareil du réseau utilise exclusivement le DNS filtrant. Aucun contournement possible.
 
 ---
 
 ## 🛠️ Architecture du Lab
 
-* **Matériel :** Raspberry Pi (J'utiliserai un Raspberry pi 3B qui était au fond d'un tiroir).
-* **OS :** Raspberry Pi OS (Lite).
-* **Position :** Remplacer le serveur DNS par défaut de mon FAI
-* **Réseau :** 192.168.1.0/24
-* **Passerelle FAI :** 192.168.1.254
-* **Cible Raspberry Pi :** On va lui donner l'IP 192.168.1.XXX
+* **Matériel :** Raspberry Pi 3B
+* **OS :** Raspberry Pi OS Lite (sans interface graphique, dédié à la performance réseau)
+* **Position :** Serveur DNS et DHCP unique du réseau LAN, en remplacement des services de la box FAI
+* **Réseau :** `192.168.1.0/24`
+* **Passerelle FAI :** `192.168.1.254`
+* **IP Raspberry Pi :** `192.168.1.250`
+
+### Schéma de flux DNS
+
+```txt
+                    ┌──────────────────────────────────────────┐
+                    │        Raspberry Pi (192.168.1.250)      │
+                    │                                          │
+Appareils LAN ────► │  AdGuard Home                            │
+  (DHCP :53)        │    ├── Filtrage DNS (pubs/trackers/C2)   │
+                    │    ├── Cache local (~1ms)                │
+                    │    ├── DHCP Server (.50 → .150)          │
+                    │    └── Upstream → Unbound :5335          │
+                    │                    └── Serveurs racine   │
+                    └──────────────────────────────────────────┘
+                                      │
+                              Box FAI (192.168.1.254)
+                              Conditional forwarding
+                              (.bytel.fr / .lan uniquement)
+```
+
+> 💡 **Note :** les résolutions DNS en amont sont gérées par **Unbound** (résolveur récursif local) depuis avril 2026. Voir la fiche dédiée : [LAB Unbound](/challenges/Homelab_Unbound.md)
 
 ---
 
-### Pré-requis Raspberry Pi OS
+## 🚀 Installation
 
-> 📚 **Ressources** :
+### Pré-requis : Raspberry Pi OS Lite
+
+> 📚 **Ressources :**
 >
-> * Raspberry Pi OS Lite <https://www.raspberrypi.com/software/operating-systems/>
-> * Raspberry Pi Imager <https://www.raspberrypi.com/software/>
+> * Raspberry Pi OS Lite : <https://www.raspberrypi.com/software/operating-systems/>
+> * Raspberry Pi Imager : <https://www.raspberrypi.com/software/>
 
-Pour un serveur DNS comme AdGuard Home, la version **Lite** est impérative : pas d'interface graphique inutile qui mange de la RAM et du CPU. Le Raspberry Pi sera dédié à la performance réseau.
+La version **Lite** (sans bureau graphique) est impérative pour un serveur DNS. Pas d'interface graphique inutile qui consomme de la RAM et du CPU — le Pi est dédié à la performance réseau.
 
-On lance Raspberry Pi Imager pour créer le support d'installation
-
-![appareil](/images/2026-01-21-00-07-18.png)
+Lancer **Raspberry Pi Imager** pour flasher la carte micro SD :
 
 ![OS](/images/2026-01-21-00-08-30.png)
 
-On personnalise le Hostname, l'user admin et le password, puis il faut activer le SSH
-
-Et c'est parti pour le formatage et l'écriture de la carte micro SD
+Personnaliser la configuration : hostname (`adguard-pi`), user admin, mot de passe, et **activer le SSH** (indispensable pour l'administration à distance).
 
 ![done](/images/2026-01-21-00-20-36.png)
 
-On peut enfin mettre la carte micro SD dans le Pi et le brancher à la Box puis le démarrer !
+Insérer la carte micro SD dans le Pi, le brancher en Ethernet à la box, et le démarrer.
 
-### 1. Configuration du Bail Statique
+---
 
-Avant même d'installer le AdGuard, on va passer l'IP en statique sur la Box `192.168.1.254` dans Réglages avancés > DHCP > Attribution d'adresse IP statique.
+### 1. Attribution d'une IP statique
 
-Pour trouver le Raspberry on va dans la liste des appareils et on cherche un appareil nommé adguard-pi ou dont l'adresse MAC commence par `b8:27:eb` ou `dc:a6:32` (les identifiants constructeurs Raspberry).
+Avant d'installer quoi que ce soit, il faut figer l'adresse IP du Pi. Un serveur DNS dont l'IP changerait rendrait tout le réseau inaccessible.
+
+Sur l'interface de la box (`192.168.1.254`) → Réglages avancés → DHCP → Attribution d'adresse IP statique.
+
+Pour identifier le Pi dans la liste des appareils, chercher le hostname `adguard-pi` ou une adresse MAC commençant par `b8:27:eb` ou `dc:a6:32` (préfixes OUI du fabricant Raspberry Pi Foundation).
 
 ![DHCP](/images/2026-01-21-11-45-54.png)
 
-On débranche/rebranche le câble réseau pour qu'il récupère sa nouvelle identité.
+Débrancher/rebrancher le câble Ethernet pour forcer le renouvellement du bail.
 
-Vérification : `Ping 192.168.1.XXX`
+Vérification : `ping 192.168.1.250`
 
-![ping](/images/2026-01-21-11-50-48.png)
+---
 
-### 2. Installation (SSH)
+### 2. Installation d'AdGuard Home (SSH)
 
-Connexion au Pi en SSH
+Connexion SSH au Pi :
 
 ```bash
-ssh user@192.168.1.XXX
-
+ssh user@192.168.1.250
 ```
 
-![ssh](/images/2026-01-21-11-56-15.png)
-
-On lance le script d'installation automatique :
+Lancer le script d'installation officiel :
 
 ```bash
 curl -s -S -L https://raw.githubusercontent.com/AdguardTeam/AdGuardHome/master/scripts/install.sh | sh -s -- -v
-
 ```
 
 ![install](/images/2026-01-21-11-57-41.png)
 
-Par sécurité on va donner une IP statique côté client dans le network manager `sudo nmtui`
+> ⚠️ **Sécurité :** configurer également une IP statique côté OS (en plus du bail statique de la box), pour garantir la stabilité même en cas de redémarrage de la box.
+
+Lancer `sudo nmtui` pour configurer l'interface réseau :
 
 ![nmt](/images/2026-01-21-16-17-15.png)
 
-On met l'IPv4 en Manuel, on ajoute notre serveur, la passerelle et le DNS en `127.0.0.1` pour qu'il utilise son propre service, on valide et on reboot `sudo reboot`
+Passer l'IPv4 en **Manuel**, renseigner l'adresse IP, la passerelle et le DNS en `127.0.0.1` (le Pi utilisera son propre service AdGuard pour résoudre les noms). Valider et redémarrer : `sudo reboot`
 
-![nmt](/images/2026-01-21-16-20-28.png)
-
-On va installer Btop pour avoir un monitoring
+Installation de **Btop** pour le monitoring des ressources en temps réel :
 
 ```bash
-sudo apt update
-sudo apt install btop
+sudo apt update && sudo apt install btop -y
 ```
 
 ![Btop](/images/2026-01-21-16-53-37.png)
 
-### 3. Initialisation (Web)
+---
 
-On va ouvrir le navigateur sur : `http://192.168.1.XXX:3000`
+### 3. Configuration initiale (Interface Web)
+
+Ouvrir un navigateur sur `http://192.168.1.250:3000` pour accéder à l'assistant de configuration.
 
 ![web](/images/2026-01-21-11-59-24.png)
 
-On peut voir et configurer les interfaces web et d'écoute
+Configuration des interfaces d'écoute :
 
-Attention le Serveur DNS Doit impérativement être sur le port `53` (UDP/TCP).
+> ⚠️ **Le serveur DNS doit impérativement écouter sur le port `53` (UDP/TCP).** C'est le port standard que tous les appareils utilisent par défaut pour les requêtes DNS.
 
-![interfaces](/images/2026-01-21-12-02-24.png)
-
-Config compte admin
-
-![admin](/images/2026-01-21-12-07-21.png)
-
-Une fois la configuration terminée je peux me connecter directement sur son IP (port 80)
+Une fois l'assistant terminé, l'interface d'administration est accessible sur le port 80 :
 
 ![login](/images/2026-01-21-12-14-17.png)
 
-### 4. Configuration et Bascule DNS
+---
 
-Sur l'interface Box > Réglages avancés > DHCP > Options
+### 4. Bascule DNS du réseau
+
+#### 4.1 — Redirection DNS sur la box
+
+Sur l'interface de la box → Réglages avancés → DHCP → Options : renseigner `192.168.1.250` comme serveur DNS distribué aux clients.
 
 ![options](/images/2026-01-21-12-28-03.png)
 
-Le petit bonus 💡 On va créer un petit alias DNS local dans AdGuard Home
+#### 4.2 — Alias DNS local
 
-Dans le menu en haut : Filtres > Réécritures DNS, et ajouter une réécriture DNS :
+💡 Création d'une **réécriture DNS** pour accéder à AdGuard via un nom convivial. Dans AdGuard Home → Filtres → Réécritures DNS, ajouter une entrée pointant `adguard.home` vers l'IP du Pi.
 
-![dns](/images/2026-01-21-12-26-14.png)
-
-Désormais, on peut taper `http://adguard.home` pour accéder à l'interface !
+L'interface est désormais accessible à l'adresse `http://adguard.home` depuis n'importe quel appareil du réseau.
 
 ![dash](/images/2026-01-21-13-33-19.png)
 
-AdGuard ne sais pas résoudre certains noms locaux comme ma box ou lan, on va les ajouter dans DNS upstream dans Paramètres DNS. On a une liste d'exemple en dessous. On peux voir qu'il utilise de base Quad9 en version DoH : DNS over HTTPS, Port 443, les requêtes DNS sont cachées dans un flux HTTPS, on gagne en confidentialité. C'est la version `9.9.9.10` "Unsecured" qui laisse AdGuard gérer les restrictions
+#### 4.3 — Serveurs DNS upstream
 
-On ajoute notre box et lan en local comme dans les exemples
+AdGuard Home ne sait pas résoudre les noms locaux du réseau (hostnames de la box, `.lan`, `.bytel.fr`). Ces domaines n'existent pas dans le DNS public — seule la box les connaît. Il faut ajouter des règles de **conditional forwarding** dans les paramètres DNS upstream :
 
-![DNS](/images/2026-01-21-15-23-13.png)
+```sh
+[/bytel.fr/]192.168.1.254
+[/lan/]192.168.1.254
+```
 
-On va ajouter des DNS de repli en cas de problème sur le principal pour ne pas avoir de SPOF (Single Point Of Failure), Cloudflare et Quad9 classique (toujours en DoH)
+Ces lignes indiquent à AdGuard de rediriger les requêtes pour les domaines locaux vers la box FAI (`192.168.1.254`), qui est la seule à pouvoir les résoudre.
 
-![repli](/images/2026-01-21-15-35-39.png)
+Le DNS upstream principal utilisait initialement **Quad9** en DoH (DNS-over-HTTPS, port 443) pour chiffrer les requêtes DNS sur le réseau. La version `9.9.9.10` "Unsecured" laisse AdGuard Home gérer lui-même le filtrage de sécurité sans doublon avec celui de Quad9.
 
-### 5. Configuration et Bascule DHCP
+Des DNS de repli (Cloudflare et Quad9 classique, toujours en DoH) étaient configurés pour éviter un **SPOF** (Single Point Of Failure).
 
-La Box ne permet pas le contrôle DNS sur tout le réseau, elle reste active et comme serveur DNS principal du réseau, c'est une  règle non modifiable du FAI
+> 💡 **Note :** depuis avril 2026, Quad9 et Cloudflare ont été remplacés par **Unbound** (résolveur récursif local) comme unique upstream. Voir la fiche [LAB Unbound](/challenges/Homelab_Unbound.md) pour le détail et les raisons de ce changement.
+
+---
+
+### 5. Bascule DHCP — Contrôle total du réseau
+
+#### Le problème
+
+La box Bouygues impose son propre serveur DNS à tous les appareils via le DHCP, même si un DNS alternatif est configuré. Cette règle du FAI n'est pas modifiable :
 
 ![DNS](/images/2026-01-21-15-52-31.png)
 
-Il va donc falloir désactiver le service DHCP et activer celui de notre nouveau serveur AdGuard Home, ainsi aucun appareil ne pourra contourner le filtrage et on aura le contrôle total de notre réseau
+#### La solution
 
-Dans les paramètres DHCP de AdGuard, on sélectionne l'interface de notre serveur (eth0), on entre l'IP de notre passerelle (box), la range IP (.50 à .150), le masque de sous-réseau et la durée du bail (86400s = 24h)
+Désactiver le serveur DHCP de la box et activer celui d'AdGuard Home. Ainsi, tous les appareils obtiennent leur configuration réseau (IP, passerelle, DNS) directement depuis le Pi. Aucun appareil ne peut contourner le filtrage DNS.
 
-On doit également ajouter le range pour l'IPv6 : `fd00::10` à `fd00::ff` distribue les adresses Privées ULA de la 10 à la 255
+Configuration DHCP dans AdGuard Home :
 
-![DHCP](/images/2026-01-21-16-00-59.png)
+| Paramètre | Valeur |
+| --- | --- |
+| Interface | `eth0` |
+| Passerelle | `192.168.1.254` (box FAI) |
+| Plage IPv4 | `192.168.1.50` → `192.168.1.150` |
+| Masque | `255.255.255.0` |
+| Durée du bail | `86400s` (24h) |
+| Plage IPv6 (ULA) | `fd00::10` → `fd00::ff` |
 
-Maintenant qu'il est configuré, on va aller désactiver celui de la Box et revenir activer celui ci immédiatement après
+> ⚠️ **Procédure critique :** désactiver le DHCP de la box **puis** activer immédiatement celui d'AdGuard Home. Pendant la bascule, aucun appareil ne pourra obtenir de nouvelle adresse IP. Il est recommandé de garder une fenêtre SSH ouverte sur le Pi pour intervenir rapidement.
 
-![box](/images/2026-01-21-16-09-47.png)
+---
 
-On peu activer le DHCP d'AdGuard
+### 6. Problème rencontré : renouvellement DHCP post-bascule
 
-### Problèmes
+Après la bascule DHCP, plusieurs appareils ont rencontré des problèmes de connectivité.
 
-Problème rencontré, après un redémarrage mon PC n'a plus d'IP, c'est le seul appareil qui rencontre un problème a ce moment là, donc apparemment lié à Windows, après divers tests on voit une erreur NCB (Network Control Block)
+**Symptôme 1 — PC Windows :** impossible de renouveler l'adresse IP après redémarrage. Erreur NCB (Network Control Block) dans les logs :
 
 ![NCB](/images/2026-01-21-18-51-29.png)
 
-Après de multiples essais, vidange du cache DNS, reset du catalogue Winsock, réinitialisation de la pile TCP/IP, désinstallation de la carte réseau, arrêt du matériel, reboot... rien n'y fait. Toujours impossible de renew l'IP, donc passage du PC en IP fixe.
+**Tentatives de résolution (sans succès) :**
 
-Il s'avère qu'après un reboot de la box, la plupart des appareils en wifi n'arrivaient pas à se reconnecter non plus, depuis un PC et tél portable, après pas mal de temps j'ai passé le tél en IP Fixe, et après ça tout s'est mis à remonter. Le tél qui se reconnecte en Ip Fixe au Wifi pourrait avoir trigger un renouvellement de la table ARP ? Ou juste il fallait être patient et attendre des renouvellements de bails et reconnexions ?
+```powershell
+# Vidange du cache DNS
+ipconfig /flushdns
+# Reset du catalogue Winsock
+netsh winsock reset
+# Réinitialisation de la pile TCP/IP
+netsh int ip reset
+# Désinstallation/réinstallation de la carte réseau via le Gestionnaire de périphériques
+```
 
-Ajout des appareils principaux en IP fixe et/ou bail statique en dehors de la plage IP.
+**Solution :** passage du PC en IP fixe (hors plage DHCP).
 
-Bref, maintenant tout à l'air OK, IP fixe, DHCP maîtrisé, DNS filtrant et chiffré.
+**Symptôme 2 — Appareils Wi-Fi :** après un reboot de la box, la plupart des appareils Wi-Fi ne parvenaient plus à se reconnecter. Forcer la reconnexion d'un appareil en IP fixe a semblé déclencher un renouvellement de la table ARP, après quoi les autres appareils ont suivi.
 
-![OK](/images/2026-01-22-08-17-56.png)
+**Leçon retenue :** les appareils principaux (PC, serveurs, NAS) doivent être en IP fixe ou en bail statique, hors de la plage DHCP. Cela élimine les problèmes de renouvellement de bail et garantit l'accessibilité permanente des services critiques.
 
-![requetes](/images/2026-01-22-08-18-37.png)
+---
 
-### Sauvegarde de la config AdGuard
+## 🔒 Listes de filtrage
 
-On va faire une sauvegarde rapide en ssh avec `scp` (Secure Copy), le fichier `AdGuardHome.yaml` qui contient toute la config.
+Quatre listes complémentaires couvrent le spectre publicité + tracking + sécurité :
 
-En ssh on va créer une copie avec `sudo cp /opt/AdGuardHome/AdGuardHome.yaml ~/AdGuardHome_backup.yaml` et on se donne les droits avec `sudo chown freed:freed ~/AdGuardHome_backup.yaml`
+| Liste | Cible | Description |
+| --- | --- | --- |
+| **AdGuard DNS filter** | Pubs & Trackers | Filtre natif et généraliste. Assure la base du blocage des publicités et traceurs sur le web moderne. |
+| **AdAway Default Blocklist** | Pubs mobiles | Liste légère et historique, particulièrement efficace contre les publicités au sein des applications mobiles (Android/iOS). |
+| **OISD (The Big One)** | Pubs, Trackers, Télémétrie | La référence : liste massive qui agrège des milliers de sources tout en garantissant un taux de faux positifs quasi nul. <https://big.oisd.nl> |
+| **Abuse.ch / URLHaus** | Malwares & Botnets | Projet communautaire de référence pour traquer et bloquer les domaines servant à la distribution de malwares, virus et botnets. <https://urlhaus.abuse.ch/downloads/hostfile/> |
 
-Depuis un terminal Windows en Administrateur on choisi un dossier puis on lance `scp -r freed@192.168.1.250:~/AdGuardHome_backup.yaml .`
+![lists](/images/2026-01-26-14-20-42.png)
 
-![backup](/images/2026-01-22-01-19-53.png)
+---
 
-### Création d'un Script de Sauvegarde
+## 🔄 Sauvegarde
 
-Création d’une clef SSH sur PowerShell (différente de la clef de base qui sert à autre chose et qui a une passphrase) :
-`ssh-keygen -t ed25519 -f "C:\Users\fr33d\.ssh\id_raspi”` (Entée à tout)
+### Sauvegarde manuelle
 
-Puis l'envoyer au Pi :
-`Get-Content "C:\Users\fr33d\.ssh\id_raspi.pub" | ssh freed@192.168.1.250 "cat >> ~/.ssh/authorized_keys”`
+Toute la configuration d'AdGuard Home est contenue dans un seul fichier : `/opt/AdGuardHome/AdGuardHome.yaml`. Une sauvegarde rapide via SSH et `scp` (Secure Copy) :
+
+```bash
+# Sur le Pi : copier le fichier et ajuster les permissions
+sudo cp /opt/AdGuardHome/AdGuardHome.yaml ~/AdGuardHome_backup.yaml
+sudo chown freed:freed ~/AdGuardHome_backup.yaml
+```
+
+```powershell
+# Depuis un terminal Windows : récupérer le fichier
+scp freed@192.168.1.250:~/AdGuardHome_backup.yaml .
+```
+
+### Script de sauvegarde automatisé (PowerShell)
+
+Pour automatiser la sauvegarde, création d'une **clé SSH dédiée** (ed25519, sans passphrase) réservée aux scripts :
+
+```powershell
+# Génération de la clé (Entrée à tout pour valider sans passphrase)
+ssh-keygen -t ed25519 -f "C:\Users\<user>\.ssh\<key>"
+
+# Déploiement de la clé publique sur le Pi
+Get-Content "C:\Users\<user>\.ssh\<key>.pub" | ssh freed@192.168.1.250 "cat >> ~/.ssh/authorized_keys"
+```
+
+> ⚠️ **Sécurité :** cette clé sans passphrase est strictement dédiée aux scripts de sauvegarde. L'accès SSH interactif utilise une clé distincte protégée par passphrase.
+
+Le script sauvegarde à la fois la configuration AdGuard Home et la configuration Unbound. Il utilise un tableau de fichiers extensible :
 
 ```powershell
 # --- CONFIGURATION ---
 $User = "freed"
 $IP = "192.168.1.250"
-$KeyPath = "C:\Users\fr33d\.ssh\id_raspi"
-$RemoteFile = "/opt/AdGuardHome/AdGuardHome.yaml"
-$TempFile = "~/AdGuardHome_backup.yaml"
-$LocalPath = ".\" # Sauvegarde dans le dossier où se trouve le script
+$KeyPath = "C:\Users\<user>\.ssh\<key>"
+$Date = Get-Date -Format "yyyyMMdd"
+$LocalPath = $PSScriptRoot
 
-Write-Host "--- Etape 1 : Preparation de la copie sur le Raspberry Pi ---" -ForegroundColor Cyan
-# On envoie une seule ligne de commande qui fait tout d'un coup sur le RPi
-# On ajoute "-i $KeyPath" pour utiliser la bonne clé
-ssh -i $KeyPath $User@$IP "sudo cp $RemoteFile $TempFile && sudo chown ${User}:${User} $TempFile"
+# Fichiers à sauvegarder (source sur le Pi → nom local)
+$Files = @(
+    @{ Remote = "/opt/AdGuardHome/AdGuardHome.yaml"; Local = "AdGuardHome_backup_$Date.yaml" },
+    @{ Remote = "/etc/unbound/unbound.conf.d/pi-unbound.conf"; Local = "Unbound_backup_$Date.conf" }
+)
 
-Write-Host "--- Etape 2 : Telechargement du fichier vers le PC ---" -ForegroundColor Cyan
-# Récupération du fichier
-scp -i $KeyPath "$User@$IP`:$TempFile" $LocalPath
+foreach ($File in $Files) {
+    $FileName = Split-Path $File.Remote -Leaf
+    $TempFile = "~/$($File.Local)"
 
-Write-Host "--- Etape 3 : Nettoyage sur le Raspberry Pi ---" -ForegroundColor Cyan
-# On supprime le fichier temporaire pour laisser propre
-ssh -i $KeyPath $User@$IP "rm $TempFile"
+    Write-Host "--- Sauvegarde de $FileName ---" -ForegroundColor Cyan
+
+    Write-Host "  [1/3] Preparation sur le Pi..." -ForegroundColor Gray
+    ssh -i $KeyPath $User@$IP "sudo cp $($File.Remote) $TempFile && sudo chown ${User}:${User} $TempFile"
+
+    Write-Host "  [2/3] Telechargement..." -ForegroundColor Gray
+    scp -i $KeyPath "$User@${IP}:$TempFile" "$LocalPath\$($File.Local)"
+
+    Write-Host "  [3/3] Nettoyage..." -ForegroundColor Gray
+    ssh -i $KeyPath $User@$IP "rm $TempFile"
+
+    Write-Host "  OK : $($File.Local)" -ForegroundColor Green
+    Write-Host ""
+}
 
 Write-Host "--- Sauvegarde Terminee ! ---" -ForegroundColor Green
 Read-Host "Appuyez sur Entree pour fermer..."
-
 ```
 
-![OK](/images/2026-01-26-14-14-59.png)
+---
 
-### Ajout de listes
+## 📊 Statistiques
 
-* AdGuard DNS filter : Le filtre natif et généraliste. Il assure la base du blocage des publicités et des traceurs sur le web moderne.
-
-* AdAway Default Blocklist : Une liste légère et historique, particulièrement efficace pour bloquer les publicités au sein des applications mobiles (Android/iOS).
-
-* OISD (The Big One) : <https://big.oisd.nl> La référence : une liste massive qui agrège des milliers de sources tout en garantissant un taux de faux positifs quasi nul. Cible pubs, trackers et télémétrie.
-
-* Abuse.ch / URLHaus : <https://urlhaus.abuse.ch/downloads/hostfile/> Focalisée Sécurité. Projet communautaire de référence pour traquer et bloquer les domaines malveillants servant à la distribution de malwares, virus et botnets.
-
-![lists](/images/2026-01-26-14-20-42.png)
-
-### Résumé final
-
-* Infrastructure : Raspberry Pi 3B (AdGuard Home) sur OS Lite.
-
-* Supervision : Btop (Monitoring ressources temps réel).
-
-* Réseau : Intégration transparente dans LAN 10Gb (DNS & DHCP).
-
-* Sécurité : Filtrage AdGuard + OISD + URLHaus (Pubs & Malwares).
-
-* Automatisation : Sauvegarde via script PowerShell + Clés SSH dédiées.
-
-### Update
-
-* Moyenne des blocages sur une semaine
+Moyenne des blocages DNS sur une semaine de fonctionnement :
 
 ![blocked](/images/2026-02-24-00-19-54.png)
 
-### Ajout d'Unbound
+---
 
-[Souveraineté DNS — Résolution Récursive avec Unbound](/challenges/Homelab_Unbound.md)
+## 📋 Résumé
+
+* **Infrastructure :** Raspberry Pi 3B sous Raspberry Pi OS Lite
+* **Services :** AdGuard Home (DNS sinkhole + DHCP) + Unbound (résolveur récursif)
+* **Réseau :** Intégration transparente dans le LAN `192.168.1.0/24` — contrôle total du DNS et du DHCP
+* **Sécurité :** Filtrage multicouche AdGuard DNS + AdAway + OISD + URLHaus (pubs, trackers, malwares, botnets)
+* **Privacy :** Résolution DNS souveraine via Unbound (aucun DNS tiers dans la chaîne)
+* **Supervision :** Btop (ressources temps réel) + tableau de bord AdGuard Home (stats DNS)
+* **Automatisation :** Script PowerShell de sauvegarde (AdGuard + Unbound) via clé SSH dédiée
+
+---
+
+## 📚 Références
+
+* AdGuard Home : <https://github.com/AdguardTeam/AdguardHome>
+* Raspberry Pi OS : <https://www.raspberrypi.com/software/>
+* OISD Blocklist : <https://oisd.nl/>
+* URLHaus (Abuse.ch) : <https://urlhaus.abuse.ch/>
+* LAB Unbound (résolveur récursif) : [Homelab_Unbound.md](/challenges/Homelab_Unbound.md)
+
+---
+
+![OK](/images/2026-01-22-08-17-56.png)
+
+![requetes](/images/2026-01-22-08-18-37.png)
