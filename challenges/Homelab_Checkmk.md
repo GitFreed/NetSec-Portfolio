@@ -431,6 +431,10 @@ Accepter les services voulus (`Accept all`) et activer les changements (Bouton j
 
 ## Custom Dashboard
 
-![dash](/images/2026-02-27-15-29-01.png)
+Premiers ajouts
 
-to be continued...
+![dashboard](/images/2026-02-27-15-29-01.png)
+
+Board personnalisé
+
+![dashboard](/images/2026-04-04-23-27-32.png)

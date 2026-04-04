@@ -190,9 +190,11 @@ Commande utilisée pour extraire la liste du fichier [Resume.md](/RESUME.md)
 
 [Homelab pfSense](./Homelab_pfSense.md) : Déploiement d'un Routeur/Pare-feu pfSense sous Proxmox.
 
-[Homelab Crowdsec](./Homelab_Crowdsec.md) : Déploiement d'un outil de Sécurité Collaborative sur pfSense
+[Homelab Crowdsec](./Homelab_Crowdsec.md) : Déploiement d'un outil de Sécurité Collaborative sur pfSense.
 
 [Homelab Scanopy](./Homelab_Scanopy.md) : Déploiement d'un outil de cartographie réseau distribuée et IPAM dynamique.
+
+[Homelab Unbound](./Homelab_Unbound.md) : Déploiement d'un résolveur DNS récursif.
 
 ---
 
