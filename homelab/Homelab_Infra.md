@@ -142,4 +142,5 @@ Ce schéma représente les flux logiques et la segmentation par ponts virtuels (
 | Checkmk | [Homelab Checkmk](./Homelab_Checkmk.md) | Supervision infrastructure | LAN |
 | Scanopy | [Homelab Scanopy](./Homelab_Scanopy.md) | Cartographie réseau & IPAM | LAN + DMZ |
 | Plex | [Homelab Plex](./Homelab_Plex.md) | Streaming multimédia | DMZ |
+| Homarr | [Homelab Homarr](./Homelab_Homarr.md) | Dashboard centralisé | DMZ |
 | Nginx | *(à venir)* | Reverse Proxy | LAN |
