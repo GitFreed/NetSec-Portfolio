@@ -20,8 +20,8 @@ Je suis **Frédéric**, et ce Github documente mon parcours pour l'obtention du 
 Ce répertoire est organisé pour refléter mon apprentissage quotidien :
 
 - **📝 `RESUME.md`** : [Fiche de synthèse](./RESUME.md) personnelle qui regroupe les **notions essentielles** que j'ai acquises.
-- **💻 `/challenges`** : Retrouvez [ici mes **labs**, exercices quotidiens et scripts](./challenges/Challenge_-_List.md) réalisés pour valider les concepts techniques abordés en cours.
-- **`/homelab`** : mon [Lab maison](./homelab/Homelab_Infra.md)
+- **💻 `/challenges`** : Retrouvez [ici mes labs, exercices quotidiens et scripts](./challenges/Challenge_-_List.md) réalisés pour valider les concepts techniques abordés en cours.
+- **🏗️ `/homelab`** : Mon [infrastructure auto-hébergée](./homelab/Homelab_Infra.md) — Proxmox, pfSense, DNS souverain, supervision et services isolés en DMZ.
 - **📚 `/ressources`** : [Aide-mémoire](./ressources/A_Cheatsheet.md), documentation technique et outils utiles pour l'administration réseau.
 - **📸 `/images`** : Schémas et captures d'écran illustrant mes projets.
 
