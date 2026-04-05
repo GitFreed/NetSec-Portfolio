@@ -19,8 +19,9 @@ Je suis **Frédéric**, et ce Github documente mon parcours pour l'obtention du 
 
 Ce répertoire est organisé pour refléter mon apprentissage quotidien :
 
-- **💻 `/challenges`** : Retrouvez [ici mes **labs**, exercices quotidiens et scripts](./challenges/Challenge_-_List.md) réalisés pour valider les concepts techniques abordés en cours.
 - **📝 `RESUME.md`** : [Fiche de synthèse](./RESUME.md) personnelle qui regroupe les **notions essentielles** que j'ai acquises.
+- **💻 `/challenges`** : Retrouvez [ici mes **labs**, exercices quotidiens et scripts](./challenges/Challenge_-_List.md) réalisés pour valider les concepts techniques abordés en cours.
+- **`/homelab`** : mon [Lab maison](./homelab/Homelab_Infra.md)
 - **📚 `/ressources`** : [Aide-mémoire](./ressources/A_Cheatsheet.md), documentation technique et outils utiles pour l'administration réseau.
 - **📸 `/images`** : Schémas et captures d'écran illustrant mes projets.
 
@@ -32,7 +33,7 @@ Ce répertoire est organisé pour refléter mon apprentissage quotidien :
 - **Système :** Linux (Debian/RedHat), Windows Server,
 - **Sécurité :** Hardening, gestion des droits, VPN,
 - **Outils :** Cisco Packet Tracer, VMware, Proxmox, vCenter, Asterisk, Veeam, Proxmox Backup, Zabbix, Nagios, Git, Python, Bash, Powershell, AWS,
-- **HomeLab :** [Adguard Home](./challenges/Homelab_AdGuard.md) (DHCP & filtrage DNS), [Proxmox VE](./challenges/Homelab_Proxmox.md) (Hyperviseur socle du Homelab) , [pfSense](./challenges/Homelab_pfSense.md) (Routeur & Pare-feu), [Checkmk Raw](./challenges/Homelab_Checkmk.md) (Supervision), [Crowdsec](./challenges/Homelab_Crowdsec.md) (Sécurité Collaborative), [Scanopy](./challenges/Homelab_Scanopy.md) (Scan Réseau), [Unbound](./challenges/Homelab_Unbound.md) (Résolution DNS récursive), tbc...
+- **HomeLab :** [Infra](./homelab/Homelab_Infra.md), [Adguard Home](./homelab/Homelab_AdGuard.md) (DHCP & filtrage DNS), [Proxmox VE](./homelab/Homelab_Proxmox.md) (Hyperviseur socle du Homelab) , [pfSense](./homelab/Homelab_pfSense.md) (Routeur & Pare-feu), [Checkmk Raw](./homelab/Homelab_Checkmk.md) (Supervision), [Crowdsec](./homelab/Homelab_Crowdsec.md) (Sécurité Collaborative), [Scanopy](./homelab/Homelab_Scanopy.md) (Scan Réseau), [Unbound](./homelab/Homelab_Unbound.md) (Résolution DNS récursive), [Plex](./homelab/Homelab_Plex.md) (Streaming Multimédia) tbc...
 
 ---
 
