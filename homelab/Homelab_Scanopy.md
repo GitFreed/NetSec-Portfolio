@@ -1,4 +1,4 @@
-# 📊 LAB : Cartographie Réseau et IPAM (Gestion des Adresses IP)
+# 📊 LAB : Cartographie Réseau et IPAM avec Scanopy
 
 ```txt
  _____                                   
@@ -19,9 +19,9 @@
 
 **Rôle :** Administrateur Réseau / Ingénieur DevOps
 
-**Mission :** Déployer Scanopy, une solution moderne de cartographie réseau distribuée. Contrairement à un simple scanner, Scanopy agit comme un annuaire IPAM dynamique. Il s'appuie sur une architecture décentralisée (un serveur central + des démons déportés) pour scanner simultanément plusieurs sous-réseaux isolés (VLANs, DMZ, LAN physique). Il utilise des requêtes de Niveau 2 (ARP) et Niveau 3/4 (ICMP, TCP, UDP, SNMP) pour découvrir les équipements, identifier les ports ouverts, et construire une topologie visuelle interactive de l'ensemble du système d'information.
+**Mission :** Déployer Scanopy, une solution de cartographie réseau distribuée qui agit comme un annuaire IPAM dynamique. Contrairement à un simple scanner, Scanopy s'appuie sur une architecture décentralisée (un serveur central + des démons déportés) pour scanner simultanément plusieurs sous-réseaux isolés (VLANs, DMZ, LAN physique). Il utilise des requêtes de Niveau 2 (ARP) et Niveau 3/4 (ICMP, TCP, UDP, SNMP) pour découvrir les équipements, identifier les ports ouverts, et construire une topologie visuelle interactive.
 
-> - [Github Scanopy](https://github.com/scanopy/scanopy)
+> - [GitHub Scanopy](https://github.com/scanopy/scanopy)
 > - [Documentation Officielle](https://scanopy.net/docs/)
 
 ---
@@ -37,38 +37,37 @@
 ## 🛠️ Architecture du Lab
 
 - **Environnement :** Serveur Proxmox VE
-- **Serveur Central (UI + API + DB) :** Machine Virtuelle Docker (Debian 13)
+- **Serveur Central (UI + API + DB) :** VM Docker (Debian 13)
   - IP : `10.0.0.20` (Zone DMZ, sur `vmbr2`)
   - Port d'écoute API/Web : `60072` TCP
-- **Sonde Locale (DMZ) :** Conteneur Docker tournant sur la même VM (`10.0.0.20`), chargé de scanner la zone 10.0.x.x.
-- **Sonde Déportée (LAN) :** Conteneur LXC (Debian 13) léger dédié au scan du réseau physique.
+- **Sonde Locale (DMZ) :** Conteneur Docker sur la même VM (`10.0.0.20`), chargé de scanner la zone `10.0.0.0/24`
+- **Sonde Déportée (LAN) :** Conteneur LXC (Debian 13) dédié au scan du réseau physique
   - IP : `192.168.1.243` (Zone LAN, sur `vmbr0`)
 - **Routeur / Pare-feu :** pfSense (`192.168.1.251` côté WAN)
 
 ---
 
-## 1️⃣ Installation du Serveur Core (Docker)
+## 1️⃣ Installation du Serveur Central (Docker Compose)
 
-Le serveur central et sa base de données sont déployés via Docker Compose sur la VM `10.0.0.20`.
-Le fichier intègre également une sonde locale pour scanner la DMZ.
+Le serveur central et sa base de données sont déployés via Docker Compose sur la VM `10.0.0.20`. Le fichier intègre également une sonde locale pour scanner la DMZ.
 
-### Configuration du fichier d'orchestration
+```bash
+nano docker-compose.yml
+```
 
-`nano docker-compose.yml`
-
-> ⚠️ **Alerte Cybersécurité :** Le bloc `daemon` officiel utilise `privileged: true`. Nous le remplaçons par les `cap_add` strictement nécessaires pour forger des trames réseau, sécurisant ainsi la VM hôte.
+> ⚠️ **Sécurité :** Le bloc `daemon` officiel utilise `privileged: true`, qui donne un accès complet au noyau de la VM hôte. On le remplace par les `cap_add` strictement nécessaires pour forger des trames réseau.
 
 ```yaml
 name: scanopy
 
 services:
-  # --- LA BASE DE DONNEES ---
+  # --- BASE DE DONNÉES ---
   postgres:
     image: postgres:17-alpine
     environment:
       POSTGRES_DB: scanopy
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-<MOT_DE_PASSE>}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -80,14 +79,14 @@ services:
     networks:
       - scanopy
 
-  # --- LE SERVEUR CENTRAL ---
+  # --- SERVEUR CENTRAL ---
   server:
     image: ghcr.io/scanopy/scanopy/server:latest
     ports:
       - "60072:60072"
     environment:
       SCANOPY_LOG_LEVEL: ${SCANOPY_LOG_LEVEL:-info}
-      SCANOPY_DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:-password}@postgres:5432/scanopy
+      SCANOPY_DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:-<MOT_DE_PASSE>}@postgres:5432/scanopy
       SCANOPY_WEB_EXTERNAL_PATH: /app/static
       SCANOPY_PUBLIC_URL: ${SCANOPY_PUBLIC_URL:-http://10.0.0.20:60072}
       SCANOPY_INTEGRATED_DAEMON_URL: http://host.docker.internal:60073
@@ -102,21 +101,21 @@ services:
     networks:
       - scanopy
 
-  # --- LA SONDE LOCALE (DMZ) ---
+  # --- SONDE LOCALE (DMZ) ---
   daemon:
     image: ghcr.io/scanopy/scanopy/daemon:latest
     container_name: scanopy-daemon
-    network_mode: host # Obligatoire pour le scan ARP
-    cap_add:           # Remplace "privileged: true" (Moindre Privilège)
-      - NET_RAW
-      - NET_ADMIN
+    network_mode: host                 # Obligatoire pour le scan ARP (couche 2)
+    cap_add:                           # Moindre Privilège : remplace "privileged: true"
+      - NET_RAW                        # Forger des paquets bruts (ARP, ICMP)
+      - NET_ADMIN                      # Modifier les interfaces réseau
     restart: unless-stopped
     environment:
       SCANOPY_LOG_LEVEL: ${SCANOPY_LOG_LEVEL:-info}
       SCANOPY_SERVER_URL: http://127.0.0.1:60072
     volumes:
       - daemon-config:/root/.config/daemon
-      - /var/run/docker.sock:/var/run/docker.sock:ro # Lecture seule des conteneurs
+      - /var/run/docker.sock:/var/run/docker.sock:ro  # Lecture seule des conteneurs
 
 volumes:
   postgres_data:
@@ -128,9 +127,12 @@ networks:
 ```
 
 Démarrage de l'infrastructure :
-`docker compose up -d`
 
-L'interface Web est désormais accessible sur `http://10.0.0.20:60072`.
+```bash
+docker compose up -d
+```
+
+L'interface Web est accessible sur `http://10.0.0.20:60072`.
 
 ---
 
@@ -138,67 +140,73 @@ L'interface Web est désormais accessible sur `http://10.0.0.20:60072`.
 
 Avant de déployer une sonde sur un autre sous-réseau, il faut déclarer ce réseau dans l'application pour générer une identité sécurisée.
 
-1. **Création du Réseau Logique :**
-      - Aller dans **Networks** \> Add Network.
-      - Nom : `Network LAN`.
-2. **Création du Sous-réseau Physique :**
-      - Aller dans **Subnets** \> Add Subnet.
-      - Type : `LAN`.
-      - CIDR : `192.168.1.0/24`.
-      - L'attacher au parent `Network LAN`.
-3. **Génération de l'Identité du Démon :**
-      - Aller dans **Daemons** \> Create a daemon.
-      - Sélectionner le réseau `Network LAN`.
-      - Nom : `scanopy-daemon-network-lan`.
-      - **Copier la commande d'installation et le Token API (Clé).**
+1. **Création du Réseau Logique :** Networks > Add Network → Nom : `Network LAN`
+2. **Création du Sous-réseau :** Subnets > Add Subnet → Type : `LAN`, CIDR : `192.168.1.0/24`, Parent : `Network LAN`
+3. **Génération de l'Identité du Démon :** Daemons > Create a daemon → Réseau `Network LAN`, Nom : `scanopy-daemon-network-lan`
+   - **Copier la commande d'installation, le Token API et l'ID réseau.**
 
 ---
 
 ## 3️⃣ Déploiement de la Sonde Déportée (LXC)
 
-Création d'un conteneur LXC Debian 13 (Trixie) non privilégié (Unprivileged) sur l'hyperviseur Proxmox.
+Création d'un conteneur LXC Debian 13 non privilégié sur Proxmox :
 
-- **CPU :** 1 Cœur | **RAM :** 512 Mo | **Disque :** 2 Go
-- **Réseau :** `vmbr0` | **IP :** `192.168.1.243/24` | **Gateway :** `192.168.1.254`
+```sh
+CPU : 1 Cœur | RAM : 512 Mo | Disque : 2 Go
+Réseau : vmbr0 | IP : 192.168.1.243/24 | Gateway : 192.168.1.254
+```
 
-### A. Le Franchissement de Pare-feu (pfSense & Routage)
+### A. Routage inter-zones (LAN → DMZ)
 
-La sonde LAN (`192.168.1.0/24`) doit contacter le serveur DMZ (`10.0.0.0/24`). La Bbox domestique ne gérant pas le routage interne, nous appliquons un **Routage Statique Local (Host-based routing)**.
+La sonde LAN (`192.168.1.0/24`) doit contacter le serveur en DMZ (`10.0.0.0/24`). La box domestique ne gère pas le routage interne — on configure un **routage statique local** (host-based routing) via pfSense.
 
-`nano /etc/network/interfaces`
-Ajouter la ligne d'interface `up` pour forcer le trafic DMZ vers pfSense :
+```bash
+nano /etc/network/interfaces
+```
 
 ```text
 auto eth0
 iface eth0 inet static
     address 192.168.1.243/24
     gateway 192.168.1.254
+    # Route statique : trafic DMZ via pfSense
     up ip route add 10.0.0.0/24 via 192.168.1.251
 ```
 
-Reboot le conteneur ou injecter à chaud : `ip route add 10.0.0.0/24 via 192.168.1.251`.
+Redémarrer le conteneur ou injecter à chaud : `ip route add 10.0.0.0/24 via 192.168.1.251`.
 
-**Sur l'interface de pfSense (Firewall \> Rules \> WAN) :**
-Créer une règle autorisant le flux :
+**Règle de pare-feu pfSense :** Firewall > Rules > WAN
 
-- Action: **Pass** | Protocol: **TCP** | Source: **192.168.1.243** | Destination: **10.0.0.20** | Port: **60072**
+| Paramètre | Valeur |
+| --- | --- |
+| Action | Pass |
+| Protocol | TCP |
+| Source | 192.168.1.243 |
+| Destination | 10.0.0.20 |
+| Port | 60072 |
 
 ### B. Installation et Configuration du Service Systemd
 
-Installation des prérequis et lancement du script officiel (en modifiant l'URL localhost par l'IP de la DMZ) :
-
 ```bash
+# Installation des pré-requis
 apt update && apt install -y curl sudo
 
-bash -c "$(curl -fsSL https://raw.githubusercontent.com/scanopy/scanopy/refs/heads/main/install.sh)" && sudo scanopy-daemon --server-url http://10.0.0.20:60072 --network-id VOTRE_ID --daemon-api-key VOTRE_TOKEN --user-id VOTRE_USER_ID --name scanopy-daemon-network-lan --mode daemon_poll
+# Lancement du script officiel (remplacer localhost par l'IP DMZ)
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/scanopy/scanopy/refs/heads/main/install.sh)" \
+  && sudo scanopy-daemon \
+    --server-url http://10.0.0.20:60072 \
+    --network-id <VOTRE_ID> \
+    --daemon-api-key <VOTRE_TOKEN> \
+    --user-id <VOTRE_USER_ID> \
+    --name scanopy-daemon-network-lan \
+    --mode daemon_poll
 ```
 
-> ⚙️ **Optimisation Sysadmin (Fiabilisation)**
-> Le script installe le binaire mais les variables d'environnement peuvent sauter au redémarrage. On configure le fichier Systemd en dur. De plus, la syntaxe exige un format strict (`daemon_poll` et non `DaemonPoll`).
+> ⚠️ Le script installe le binaire mais les variables d'environnement peuvent être perdues au redémarrage. Configurer le fichier Systemd en dur pour la fiabilisation.
 
-`nano /etc/systemd/system/scanopy-daemon.service`
-
-Vider le bloc `[Service]` et le remplacer par l'exécution directe :
+```bash
+nano /etc/systemd/system/scanopy-daemon.service
+```
 
 ```ini
 [Unit]
@@ -207,8 +215,13 @@ After=network.target
 
 [Service]
 Type=simple
-# Exécution stricte avec les variables issues de l'interface Web
-ExecStart=/usr/local/bin/scanopy-daemon --server-url http://10.0.0.20:60072 --network-id VOTRE_ID --daemon-api-key VOTRE_TOKEN --user-id VOTRE_USER_ID --name scanopy-daemon-network-lan --mode daemon_poll
+ExecStart=/usr/local/bin/scanopy-daemon \
+  --server-url http://10.0.0.20:60072 \
+  --network-id <VOTRE_ID> \
+  --daemon-api-key <VOTRE_TOKEN> \
+  --user-id <VOTRE_USER_ID> \
+  --name scanopy-daemon-network-lan \
+  --mode daemon_poll
 Restart=on-failure
 RestartSec=5
 
@@ -216,15 +229,15 @@ RestartSec=5
 WantedBy=multi-user.target
 ```
 
-**Démarrage final :**
+> ⚠️ La syntaxe du mode exige `daemon_poll` (underscore) et non `DaemonPoll`.
 
 ```bash
 systemctl daemon-reload
-systemctl restart scanopy-daemon
+systemctl enable --now scanopy-daemon
 journalctl -fu scanopy-daemon
 ```
 
-Dans les journaux, le message `Connected to server` confirmera que le routage, le pare-feu et l'authentification sont fonctionnels. La découverte réseau démarre automatiquement sur l'interface Web \! 🎉
+Le message `Connected to server` dans les journaux confirme que le routage, le pare-feu et l'authentification sont fonctionnels. La découverte réseau démarre automatiquement sur l'interface web.
 
 ![connecting](/images/2026-03-17-12-46-54.png)
 
@@ -235,3 +248,21 @@ Dans les journaux, le message `Connected to server` confirmera que le routage, l
 ## Topologie
 
 ![topo](/images/2026-03-17-19-43-39.png)
+
+---
+
+## 📋 Résumé
+
+- **Service :** Scanopy — cartographie réseau distribuée et IPAM
+- **Serveur :** Docker Compose sur VM `10.0.0.20:60072` (DMZ)
+- **Sonde DMZ :** conteneur Docker en `network_mode: host` avec `cap_add` (pas de `privileged`)
+- **Sonde LAN :** LXC `192.168.1.243` avec routage statique vers la DMZ via pfSense
+- **Protocoles :** ARP (L2), ICMP/TCP/UDP (L3/L4), SNMP
+- **Sécurité :** tokens API uniques, modèle polling (sonde → serveur), moindre privilège (capabilities)
+
+---
+
+## 📚 Références
+
+- GitHub Scanopy : <https://github.com/scanopy/scanopy>
+- Documentation Officielle : <https://scanopy.net/docs/>

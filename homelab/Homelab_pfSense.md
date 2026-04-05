@@ -297,7 +297,7 @@ On cherche "openvpn", et on installe le premier paquet de la liste : `openvpn-cl
 
 Ensuite dans `VPN > OpenVPN`, puis sur l'onglet `Client Export`.
 
-On va changer le champ `Host Name Resolution` : on remplace `Interface IP Address` par `Other`, **puis dans le champ `Host Name` l'adresse IPv4 publique de notre serveur Proxmox.**
+On va change  on remplace `Interface IP Address` par `Other`, **puis dans le champ `Host Name` l'adresse IPv4 publique de notre serveur Proxmox.**
 
 Une fois que c'est fait, on va télécharger le fichier Inline Configurations : `Most Clients` ou `OpenVPN Connect (iOS/Android)` pour notre utilisateur un peu plus bas.
 
