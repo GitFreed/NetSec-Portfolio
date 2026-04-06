@@ -17,7 +17,7 @@
 
 **Rôle :** Administrateur d'Infrastructures Sécurisées
 
-**Mission :** Déployer un **reverse proxy** Nginx en LXC dans la zone LAN, servant de point d'entrée unique pour tous les services du homelab. Le reverse proxy écoute sur le port 80 (HTTP standard) et redirige les requêtes vers le bon service backend en fonction du **nom de domaine** demandé (`homarr.home`, `plex.home`, etc.). Combiné aux réécritures DNS d'AdGuard Home, cette architecture permet à **tous les appareils du réseau** (PC, téléphones, tablettes WiFi) d'accéder aux services internes par un simple nom, sans retenir d'IP ni de port, et sans configurer de route statique sur chaque client.
+**Mission :** Déployer un **reverse proxy** Nginx en LXC dans la zone LAN, servant de point d'entrée unique pour tous les services du homelab. Le reverse proxy écoute sur les ports 80 (HTTP) et 443 (HTTPS) et redirige les requêtes vers le bon service backend en fonction du **nom de domaine** demandé (`homarr.home`, `plex.home`, etc.). Combiné aux réécritures DNS d'AdGuard Home, cette architecture permet à **tous les appareils du réseau** (PC, téléphones, tablettes WiFi) d'accéder aux services internes par un simple nom, sans retenir d'IP ni de port, et sans configurer de route statique sur chaque client.
 
 > - [Documentation Officielle Nginx](https://nginx.org/en/docs/)
 > - [Guide Reverse Proxy Nginx](https://docs.nginx.com/nginx/admin-guide/web-server/reverse-proxy/)
@@ -27,8 +27,8 @@
 ## L'intérêt technique 🎯
 
 1. **Routage Couche 7 (Applicatif) :** Là où pfSense route en fonction du port TCP (couche 3/4), Nginx route en fonction du **header `Host:`** de la requête HTTP (couche 7). C'est l'équivalent applicatif du NAT/PAT — un seul point d'entrée, plusieurs services derrière.
-2. **Pont LAN ↔ DMZ Transparent :** La Bbox FAI ne supporte pas les routes statiques. En plaçant Nginx dans le LAN, il fait office de passerelle applicative vers la DMZ : les clients LAN n'ont besoin d'aucune route spéciale, c'est Nginx qui possède la route vers `10.0.0.0/24` via pfSense.
-3. **Suppression des Ports :** Sans reverse proxy, on accède aux services via `IP:port` (`10.0.0.20:7575`, `192.168.1.240:8006`). Avec Nginx, on tape simplement `homarr.home` ou `proxmox.home` — le port 80 étant le port HTTP par défaut, le navigateur ne l'affiche pas.
+2. **Pont LAN ↔ DMZ Transparent :** La Bbox FAI (F@st 5688b) ne supporte pas les routes statiques. En plaçant Nginx dans le LAN, il fait office de passerelle applicative vers la DMZ : les clients LAN n'ont besoin d'aucune route spéciale, c'est Nginx qui possède la route vers `10.0.0.0/24` via pfSense.
+3. **Suppression des Ports :** Sans reverse proxy, on accède aux services via `IP:port` (`10.0.0.20:7575`, `192.168.1.240:8006`). Avec Nginx, on tape simplement `homarr.home` ou `proxmox.home` — les ports 80/443 étant les ports HTTP/HTTPS par défaut, le navigateur ne les affiche pas.
 4. **Centralisation de la Sécurité :** Point unique pour appliquer des headers de sécurité (HSTS, X-Frame-Options), du rate limiting, et à terme un bouncer CrowdSec dédié pour la protection applicative.
 
 ---
@@ -36,7 +36,7 @@
 ## 🛠️ Architecture du Lab
 
 - **Environnement :** Serveur Proxmox VE (HP ProDesk 600 G4)
-- **Conteneur :** LXC Debian 13 (Trixie) — Non privilégié (Unprivileged)
+- **Conteneur :** LXC Debian 13 (Trixie) — Non privilégié (Unprivileged), CT ID 104
 - **IP :** `192.168.1.244/24` (Zone LAN, sur `vmbr0`)
 - **Gateway :** `192.168.1.254` (Box FAI)
 - **DNS :** `192.168.1.250` (AdGuard Home)
@@ -56,7 +56,7 @@
 │  Réécriture DNS :                │
 │  homarr.home → 192.168.1.244    │
 └──────────────────────┬───────────┘
-                       │ Requête HTTP (port 80)
+                       │ Requête HTTP/HTTPS (port 80/443)
                        ▼
 ┌──────────────────────────────────────────────────────────────────────┐
 │  Nginx Reverse Proxy (192.168.1.244) — LXC LAN                      │
@@ -64,13 +64,22 @@
 │  server_name homarr.home   → proxy_pass http://10.0.0.20:7575       │
 │  server_name plex.home     → proxy_pass http://10.0.0.10:32400      │
 │  server_name scanopy.home  → proxy_pass http://10.0.0.20:60072      │
-│  server_name proxmox.home  → proxy_pass https://192.168.1.240:8006  │
-│  server_name checkmk.home  → proxy_pass http://192.168.1.241:5000   │
-│  server_name adguard.home  → proxy_pass http://192.168.1.250:3000   │
+│  server_name proxmox.home  → proxy_pass https://192.168.1.240:8006  │  ← HTTPS (SSL)
+│  server_name checkmk.home  → proxy_pass http://192.168.1.241/       │
+│  server_name adguard.home  → proxy_pass http://192.168.1.250/       │
 │                                                                      │
 │  Route statique : 10.0.0.0/24 via 192.168.1.251 (pfSense)          │
 └──────────────────────────────────────────────────────────────────────┘
 ```
+
+### Points techniques découverts lors du déploiement
+
+| Service | Problème rencontré | Cause | Solution |
+| --- | --- | --- | --- |
+| Checkmk | `Bad Gateway` sur port 5000 | Port 5000 écoute sur `127.0.0.1` uniquement | Passer par Apache sur le port **80** |
+| AdGuard Home | `Bad Gateway` sur port 3000 | Port 3000 = port d'onboarding initial | Passer par le port **80** |
+| Proxmox | `401: No ticket` après login | Cookie d'auth a le flag `Secure` → refusé en HTTP | Passer Nginx en **HTTPS** (certificat auto-signé) |
+| pfSense | `DNS Rebind attack detected` | pfSense rejette les hostnames inconnus | Ajouter `pfsense.home` dans **Alternate Hostnames** |
 
 ---
 
@@ -161,7 +170,26 @@ ping 10.0.0.10   # Plex
 
 ---
 
-## 4️⃣ Configuration des Virtual Hosts (Reverse Proxy)
+## 4️⃣ Génération du Certificat SSL (pour Proxmox)
+
+Proxmox utilise un cookie d'authentification avec le flag `Secure` — il n'est transmis que sur une connexion HTTPS. Le vhost Proxmox doit donc écouter en HTTPS avec un certificat auto-signé.
+
+```bash
+# Créer le répertoire pour les certificats
+mkdir -p /etc/nginx/ssl
+
+# Générer un certificat auto-signé valable 10 ans
+openssl req -x509 -nodes -days 3650 -newkey rsa:2048 \
+  -keyout /etc/nginx/ssl/proxmox.key \
+  -out /etc/nginx/ssl/proxmox.crt \
+  -subj "/CN=proxmox.home"
+```
+
+> 💡 Le navigateur affichera un avertissement de certificat auto-signé lors du premier accès — accepter l'exception. En production, on utiliserait un certificat signé par une CA interne.
+
+---
+
+## 5️⃣ Configuration des Virtual Hosts (Reverse Proxy)
 
 Supprimer le site par défaut :
 
@@ -233,17 +261,28 @@ server {
 EOF
 ```
 
-### Proxmox (`proxmox.home`)
+### Proxmox (`proxmox.home`) — HTTPS obligatoire
+
+> ⚠️ **Cas particulier :** Proxmox exige une connexion HTTPS entre le navigateur et le reverse proxy (flag `Secure` sur le cookie d'authentification). Le bloc `listen 80` redirige automatiquement vers HTTPS.
 
 ```bash
 cat > /etc/nginx/sites-available/proxmox.home << 'EOF'
+# Redirection HTTP → HTTPS
 server {
     listen 80;
     server_name proxmox.home;
+    return 301 https://$host$request_uri;
+}
+
+# Reverse proxy HTTPS
+server {
+    listen 443 ssl;
+    server_name proxmox.home;
+
+    ssl_certificate /etc/nginx/ssl/proxmox.crt;
+    ssl_certificate_key /etc/nginx/ssl/proxmox.key;
 
     location / {
-        # Proxmox utilise HTTPS nativement — proxy_ssl_verify off
-        # car le certificat est auto-signé
         proxy_pass https://192.168.1.240:8006;
         proxy_ssl_verify off;
         proxy_set_header Host $host;
@@ -254,12 +293,20 @@ server {
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
+        # Paramètres de performance (sessions longues, uploads ISO)
+        proxy_buffering off;
+        client_max_body_size 0;
+        proxy_connect_timeout 3600s;
+        proxy_read_timeout 3600s;
+        send_timeout 3600s;
     }
 }
 EOF
 ```
 
 ### Checkmk (`checkmk.home`)
+
+> ⚠️ **Port d'écoute :** Checkmk utilise Apache sur le port **80** comme frontend. Le port 5000 (Gunicorn) n'écoute que sur `127.0.0.1` (localhost) et n'est pas accessible depuis l'extérieur.
 
 ```bash
 cat > /etc/nginx/sites-available/checkmk.home << 'EOF'
@@ -268,7 +315,16 @@ server {
     server_name checkmk.home;
 
     location / {
-        proxy_pass http://192.168.1.241:5000/mkmonitor/;
+        proxy_pass http://192.168.1.241/mkmonitor/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # Chemin interne Checkmk (redirections internes)
+    location /mkmonitor/ {
+        proxy_pass http://192.168.1.241/mkmonitor/;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -280,6 +336,8 @@ EOF
 
 ### AdGuard Home (`adguard.home`)
 
+> ⚠️ **Port d'écoute :** AdGuard Home écoute sur le port **80** en fonctionnement normal. Le port 3000 n'est utilisé que lors de l'installation initiale (onboarding).
+
 ```bash
 cat > /etc/nginx/sites-available/adguard.home << 'EOF'
 server {
@@ -287,7 +345,7 @@ server {
     server_name adguard.home;
 
     location / {
-        proxy_pass http://192.168.1.250:3000;
+        proxy_pass http://192.168.1.250;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -299,7 +357,7 @@ EOF
 
 ---
 
-## 5️⃣ Activation et Validation
+## 6️⃣ Activation et Validation
 
 Activer tous les virtual hosts via des liens symboliques :
 
@@ -326,7 +384,7 @@ systemctl reload nginx
 
 ---
 
-## 6️⃣ Configuration DNS (AdGuard Home)
+## 7️⃣ Configuration DNS (AdGuard Home)
 
 Dans l'interface AdGuard Home (`http://192.168.1.250:3000`) → **Filtres > Réécriture DNS**, toutes les entrées doivent pointer vers l'IP du reverse proxy :
 
@@ -340,7 +398,17 @@ Dans l'interface AdGuard Home (`http://192.168.1.250:3000`) → **Filtres > Ré�
 | `adguard.home` | `192.168.1.244` |
 | `pfsense.home` | `192.168.1.251` |
 
-> ℹ️ `pfsense.home` reste pointé directement vers pfSense (`192.168.1.251`) car l'interface web de pfSense utilise HTTPS avec un certificat lié à son IP — le reverse proxy n'apporte pas de valeur ajoutée ici.
+> ℹ️ `pfsense.home` reste pointé directement vers pfSense (`192.168.1.251`) — pas besoin de passer par le reverse proxy.
+
+---
+
+## 8️⃣ Configuration pfSense (DNS Rebind Protection)
+
+pfSense bloque par défaut les accès via un hostname qu'il ne reconnaît pas (protection contre les attaques DNS Rebind). Pour que `pfsense.home` fonctionne :
+
+➡️ **System > Advanced > Admin Access** → champ **Alternate Hostnames** → ajouter `pfsense.home`
+
+➡️ **Save**
 
 ---
 
@@ -349,12 +417,13 @@ Dans l'interface AdGuard Home (`http://192.168.1.250:3000`) → **Filtres > Ré�
 Depuis **n'importe quel appareil** connecté au réseau WiFi/LAN :
 
 ```sh
-http://homarr.home    → Dashboard Homarr ✅
-http://plex.home      → Interface web Plex ✅
-http://proxmox.home   → Interface Proxmox ✅
-http://checkmk.home   → Dashboard Checkmk ✅
-http://scanopy.home   → Interface Scanopy ✅
-http://adguard.home   → Interface AdGuard Home ✅
+http://homarr.home     → Dashboard Homarr ✅
+http://plex.home       → Interface web Plex ✅
+https://proxmox.home   → Interface Proxmox ✅  (accepter le certificat auto-signé)
+http://checkmk.home    → Dashboard Checkmk ✅
+http://scanopy.home    → Interface Scanopy ✅
+http://adguard.home    → Interface AdGuard Home ✅
+http://pfsense.home    → Interface pfSense ✅  (accès direct, sans reverse proxy)
 ```
 
 Aucun port à retenir, aucune route à configurer sur les clients. Le DNS résout vers Nginx, Nginx proxy vers le bon service.
@@ -392,6 +461,9 @@ ls /etc/nginx/sites-enabled/          # Sites actifs (liens symboliques)
 ## 🔐 Points de Sécurité
 
 - **Exposition limitée au LAN :** Nginx n'écoute que sur le réseau local (`192.168.1.0/24`). Aucun port n'est ouvert sur Internet — le reverse proxy n'est pas exposé côté WAN.
+- **Certificat auto-signé (Proxmox) :** Le vhost Proxmox utilise un certificat auto-signé généré avec OpenSSL (valable 10 ans). Le navigateur affiche un avertissement au premier accès. En production, on déploierait une CA interne pour signer les certificats et supprimer cet avertissement.
+- **Proxy SSL Verify Off :** Désactivé pour Proxmox car son certificat backend est auto-signé. En environnement sécurisé, on importerait le certificat CA de Proxmox dans le trust store de Nginx.
+- **DNS Rebind Protection (pfSense) :** pfSense rejette par défaut les requêtes dont le header `Host` ne correspond pas à un hostname connu. L'ajout de `pfsense.home` dans les **Alternate Hostnames** est requis pour permettre l'accès via le DNS rewrite.
 - **Headers de sécurité :** Pour un durcissement futur, il est possible d'ajouter des headers dans chaque bloc `server` :
 
   ```nginx
@@ -400,7 +472,6 @@ ls /etc/nginx/sites-enabled/          # Sites actifs (liens symboliques)
   add_header X-XSS-Protection "1; mode=block" always;
   ```
 
-- **Proxy SSL Verify Off :** Utilisé pour Proxmox car son certificat est auto-signé. En production, il faudrait déployer un certificat CA interne et activer la vérification.
 - **CrowdSec :** Un bouncer Nginx pourra être ajouté ultérieurement pour analyser les requêtes HTTP et bloquer les comportements malveillants au niveau applicatif — en complément du bouncer pfSense qui agit au niveau réseau.
 - **Limitation de la Bbox :** Cette architecture (Nginx LAN + DNS AdGuard) est un contournement de l'impossibilité de configurer des routes statiques sur la Bbox Bouygues (F@st 5688b). Le reverse proxy fait office de passerelle applicative entre le LAN et la DMZ.
 

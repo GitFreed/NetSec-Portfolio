@@ -178,7 +178,7 @@ Le DNS upstream principal utilisait initialement **Quad9** en DoH (DNS-over-HTTP
 
 Des DNS de repli (Cloudflare et Quad9 classique, toujours en DoH) étaient configurés pour éviter un **SPOF** (Single Point Of Failure).
 
-> 💡 **Note :** depuis avril 2026, Quad9 et Cloudflare ont été remplacés par **Unbound** (résolveur récursif local) comme unique upstream. Voir la fiche [LAB Unbound](/challenges/Homelab_Unbound.md) pour le détail et les raisons de ce changement plus que conseillé.
+> 💡 **Note :** depuis avril 2026, Quad9 et Cloudflare ont été remplacés par **Unbound** (résolveur récursif local) comme unique upstream. Voir la fiche [LAB Unbound](Homelab_Unbound.md) pour le détail et les raisons de ce changement plus que conseillé.
 
 ---
 
@@ -348,7 +348,7 @@ Moyenne des blocages DNS sur une semaine de fonctionnement :
 * Raspberry Pi OS : <https://www.raspberrypi.com/software/>
 * OISD Blocklist : <https://oisd.nl/>
 * URLHaus (Abuse.ch) : <https://urlhaus.abuse.ch/>
-* LAB Unbound (résolveur récursif) : [Homelab_Unbound.md](/challenges/Homelab_Unbound.md)
+* LAB Unbound (résolveur récursif) : [Homelab_Unbound.md](./Homelab_Unbound.md)
 
 ---
 
