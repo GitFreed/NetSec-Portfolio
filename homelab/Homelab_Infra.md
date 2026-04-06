@@ -111,7 +111,7 @@ Ce schéma représente les flux logiques et la segmentation par ponts virtuels (
     ├─> [Checkmk LXC - 192.168.1.241] (Supervision SNMP + Agents)
     ├─> [Samba LXC - 192.168.1.242] (Serveur de fichiers SMB)
     ├─> [Scanopy LXC - 192.168.1.243] (Sonde cartographie LAN)
-    ├─> [Nginx LXC - 192.168.1.244] (Reverse Proxy — prévu)
+    ├─> [Nginx LXC - 192.168.1.244] (Reverse Proxy)
     └─> [pfSense VM - 192.168.1.251] (Routeur / Pare-feu / VPN / CrowdSec)
         │   (Patte WAN : 192.168.1.251 → vmbr0)
         │   (Patte LAN : 10.0.0.1 → vmbr2)
@@ -139,8 +139,8 @@ Ce schéma représente les flux logiques et la segmentation par ponts virtuels (
 | AdGuard Home | [Homelab AdGuard](./Homelab_AdGuard.md) | DNS Sinkhole + DHCP | LAN |
 | Unbound | [Homelab Unbound](./Homelab_Unbound.md) | Résolveur DNS récursif | LAN |
 | CrowdSec | [Homelab CrowdSec](./Homelab_Crowdsec.md) | IDS/IPS Collaboratif | LAN (pfSense) |
+| Nginx | [Homelab Nginx](./Homelab_Nginx.md) | Reverse Proxy | LAN |
 | Checkmk | [Homelab Checkmk](./Homelab_Checkmk.md) | Supervision infrastructure | LAN |
 | Scanopy | [Homelab Scanopy](./Homelab_Scanopy.md) | Cartographie réseau & IPAM | LAN + DMZ |
 | Plex | [Homelab Plex](./Homelab_Plex.md) | Streaming multimédia | DMZ |
 | Homarr | [Homelab Homarr](./Homelab_Homarr.md) | Dashboard centralisé | DMZ |
-| Nginx | *(à venir)* | Reverse Proxy | LAN |
