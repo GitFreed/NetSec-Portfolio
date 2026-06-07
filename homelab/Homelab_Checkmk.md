@@ -253,9 +253,7 @@ Pour les VMs supervisées indirectement via l'API Proxmox :
 
 Le tableau de bord est configuré avec des widgets pour visualiser l'état de l'infrastructure en un coup d'œil : état des hôtes, services critiques, bande passante des interfaces réseau, et alertes actives.
 
-![dashboard](/images/2026-02-27-15-29-01.png)
-
-![dashboard](/images/2026-04-04-23-27-32.png)
+![dashboardcheckmk](/images/2026-06-08-00-48-01.png)
 
 ---
 

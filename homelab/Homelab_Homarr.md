@@ -225,4 +225,4 @@ cp -r $(docker volume inspect homarr_homarr_data --format '{{ .Mountpoint }}') ~
 
 ---
 
-![dashboard](/images/2026-04-05-23-22-17.png)
+![dashboardhomarr](/images/2026-06-08-00-45-11.png)

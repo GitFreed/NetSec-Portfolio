@@ -351,3 +351,7 @@ apt update
 - Plex Support : <https://support.plex.tv/>
 - Dépôt Debian : <https://support.plex.tv/articles/235974187-enable-repository-updating-for-supported-linux-server-distributions/>
 - Proxmox LXC Bind Mounts : <https://pve.proxmox.com/wiki/Linux_Container#pct_mount_points>
+
+---
+
+![Dashboardplex](/images/2026-06-08-00-42-41.png)
