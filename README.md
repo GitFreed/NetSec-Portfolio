@@ -33,7 +33,7 @@ Ce répertoire est organisé pour refléter mon apprentissage quotidien :
 - **Système :** Linux (Debian/RedHat), Windows Server,
 - **Sécurité :** Hardening, gestion des droits, VPN,
 - **Outils :** Cisco Packet Tracer, VMware, Proxmox, vCenter, Asterisk, Veeam, Proxmox Backup, Zabbix, Nagios, Git, Python, Bash, Powershell, AWS,
-- **HomeLab :** [Infra](./homelab/Homelab_Infra.md), [Adguard Home](./homelab/Homelab_AdGuard.md) (DHCP & filtrage DNS), [Proxmox VE](./homelab/Homelab_Proxmox.md) (Hyperviseur socle du Homelab) , [pfSense](./homelab/Homelab_pfSense.md) (Routeur & Pare-feu), [Checkmk Raw](./homelab/Homelab_Checkmk.md) (Supervision), [Crowdsec](./homelab/Homelab_Crowdsec.md) (Sécurité Collaborative), [Scanopy](./homelab/Homelab_Scanopy.md) (Scan Réseau), [Unbound](./homelab/Homelab_Unbound.md) (Résolution DNS récursive), [Plex](./homelab/Homelab_Plex.md) (Streaming Multimédia), [qBittorrent](./homelab/qBittorrent.md) (Seedbox isolée et tunnel VPN), [Homarr](./homelab/Homelab_Homarr.md) (Dashboard centralisé), tbc...
+- **HomeLab :** [Infra](./homelab/Homelab_Infra.md), [Adguard Home](./homelab/Homelab_AdGuard.md) (DHCP & filtrage DNS), [Proxmox VE](./homelab/Homelab_Proxmox.md) (Hyperviseur socle du Homelab) , [pfSense](./homelab/Homelab_pfSense.md) (Routeur & Pare-feu), [Checkmk Raw](./homelab/Homelab_Checkmk.md) (Supervision), [Crowdsec](./homelab/Homelab_Crowdsec.md) (Sécurité Collaborative), [Scanopy](./homelab/Homelab_Scanopy.md) (Scan Réseau), [Unbound](./homelab/Homelab_Unbound.md) (Résolution DNS récursive), [Plex](./homelab/Homelab_Plex.md) (Streaming Multimédia), [qBittorrent](./homelab/Homelab_qBittorrent.md) (Seedbox isolée et tunnel VPN), [Homarr](./homelab/Homelab_Homarr.md) (Dashboard centralisé), tbc...
 
 ---
 
