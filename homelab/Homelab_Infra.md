@@ -120,6 +120,7 @@ Ce schéma représente les flux logiques et la segmentation par ponts virtuels (
 ================== Pont Virtuel vmbr2 (Zone Isolée / DMZ 10.0.0.0/24) ==================
         │
         ├─> [Plex LXC - 10.0.0.10:32400] (Streaming + Intel QSV)
+        ├─> [qBittorrent LXC - 10.0.0.12] (Seedbox VPN — gluetun/WireGuard)
         ├─> [Kali VM - 10.0.0.30] (Audit / Pentest)
         └─> [Docker VM - 10.0.0.20] (Conteneurs isolés)
             ├─> Scanopy Server (:60072) — Cartographie & IPAM
@@ -143,4 +144,5 @@ Ce schéma représente les flux logiques et la segmentation par ponts virtuels (
 | Checkmk | [Homelab Checkmk](./Homelab_Checkmk.md) | Supervision infrastructure | LAN |
 | Scanopy | [Homelab Scanopy](./Homelab_Scanopy.md) | Cartographie réseau & IPAM | LAN + DMZ |
 | Plex | [Homelab Plex](./Homelab_Plex.md) | Streaming multimédia | DMZ |
+| qBittorrent | [Homelab qBittorrent](./Homelab_qBittorrent.md) | Seedbox VPN + Kill Switch | DMZ |
 | Homarr | [Homelab Homarr](./Homelab_Homarr.md) | Dashboard centralisé | DMZ |
